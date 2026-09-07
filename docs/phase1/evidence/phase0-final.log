@@ -1,0 +1,16 @@
+✔ keyboard movement changes position and stays inside legacy bounds (5.9016ms)
+✔ paused match rejects combat and preserves the whole simulation snapshot (0.4411ms)
+✔ one paired move owns both actors until release (0.1886ms)
+✔ block reduces incoming light-strike damage to one fifth (0.1729ms)
+✔ invalid upgrade requests do not mutate a profile (0.1855ms)
+✔ legacy profile parsing bounds nonfinite and negative counters (0.187ms)
+✔ same injected random stream and input reproduce a match (1.6316ms)
+✔ completed match ignores later movement and damage (0.2377ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 475.4438

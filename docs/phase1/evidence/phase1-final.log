@@ -1,0 +1,16 @@
+✔ no input selects idle and keeps the player grounded (0.628ms)
+✔ walking uses delta time and faces the world movement direction (0.6017ms)
+✔ running changes speed only when shift intent is active (0.0923ms)
+✔ diagonal movement is normalized (0.0953ms)
+✔ ground constraint prevents vertical drift and clamps world-space bounds (0.0899ms)
+✔ turning follows the shortest path and remains damped (0.0819ms)
+✔ animation selection follows movement state, not keyboard codes (0.1012ms)
+✔ fixed clock emits deterministic ticks and bounded catch-up (0.1294ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 448.1472
