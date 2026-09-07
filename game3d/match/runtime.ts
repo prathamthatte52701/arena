@@ -10,6 +10,7 @@ import { createActor, tickMatch, type MatchActor } from './logic';
 import { BroadcastCamera } from './broadcast';
 import { CombatSystem, movementAllowed } from '../combat/system';
 import { SyncController, type SyncMoveId } from '../sync/system';
+import { createArenaWorld } from '../arena/world';
 
 export type MatchCameraMode = 'broadcast' | 'follow';
 export type MatchSnapshot = {
@@ -32,6 +33,7 @@ export class MatchRuntime {
   private readonly broadcast: BroadcastCamera;
   private readonly clock = new FixedClock();
   private readonly ring = createWrestlingRing();
+  private readonly arena = createArenaWorld();
   private player: MatchActor = createActor('player', -1.7, 0);
   private cpu: MatchActor = createActor('cpu', 1.7, 0);
   private playerCharacter: Awaited<ReturnType<typeof loadCharacter>> | undefined;
@@ -50,7 +52,7 @@ export class MatchRuntime {
   constructor(private readonly canvas: HTMLCanvasElement, private readonly callbacks: MatchCallbacks) {
     this.renderer = new WebGLRenderer({ canvas, antialias: true, alpha: false }); this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     this.renderer.shadowMap.enabled = true; this.renderer.shadowMap.type = PCFShadowMap; this.renderer.toneMapping = ACESFilmicToneMapping; this.renderer.toneMappingExposure = 1.1;
-    this.world.scene.add(this.ring); this.input = new KeyboardInput(window, document); this.follow = new FollowCamera(this.camera, canvas); this.broadcast = new BroadcastCamera(this.camera);
+    this.world.scene.add(this.arena.arena, this.ring); this.input = new KeyboardInput(window, document); this.follow = new FollowCamera(this.camera, canvas); this.broadcast = new BroadcastCamera(this.camera);
     if (process.env.NODE_ENV !== 'production' && new URLSearchParams(window.location.search).get('qaClose') === '1') { this.player = createActor('player', -.7, 0); this.cpu = createActor('cpu', .7, 0); }
     this.observer = new ResizeObserver(this.resize); this.observer.observe(canvas); this.resize(); window.addEventListener('keydown', this.cameraToggle);
     canvas.addEventListener('webglcontextlost', this.contextLost); window.addEventListener('keydown', this.combatInput); window.addEventListener('keydown', this.syncInput); window.addEventListener('keyup', this.combatInputUp); this.timeout = setTimeout(() => { this.abort.abort(); this.callbacks.failure('Match characters timed out while loading.'); }, 15000);
