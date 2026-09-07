@@ -1,9 +1,7 @@
 import { Vector3, type PerspectiveCamera } from 'three';
 import { dampFactor, type Vec3 } from '../core/movement';
-
-export function cameraOffset(orbit: number): Vec3 {
-  return { x: Math.sin(orbit) * 5.6, y: 3.2, z: Math.cos(orbit) * 5.6 };
-}
+import { cameraOffset } from './math';
+export { cameraOffset } from './math';
 export class FollowCamera {
   private target = new Vector3(0, 1.05, 0);
   private desired = new Vector3();

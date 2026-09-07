@@ -1,0 +1,73 @@
+{
+  "date": "2026-09-08",
+  "environment": {
+    "browser": "Codex in-app browser",
+    "viewport": "1280x720",
+    "url": "http://localhost:3000",
+    "automation": "Playwright-backed CUA page evaluation with a dev-only timed keydown/keyup harness"
+  },
+  "status": "QUALIFIED",
+  "asset": {
+    "liveScene": true,
+    "skinnedMeshes": 1,
+    "bones": 17,
+    "clips": ["Idle", "Walk", "Run"],
+    "nonRootBoneChanged": true
+  },
+  "movement": {
+    "sampleHoldMs": 1600,
+    "axis": {
+      "W": { "before": [0, 0, 0], "after": [0, 0, -2.640], "animationWhileHeld": "Walk", "afterRelease": "Idle" },
+      "S": { "before": [0, 0, 0], "after": [0, 0, 2.612], "animationWhileHeld": "Walk", "afterRelease": "Idle" },
+      "A": { "before": [0, 0, 0], "after": [-2.640, 0, 0], "afterRelease": "Idle" },
+      "D": { "before": [0, 0, 0], "after": [2.640, 0, 0], "animationWhileHeld": "Walk", "afterRelease": "Idle" }
+    },
+    "diagonals": {
+      "W+A": { "after": [-1.847, 0, -1.847], "magnitude": 2.612 },
+      "W+D": { "after": [1.847, 0, -1.847], "magnitude": 2.612 },
+      "S+A": { "after": [-1.886, 0, 1.886], "magnitude": 2.667 },
+      "S+D": { "after": [1.867, 0, 1.867], "magnitude": 2.640 },
+      "normalization": { "walkW": 2.640, "walkWD": 2.612, "ratio": 0.989, "sqrt2Ratio": 1.414 }
+    },
+    "sprint": { "heldPosition": [0, 0, -1.837], "settledPosition": [0, 0, -6.903], "animationWhileHeld": "Run" }
+  },
+  "animation": {
+    "idleToWalk": { "weightsDuringBlend": "Idle 0.47 · Walk 0.53 · Run 0.00" },
+    "walkToIdle": { "weightsDuringBlend": "Idle 0.46 · Walk 0.54 · Run 0.00" },
+    "walkToRun": { "weightsDuringBlend": "Walk 0.99 · Run 0.01" },
+    "runToWalk": { "active": "Walk", "motion": "walk" },
+    "allReleased": { "active": "Idle", "motion": "idle" }
+  },
+  "turning": {
+    "sequence": "W → D → S → A",
+    "yawRadians": [3.142, 3.142, 1.572, 0.001, -1.571],
+    "finite": true,
+    "uncontrolledSpin": false
+  },
+  "camera": {
+    "followBefore": [2.93, 3.20, 4.77],
+    "followDuringW": [2.93, 3.20, 4.30],
+    "orbitBefore": [2.93, 3.20, 4.77],
+    "orbitAfter": [-3.26, 3.20, 4.32],
+    "finite": true
+  },
+  "grounding": { "y": 0, "verticalDrift": false, "bounds": 16 },
+  "focusLoss": {
+    "afterBlur": { "position": [0, 0, -1.155], "motion": "idle", "animation": "Idle", "focus": "RELEASED" },
+    "later": { "position": [0, 0, -1.155], "motion": "idle", "animation": "Idle", "focus": "RELEASED" }
+  },
+  "lifecycle": {
+    "reload": { "live": true, "loaded": "YES", "animation": "Idle", "canvasCount": 1 },
+    "navigation": ["/", "/3d-sandbox", "/", "/3d-sandbox"],
+    "navigationErrors": 0,
+    "assetFailure": { "status": "LOAD FAILED", "http": 404, "reloadControl": true, "consoleErrors": 0 },
+    "legacy": { "rootLoaded": true, "menu": true, "enterRing": true, "legacyCanvas": true }
+  },
+  "consoleErrors": 0,
+  "performance": {
+    "idle": { "averageFps": 60, "minimumFps": 60, "sampleSeconds": 2.75 },
+    "walk": { "averageFps": 60, "minimumFps": 60, "sampleSeconds": 2.75 },
+    "run": { "averageFps": 60, "minimumFps": 60, "sampleSeconds": 2.75 }
+  },
+  "viewportResize": { "status": "UNVERIFIED", "reason": "The available in-app browser exposes no viewport resize API; window.resizeTo is a no-op at 1280x720." }
+}

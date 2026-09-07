@@ -9,7 +9,9 @@ export class CharacterAnimation {
   active = '';
   constructor(root: Object3D, clips: AnimationClip[], private readonly mapping: CharacterAsset['animations']) {
     this.mixer = new AnimationMixer(root);
-    for (const clip of clips) this.actions.set(clip.name, this.mixer.clipAction(clip));
+    for (const clip of clips) {
+      const action = this.mixer.clipAction(clip); action.setEffectiveWeight(0); action.enabled = false; this.actions.set(clip.name, action);
+    }
     this.update('idle', 0);
   }
   update(motion: Motion, dt: number) {
@@ -23,5 +25,6 @@ export class CharacterAnimation {
     }
     this.mixer.update(dt);
   }
+  get weights() { return Object.fromEntries([...this.actions].map(([name, action]) => [name, Number(action.getEffectiveWeight().toFixed(3))])); }
   dispose() { this.mixer.stopAllAction(); this.mixer.uncacheRoot(this.mixer.getRoot()); }
 }

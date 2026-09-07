@@ -81,6 +81,7 @@ export class SandboxRuntime {
         fps: this.sampleFrames / this.sampleTime, frameMs: this.sampleTime / this.sampleFrames * 1000,
         x: p.position.x, y: p.position.y, z: p.position.z, yaw: p.yaw,
         motion: p.motion, animation: actor?.animation.active ?? '—', animationTime: actor?.animation.mixer.time ?? 0,
+        animationWeights: actor?.animation.weights ?? {},
         loaded: Boolean(actor), focused: this.input.focused, bones: actor?.stats.bones ?? 0, skins: actor?.stats.skins ?? 0,
         spineAngle: actor?.root.getObjectByName('Spine')?.rotation.x ?? 0, thighAngle: actor?.root.getObjectByName('LeftThigh')?.rotation.x ?? 0,
         cameraX: c.x, cameraY: c.y, cameraZ: c.z, drawCalls: this.renderer.info.render.calls, triangles: this.renderer.info.render.triangles,

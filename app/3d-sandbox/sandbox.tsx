@@ -8,6 +8,7 @@ import styles from './sandbox.module.css';
 
 export default function Sandbox() {
   const canvas = useRef<HTMLCanvasElement>(null);
+  const qaStarted = useRef(false);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [message, setMessage] = useState('Loading the rigged humanoid and its animation clips.');
   const [stats, setStats] = useState<DebugSnapshot>(emptySnapshot);
@@ -31,6 +32,58 @@ export default function Sandbox() {
     }).catch(error => { if (!disposed) { setStatus('error'); setMessage(error instanceof Error ? error.message : '3D runtime initialization failed.'); } });
     return () => { disposed = true; runtime?.dispose(); };
   }, []);
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'production' || status !== 'ready' || qaStarted.current) return;
+    const query = new URLSearchParams(window.location.search);
+    const allowed = ['KeyW', 'KeyS', 'KeyA', 'KeyD', 'ShiftLeft'];
+    const sequence = (query.get('qaSequence') || '').split(',').map(item => {
+      const [code, duration] = item.split(':');
+      return { code, duration: Math.max(100, Math.min(5000, Number(duration) || 700)) };
+    }).filter(item => allowed.includes(item.code));
+    const codes = (query.get('qaMove') || '').split(',').filter(code => allowed.includes(code));
+    if (!codes.length && !sequence.length) return;
+    qaStarted.current = true;
+    const holdMs = Math.max(100, Math.min(5000, Number(query.get('qaHold') || 1500)));
+    const startDelay = Math.max(50, Math.min(5000, Number(query.get('qaDelay') || 250)));
+    const blurAfter = Number(query.get('qaBlurAfter') || 0);
+    const releaseCodes = (query.get('qaRelease') || '').split(',').filter(code => codes.includes(code));
+    const releaseAfter = Math.max(50, Math.min(5000, Number(query.get('qaReleaseAfter') || Math.max(100, holdMs * .5))));
+    const event = (type: 'keydown' | 'keyup', selected = codes) => selected.forEach(code => {
+      const key = code === 'ShiftLeft' ? 'Shift' : code.slice(-1).toLowerCase();
+      window.dispatchEvent(new KeyboardEvent(type, { bubbles: true, cancelable: true, code, key }));
+    });
+    if (sequence.length) {
+      let cancelled = false;
+      const runSequence = async () => {
+        await new Promise(resolve => window.setTimeout(resolve, startDelay));
+        for (const item of sequence) {
+          if (cancelled) return;
+          event('keydown', [item.code]); document.documentElement.dataset.phase1Qa = `held-${item.code}`;
+          await new Promise(resolve => window.setTimeout(resolve, item.duration));
+          event('keyup', [item.code]);
+        }
+        document.documentElement.dataset.phase1Qa = 'released';
+      };
+      void runSequence();
+      return () => { cancelled = true; };
+    }
+    const start = window.setTimeout(() => {
+      event('keydown');
+      document.documentElement.dataset.phase1Qa = 'held';
+      const blurTimer = blurAfter > 0 ? window.setTimeout(() => {
+        window.dispatchEvent(new Event('blur'));
+        document.documentElement.dataset.phase1Qa = 'blurred';
+      }, Math.min(blurAfter, holdMs - 50)) : undefined;
+      const releaseTimer = releaseCodes.length ? window.setTimeout(() => event('keyup', releaseCodes), Math.min(releaseAfter, holdMs - 50)) : undefined;
+      window.setTimeout(() => {
+        if (blurTimer) window.clearTimeout(blurTimer);
+        if (releaseTimer) window.clearTimeout(releaseTimer);
+        event('keyup', codes.filter(code => !releaseCodes.includes(code)));
+        document.documentElement.dataset.phase1Qa = 'released';
+      }, holdMs);
+    }, startDelay);
+    return () => window.clearTimeout(start);
+  }, [status]);
   return <main className={styles.shell}>
     <div className={styles.topbar}><Link href="/" className={styles.brand}>Q/R <span>DEVELOPMENT LAB</span></Link><Link href="/">← Legacy game</Link></div>
     <div className={styles.title}><div><p>PHASE 01 / LOCOMOTION FOUNDATION</p><h1>Into the third dimension.</h1></div><span className={styles.badge}>3D SANDBOX</span></div>
