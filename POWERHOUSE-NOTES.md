@@ -28,3 +28,12 @@ This is a 2D browser arcade game with sprite pose changes and procedural animati
 ## Validation
 
 20 deterministic combat/progression tests, TypeScript and production build. No broad game-browser QA requested. The optional pause_match WebMCP tool remains unverified because no supported validation context was available.
+
+Update: mouse controls, arena audio and backstage sneak attacks
+- Click floor to move; click opponent to approach and attack; right-click hold blocks.
+- Always-visible action buttons and hold-to-move direction pad support mouse/touch.
+- B triggers a backstage sneak attack with 35 stamina cost and 18-second recovery; Q taunts a downed rival.
+- Original synthesized entrance riffs/crowd/impact audio and optional browser speech narrator respond to entrances, moves and results. Voice availability depends on device; no cloned WWE commentary.
+- Controls group light/heavy/grapple actions, informed by the official 2K PC manual: https://cdn.2k.com/wwe/wwe-2k25/manuals/pc/2KSWIN_WWE2K25_PC_Online_Manual_ENG.pdf
+- Existing transparent muscular sprite art retained; newer reference atlas still awaits background-removal approval.
+- Validation: 25 deterministic combat, progression, mouse and narrator checks; TypeScript and production build pass. Browser gameplay/audio playback not manually verified.

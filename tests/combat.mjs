@@ -28,3 +28,16 @@ check('upgrades deduct correct price, persist and affect stats',()=>{let p=newPr
 check('upgrade cap and corrupted saves are bounded',()=>{let p=newProfile();p.points=100;for(let i=0;i<5;i++)p=buyUpgrade(p,0,'toughness');assert.equal(buyUpgrade(p,0,'toughness'),null);assert.equal(readProfile({points:-5,upgrades:[{power:999,toughness:-3,speed:NaN}]}).upgrades[0].power,5);assert.equal(readProfile(null).points,6);});
 check('stamina prevents unlimited heavy attacks',()=>{const s=near(1,0);s.fighters[0].stamina=0;assert(!attack(s,0,'press'));run(s,3);assert(s.fighters[0].stamina>25);});
 console.log(`${checks} combat and progression checks passed.`);
+const mouseSource=readFileSync(new URL('../app/mouse-controls.ts',import.meta.url),'utf8');
+const engineURL='data:text/javascript;base64,'+Buffer.from(code).toString('base64');
+const mouseCode=ts.transpileModule(mouseSource,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText.replace("'./engine'",JSON.stringify(engineURL));
+const {canvasPoint,targetFromClick,steerMouse}=await import('data:text/javascript;base64,'+Buffer.from(mouseCode).toString('base64'));
+check('mouse coordinates scale and floor destinations clamp',()=>{assert.deepEqual(canvasPoint(270,150,{left:10,top:10,width:520,height:280}),{x:520,y:280});const s=near();const t=targetFromClick(s,0,0);assert.equal(t.x,170);assert.equal(t.y,325);});
+check('rival click approaches then attacks once',()=>{const s=createMatch(0,1,'fight');s.ai=999;let t=targetFromClick(s,690,300);assert.equal(t.action,'punch');for(let i=0;i<200&&t;i++){const keys=new Set();t=steerMouse(s,t,keys,.02);step(s,.02,keys);}assert.equal(t,null);assert(s.fighters[1].hp<s.fighters[1].maxHp);assert.equal(s.impact,1);});
+check('manual movement and pause cancel mouse navigation',()=>{const s=near(),t=targetFromClick(s,800,430);assert.equal(steerMouse(s,t,new Set(['a']),.02),null);s.phase='paused';assert.equal(steerMouse(s,t,new Set(),.02),null);});
+check('backstage ambush has delayed damage, stamina cost and cooldown',()=>{assert(!attack(near(),0,'ambush'));const s=near(1,0,'backstage');assert(attack(s,0,'ambush'));assert.equal(s.fighters[0].stamina,65);assert.equal(s.impact,0);run(s,2.2);assert.equal(s.impact,1);assert(s.fighters[1].down>0);s.fighters[1].down=0;assert(!attack(s,0,'ambush'));});
+console.log(checks+' total checks passed.');
+const audioSource=readFileSync(new URL('../app/arena-audio.ts',import.meta.url),'utf8');
+const audioCode=ts.transpileModule(audioSource,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText.replace("'./engine'",JSON.stringify(engineURL));
+const {ArenaAudio}=await import('data:text/javascript;base64,'+Buffer.from(audioCode).toString('base64'));
+check('audio tracks both entrants and respects narrator mute',()=>{const spoken=[];globalThis.SpeechSynthesisUtterance=class{constructor(text){this.text=text;}};globalThis.speechSynthesis={cancel(){},getVoices(){return [];},speak(u){spoken.push(u.text);}};const d=new ArenaAudio(),s=createMatch(1,3,'entrance');d.observe(s);assert.match(spoken[0],/Chyna/i);s.entranceTime=4.1;d.observe(s);d.observe(s);assert.equal(d.character,3);assert.match(spoken[1],/Bianca/i);d.setVoice(false);s.phase='fight';d.observe(s);assert.equal(spoken.length,2);d.dispose();});
