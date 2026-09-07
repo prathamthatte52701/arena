@@ -1,0 +1,15 @@
+✔ four distinct entrance timelines complete through ring pose
+✔ stage, ramp, ringside, ring-entry and ring-pose states are observed
+✔ skip is stable at stage, ramp and ringside and sequential timelines are isolated
+ℹ tests 3
+ℹ pass 3
+ℹ fail 0
+✔ tests\phase6.mjs (430.4843ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 456.6806
