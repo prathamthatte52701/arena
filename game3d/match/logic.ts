@@ -39,9 +39,9 @@ export function faceActors(a: MatchActor, b: MatchActor, dt: number) {
   a.yaw = turnToward(a.yaw, aTarget, dt, 8); b.yaw = turnToward(b.yaw, bTarget, dt, 8);
 }
 
-export function tickMatch(player: MatchActor, cpu: MatchActor, intent: Intent, dt: number, elapsed: number) {
-  advancePlayer(player, intent, dt, matchMovement, true); clampToRing(player.position, ringBounds);
-  advancePlayer(cpu, cpuIntent(cpu, player, elapsed), dt, matchMovement, false); clampToRing(cpu.position, ringBounds);
+export function tickMatch(player: MatchActor, cpu: MatchActor, intent: Intent, dt: number, elapsed: number, allowPlayer = true, allowCpu = true) {
+  advancePlayer(player, allowPlayer ? intent : { x: 0, z: 0, run: false }, dt, matchMovement, true); clampToRing(player.position, ringBounds);
+  advancePlayer(cpu, allowCpu ? cpuIntent(cpu, player, elapsed) : { x: 0, z: 0, run: false }, dt, matchMovement, false); clampToRing(cpu.position, ringBounds);
   const separation = resolveSeparation(player, cpu); faceActors(player, cpu, dt);
   return { separation, cpuMotion: cpu.motion };
 }

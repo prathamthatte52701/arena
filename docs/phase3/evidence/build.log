@@ -1,0 +1,71 @@
+
+> sites-project@0.1.0 build
+> vinext build
+
+
+  vinext build  (Vite 8.0.13)
+
+(node:45608) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[1/5] analyze client references...
+[2K
+transforming...✓ 230 modules transformed.
+rendering chunks...
+[PLUGIN_TIMINGS] Your build spent significant time in plugins. Here is a breakdown:
+  - rsc:virtual-client-package (21%)
+  - vinext:middleware-server-only (17%)
+  - vinext:css-data-url (15%)
+  - vinext:og-inline-fetch-assets (14%)
+  - rsc:scan-strip (5%)
+See https://rolldown.rs/options/checks#plugintimings for more details.
+
+✓ built in 3.90s
+[2/5] analyze server references...
+[2K
+transforming...✓ 163 modules transformed.
+rendering chunks...
+[PLUGIN_TIMINGS] Your build spent significant time in plugins. Here is a breakdown:
+  - vinext:og-inline-fetch-assets (28%)
+  - vinext:css-data-url (14%)
+  - vinext:jsx-in-js (6%)
+  - vinext:optimize-imports (5%)
+  - rsc:virtual-client-package (5%)
+See https://rolldown.rs/options/checks#plugintimings for more details.
+
+✓ built in 3.65s
+[3/5] build rsc environment...
+[2K
+transforming...✓ 227 modules transformed.
+rendering chunks...
+computing gzip size...
+✓ built in 2.63s
+[4/5] build client environment...
+[2K
+transforming...✓ 171 modules transformed.
+rendering chunks...
+computing gzip size...
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 2.89s
+[5/5] build ssr environment...
+[2K
+transforming...✓ 165 modules transformed.
+rendering chunks...
+computing gzip size...
+✓ built in 2.10s
+[0m
+  Route (app)
+  ┌ ? /          
+  ├ ? /3d-match  
+  └ ? /3d-sandbox
+
+  ? Unknown
+
+  ? Some routes could not be classified. vinext currently uses static analysis
+    and cannot detect dynamic API usage (headers(), cookies(), etc.) at build time.
+    Automatic classification will be improved in a future release.
+  Build complete. Run `vinext start` to start the production server.
+
