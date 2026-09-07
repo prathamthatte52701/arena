@@ -1,0 +1,14 @@
+✔ two actors start grounded and CPU locomotion approaches without input-reading (5.7153ms)
+✔ player world-space movement and ring bounds are enforced (0.8571ms)
+✔ deep overlap is separated without teleporting outside legal space (0.5958ms)
+✔ actors face each other with finite smooth yaw values (1.3637ms)
+✔ broadcast midpoint helper damps toward both actors (0.8136ms)
+✔ ring source defines raised platform, apron, posts, turnbuckles and ropes (1.7448ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2505.523

@@ -1,0 +1,16 @@
+✔ light strike has startup, active, recovery and exactly one hit (3.2874ms)
+✔ out-of-range attack misses and does not damage (0.4983ms)
+✔ stamina is consumed then recovers without soft-lock (1.8062ms)
+✔ blocking reduces incoming damage and prevents knockdown (0.6668ms)
+✔ heavy hit causes knockdown and controlled recovery (0.8018ms)
+✔ successful combat increases momentum and hit reaction (0.7854ms)
+✔ CPU attacks occasionally but not continuously (1.0969ms)
+✔ combat states gate movement while idle remains available (0.5371ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2332.3242
