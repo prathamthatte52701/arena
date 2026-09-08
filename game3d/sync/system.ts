@@ -33,6 +33,7 @@ export class SyncController {
 
   requestMove(id: SyncMoveId, distance: number, resources: SyncResources) {
     const move = syncMoves[id];
+    if (!move || !Number.isFinite(distance) || distance < 0 || !Number.isFinite(resources.stamina) || !Number.isFinite(resources.momentum)) return false;
     if (this.state !== 'FREE' || resources.stamina < move.staminaCost || resources.momentum < move.momentumRequired) return false;
     resources.stamina -= move.staminaCost;
     if (move.momentumRequired) resources.momentum -= move.momentumRequired;
@@ -41,6 +42,7 @@ export class SyncController {
   }
 
   tick(dt: number, attacker: SyncPose, receiver: SyncPose, escapePressed = false) {
+    if (!Number.isFinite(dt) || dt <= 0) return;
     if (!this.move || this.state === 'FREE') return;
     this.stateTime += dt;
     const move = this.move;
@@ -63,9 +65,8 @@ export class SyncController {
       this.state = 'FREE'; this.stateTime = 0; this.cameraCue = false; this.event = { kind: 'recover', move: move.id }; this.move = undefined; this.resources = undefined;
     }
     if (this.movementLocked && this.state !== 'RELEASE' && this.state !== 'RECOVERY') {
-      const angle = attacker.yaw; const targetX = attacker.x - Math.sin(angle) * .78; const targetZ = attacker.z - Math.cos(angle) * .78;
+      const angle = attacker.yaw; const targetX = attacker.x + Math.sin(angle) * .78; const targetZ = attacker.z + Math.cos(angle) * .78;
       receiver.x = approach(receiver.x, targetX, dt * 14); receiver.z = approach(receiver.z, targetZ, dt * 14); receiver.yaw = approach(receiver.yaw, attacker.yaw, dt * 14);
     }
   }
 }
-

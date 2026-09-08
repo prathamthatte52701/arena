@@ -1,0 +1,102 @@
+✖ disabled CPU attack scheduling still permits knockdown recovery (1.5532ms)
+✖ nonfinite combat delta is rejected without corrupting resources (0.2133ms)
+✖ invalid grapple distance cannot capture a target (0.1969ms)
+✖ nonfinite entrance delta preserves timeline (0.1758ms)
+✔ invalid movement intent cannot poison transform (0.2503ms)
+✔ fixed clock bounds resume delta and rejects NaN during 10000 updates (1.35ms)
+✔ attack spam cannot bypass action or stamina gates (0.2504ms)
+✔ 50 grapple cycles release and each generates one new impact (2.0146ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 4
+ℹ fail 4
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 482.3297
+
+✖ failing tests:
+
+test at tests\brutal-qa.mjs:11:1
+✖ disabled CPU attack scheduling still permits knockdown recovery (1.5532ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'KNOCKED_DOWN'
+  - 'IDLE'
+  
+      at TestContext.<anonymous> (file:///E:/shadow%20fight/tests/brutal-qa.mjs:12:124)
+      at Test.runInAsyncScope (node:async_hooks:214:14)
+      at Test.run (node:internal/test_runner/test:1103:25)
+      at Test.start (node:internal/test_runner/test:1000:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:358:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'KNOCKED_DOWN',
+    expected: 'IDLE',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\brutal-qa.mjs:14:1
+✖ nonfinite combat delta is rejected without corrupting resources (0.2133ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  NaN !== 100
+  
+      at TestContext.<anonymous> (file:///E:/shadow%20fight/tests/brutal-qa.mjs:15:54)
+      at Test.runInAsyncScope (node:async_hooks:214:14)
+      at Test.run (node:internal/test_runner/test:1103:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:785:18)
+      at Test.postRun (node:internal/test_runner/test:1232:19)
+      at Test.run (node:internal/test_runner/test:1160:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:358:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: NaN,
+    expected: 100,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\brutal-qa.mjs:17:1
+✖ invalid grapple distance cannot capture a target (0.1969ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at TestContext.<anonymous> (file:///E:/shadow%20fight/tests/brutal-qa.mjs:18:39)
+      at Test.runInAsyncScope (node:async_hooks:214:14)
+      at Test.run (node:internal/test_runner/test:1103:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:785:18)
+      at Test.postRun (node:internal/test_runner/test:1232:19)
+      at Test.run (node:internal/test_runner/test:1160:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:785:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\brutal-qa.mjs:20:1
+✖ nonfinite entrance delta preserves timeline (0.1758ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  NaN !== 0
+  
+      at TestContext.<anonymous> (file:///E:/shadow%20fight/tests/brutal-qa.mjs:21:73)
+      at Test.runInAsyncScope (node:async_hooks:214:14)
+      at Test.run (node:internal/test_runner/test:1103:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:785:18)
+      at Test.postRun (node:internal/test_runner/test:1232:19)
+      at Test.run (node:internal/test_runner/test:1160:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:785:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: NaN,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

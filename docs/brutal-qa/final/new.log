@@ -1,0 +1,20 @@
+✔ disabled CPU attack scheduling still permits knockdown recovery (1.1269ms)
+✔ nonfinite combat delta is rejected without corrupting resources (0.1879ms)
+✔ invalid grapple distance cannot capture a target (0.2052ms)
+✔ nonfinite entrance delta preserves timeline (0.3428ms)
+✔ invalid movement intent cannot poison transform (0.4055ms)
+✔ fixed clock bounds resume delta and rejects NaN during 10000 updates (1.3386ms)
+✔ attack spam cannot bypass action or stamina gates (0.4ms)
+✔ 50 grapple cycles release and each generates one new impact (2.2042ms)
+✔ ten-minute deterministic combat soak bounds all resources (18.6637ms)
+✔ all entrance skip positions and sequential identities remain terminal (1.483ms)
+✔ signature and finisher exact thresholds permit one request only (0.1962ms)
+✔ submission escape finishes and frees both participants (0.2077ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 518.3518

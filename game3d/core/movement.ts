@@ -11,6 +11,7 @@ export function turnToward(yaw: number, target: number, dt: number, rate: number
 }
 export function advancePlayer(player: PlayerState, intent: Intent, dt: number, tuning: MovementTuning, canRun = true) {
   if (!Number.isFinite(dt) || dt <= 0) return;
+  if (!Number.isFinite(intent.x) || !Number.isFinite(intent.z)) return;
   const length = Math.hypot(intent.x, intent.z);
   const speed = length > 0 ? (intent.run && canRun ? tuning.runSpeed : tuning.walkSpeed) : 0;
   const x = length > 0 ? intent.x / length : 0, z = length > 0 ? intent.z / length : 0;

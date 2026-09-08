@@ -26,9 +26,10 @@ export class CombatSystem {
     if (!active && actor.blocking) { actor.blocking = false; actor.state = 'IDLE'; actor.stateTime = 0; }
   }
   tick(dt: number, distance: number, options: { cpuEnabled?: boolean } = {}) {
+    if (!Number.isFinite(dt) || dt <= 0 || !Number.isFinite(distance) || distance < 0) return [];
     const cpuEnabled = options.cpuEnabled ?? true;
     this.events = [];
-    this.tickActor(this.player, this.cpu, dt, distance); if (cpuEnabled) this.tickActor(this.cpu, this.player, dt, distance);
+    this.tickActor(this.player, this.cpu, dt, distance); this.tickActor(this.cpu, this.player, dt, distance);
     this.cpuClock += dt;
     if (cpuEnabled && this.cpuClock > 2.8 && distance <= attacks.light.range + .25 && canAcceptAction(this.cpu)) { this.requestAttack('cpu', 'light'); this.cpuClock = 0; }
     for (const actor of [this.player, this.cpu]) if (actor.state !== 'BLOCKING') actor.stamina = Math.min(100, actor.stamina + (activeStates.has(actor.state) ? 3 : 14) * dt);

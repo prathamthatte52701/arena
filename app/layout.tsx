@@ -13,6 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  icons: { icon: '/favicon.svg' },
   title: 'Queens of the Ring | Wrestling Arcade', description: 'Play a four-character wrestling arcade game with Rhea, Chyna, Charlotte and Bianca.',
 };
 

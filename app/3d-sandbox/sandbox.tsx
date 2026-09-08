@@ -85,7 +85,7 @@ export default function Sandbox() {
     return () => window.clearTimeout(start);
   }, [status]);
   return <main className={styles.shell}>
-    <div className={styles.topbar}><Link href="/" className={styles.brand}>Q/R <span>DEVELOPMENT LAB</span></Link><Link href="/">← Legacy game</Link></div>
+    <div className={styles.topbar}><Link prefetch={false} href="/" className={styles.brand}>Q/R <span>DEVELOPMENT LAB</span></Link><Link prefetch={false} href="/">← Legacy game</Link></div>
     <div className={styles.title}><div><p>PHASE 01 / LOCOMOTION FOUNDATION</p><h1>Into the third dimension.</h1></div><span className={styles.badge}>3D SANDBOX</span></div>
     <div className={styles.workspace}>
       <div className={styles.viewport}>

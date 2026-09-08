@@ -1,0 +1,236 @@
+{
+  "base": "http://localhost:3000",
+  "errors": [
+    {
+      "url": "http://localhost:3000/",
+      "message": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "url": "http://localhost:3000/3d-sandbox",
+      "message": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "url": "http://localhost:3000/3d-match",
+      "message": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "url": "http://localhost:3000/3d-match",
+      "message": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "url": "http://localhost:3000/entrance",
+      "message": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "url": "http://localhost:3000/backstage",
+      "message": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    }
+  ],
+  "warnings": [],
+  "routes": [
+    {
+      "url": "/",
+      "canvases": 5,
+      "text": "SELECT YOUR SUPERSTAR\n04 / FIGHTERS\n01\n● PLAYER 1\nTHE NIGHTMARE\nRHEA\nPOWER 94\nSPEED 78\n\nRIPTIDE\n\n02\nPOWERHOUSE\nTHE NINTH WONDER\nCHYNA\nPOWER 112\nSPEED 70\n\nGORILLA PRESS + PEDIGREE\n\n03\nSELECT\nTHE QUEEN\nCHARLOTTE\nPOWER 86\nSPEED 87\n\nNATURAL SELECTION\n\n04\nSELECT\nTHE EST\nBIANCA\nPOWER 91\nSPEED 95\n\nK.O.D.\n\nYOUR OPPONENT\nCHYNA\nCHARLOTTE\nBIANCA\n\nWear them down. Slam. Pin for three.\nChyna: G for Gorilla Press · I for Pedigree.\n\nPLAY RING ENTRANCES\nENTER THE RING →\nMOVE LIST\nW A S D\nMOVE\nJ\nPUNCH\nK\nKICK\nL\nSUPLEX\nG\nCHYNA PRESS\nT\nPOWER TOSS\nU\nSUBMIT\nN\nPIN\nSPACE\nBLOCK\nI\nFINISHER\nF\nPICK UP\nH\nWEAPON\nE\nESCAPE\nQ\nTAUNT\nB\nSNEAK ATTACK\n\nMouse: click the floor to move, click your rival to attack, hold right-click to block. On-screen buttons work with clicks or touch. G: Chyna’s overhead press · T: grapple and throw · F/H: weapons in Extreme Rules or backstage · Q: taunt for momentum. Tap E to break a hold. The thin green bar is stamina.\n\nQ/R · POWERHOUSE EDITION\nUnofficial 2D fan game · AI-rendered characters"
+    },
+    {
+      "url": "/3d-sandbox",
+      "canvases": 1,
+      "text": "TION FOUNDATION\n\nInto the third dimension.\n3D SANDBOX\nLIVE 3D SCENE\nY-UP · WORLD SPACE\nTEMPORARY DEVELOPMENT CHARACTER\nIDLE\n\nCONTROL THE CHARACTER\n\nMove. Turn. Explore.\n\nA generic rigged humanoid for testing movement and animation. This is not a final wrestler model.\n\nW\nASD\nW / S\nForward / backward\nA / D\nLeft / right\nSHIFT\nHold to run\nDRAG\nOrbit the follow camera\n\nMovement follows world axes. Click the scene to focus. Releasing the keys stops movement; changing focus clears held keys.\n\nHide diagnostics\nRuntime diagnostics\nFPS / frame\n22 / 44.5 ms\nPosition x / y / z\n0.000 / 0.000 / 0.000\nMovement\nidle\nActive animation\nIdle\nAnimation weights\nIdle 1.00 · Walk 0.00 · Run 0.00\nCharacter loaded\nYES\nSkeleton / skinned meshes\n17 bones / 1 mesh\nYaw / clip clock\n3.142 rad / 0.88 s\nSpine / thigh rotation\n0.0177 / 0.0000\nCamera x / y / z\n2.93 / 3.20 / 4.77\nDraw calls / triangles\n5 / 19170\nInput focus\nACTIVE\n\nOne humanoid. Three skeletal clips. A separate runtime.\nLegacy gameplay remains available."
+    },
+    {
+      "url": "/3d-match",
+      "canvases": 1,
+      "text": "SPACE FOUNDATION\n\nBroadcast the matchup.\n\nTwo generic rigged development humanoids share a raised ring. J/K strike, Space guards, G grapples and H submits.\n\nW\nASD\nW / S\nMove player\nA / D\nStrafe player\nSHIFT\nRun\nC\nSwitch camera\nJ / K\nLight / heavy\nSPACE\nBlock\nG / H\nGrapple / submit\nY / U\nSignature / finisher\n\nConnected moves lock both poses together, cue the camera, then release through recovery. Momentum gates signature and finisher moves.\n\nMatch diagnostics\nFPS / frame\n10 / 103.5 ms\nPlayer position\n-1.700 / 0.000 / 0.000\nPlayer yaw\n1.697\nCPU position\n0.780 / 0.000 / -0.460\nCPU yaw\n4.269\nSeparation\n2.523\nMotion / animation\nidle / Idle · CPU walk / Walk\nSkinned meshes / bones\n2 meshes · 34 bones\nCamera\nbroadcast · -0.41 / 6.41 / 9.43\nHealth\n100 / 100\nStamina / momentum\n100 / 0\nCombat state\nIDLE · CPU IDLE\nSync state\nFREE · —\nSync event / cue\n— · normal\nLast event\n—\nGrounded / loaded\nYES / YES\n\nRing geometry, dual rigged characters and synchronized move timing.\nPhase 4 foundation active."
+    },
+    {
+      "url": "/entrance",
+      "canvases": 1,
+      "text": "Q/R RING LAB\n← Main game\n\nPHASE 06 / INDIVIDUAL ENTRANCES\n\nMake an entrance.\nCINEMATIC TIMELINE\nLIVE ENTRANCE SCENE\nRHEA · STAGE\nRHEA · THE ERADICATOR\nstage-hero\n\nDATA-DRIVEN PRESENTATION\n\nFour identities. Four rhythms.\n\nTemporary rigged humanoids follow distinct stage, ramp, ringside, entry and pose timelines.\n\nRHEA\nintimidating\nCHYNA\npowerhouse\nCHARLOTTE\ngrand\nBIANCA\nathletic\nSKIP ENTRANCE →\nState / time\nSTAGE · 0.7s\nCamera cue\nstage-hero\nPresentation\nRHEA · THE ERADICATOR\nFPS\n20\nLoaded\nYES\n\nTemporary locomotion clips; final entrance poses remain unavailable."
+    },
+    {
+      "url": "/backstage",
+      "canvases": 1,
+      "text": "Q/R RING LAB\n← Main game\n\nPHASE 07 / EXPLORABLE BACKSTAGE\n\nBehind the curtain.\nBACKSTAGE HUB\nLIVE BACKSTAGE\nMAIN_CORRIDOR\nWASD TO EXPLORE\nPRESS E NEAR ANCHOR\n\nCONNECTED 3D HUB\n\nExplore every room.\n\nWalk the corridor with the shared third-person controller. Doors and future interaction anchors are physically placed in the world.\n\nZone\nMAIN_CORRIDOR\nPosition\n0.00 / -12.00\nPrompt\n—\nInteraction\n—\nFPS\n16\nLoaded\nYES\n\nAreas: Rhea, Chyna, Charlotte and Bianca locker rooms · interview area · manager office · loading bay · arena access.\n\nPhase 7 supplies environment, navigation, collision boundaries and interaction anchors. Interviews and manager behavior remain future systems."
+    },
+    {
+      "url": "/",
+      "canvases": 5,
+      "text": "SELECT YOUR SUPERSTAR\n04 / FIGHTERS\n01\n● PLAYER 1\nTHE NIGHTMARE\nRHEA\nPOWER 94\nSPEED 78\n\nRIPTIDE\n\n02\nPOWERHOUSE\nTHE NINTH WONDER\nCHYNA\nPOWER 112\nSPEED 70\n\nGORILLA PRESS + PEDIGREE\n\n03\nSELECT\nTHE QUEEN\nCHARLOTTE\nPOWER 86\nSPEED 87\n\nNATURAL SELECTION\n\n04\nSELECT\nTHE EST\nBIANCA\nPOWER 91\nSPEED 95\n\nK.O.D.\n\nYOUR OPPONENT\nCHYNA\nCHARLOTTE\nBIANCA\n\nWear them down. Slam. Pin for three.\nChyna: G for Gorilla Press · I for Pedigree.\n\nPLAY RING ENTRANCES\nENTER THE RING →\nMOVE LIST\nW A S D\nMOVE\nJ\nPUNCH\nK\nKICK\nL\nSUPLEX\nG\nCHYNA PRESS\nT\nPOWER TOSS\nU\nSUBMIT\nN\nPIN\nSPACE\nBLOCK\nI\nFINISHER\nF\nPICK UP\nH\nWEAPON\nE\nESCAPE\nQ\nTAUNT\nB\nSNEAK ATTACK\n\nMouse: click the floor to move, click your rival to attack, hold right-click to block. On-screen buttons work with clicks or touch. G: Chyna’s overhead press · T: grapple and throw · F/H: weapons in Extreme Rules or backstage · Q: taunt for momentum. Tap E to break a hold. The thin green bar is stamina.\n\nQ/R · POWERHOUSE EDITION\nUnofficial 2D fan game · AI-rendered characters"
+    },
+    {
+      "url": "/3d-sandbox",
+      "canvases": 1,
+      "text": "TION FOUNDATION\n\nInto the third dimension.\n3D SANDBOX\nLIVE 3D SCENE\nY-UP · WORLD SPACE\nTEMPORARY DEVELOPMENT CHARACTER\nIDLE\n\nCONTROL THE CHARACTER\n\nMove. Turn. Explore.\n\nA generic rigged humanoid for testing movement and animation. This is not a final wrestler model.\n\nW\nASD\nW / S\nForward / backward\nA / D\nLeft / right\nSHIFT\nHold to run\nDRAG\nOrbit the follow camera\n\nMovement follows world axes. Click the scene to focus. Releasing the keys stops movement; changing focus clears held keys.\n\nHide diagnostics\nRuntime diagnostics\nFPS / frame\n25 / 40.5 ms\nPosition x / y / z\n0.000 / 0.000 / 0.000\nMovement\nidle\nActive animation\nIdle\nAnimation weights\nIdle 1.00 · Walk 0.00 · Run 0.00\nCharacter loaded\nYES\nSkeleton / skinned meshes\n17 bones / 1 mesh\nYaw / clip clock\n3.142 rad / 1.37 s\nSpine / thigh rotation\n0.0079 / 0.0000\nCamera x / y / z\n2.93 / 3.20 / 4.77\nDraw calls / triangles\n5 / 19170\nInput focus\nACTIVE\n\nOne humanoid. Three skeletal clips. A separate runtime.\nLegacy gameplay remains available."
+    },
+    {
+      "url": "/3d-match",
+      "canvases": 1,
+      "text": " SPACE FOUNDATION\n\nBroadcast the matchup.\n\nTwo generic rigged development humanoids share a raised ring. J/K strike, Space guards, G grapples and H submits.\n\nW\nASD\nW / S\nMove player\nA / D\nStrafe player\nSHIFT\nRun\nC\nSwitch camera\nJ / K\nLight / heavy\nSPACE\nBlock\nG / H\nGrapple / submit\nY / U\nSignature / finisher\n\nConnected moves lock both poses together, cue the camera, then release through recovery. Momentum gates signature and finisher moves.\n\nMatch diagnostics\nFPS / frame\n9 / 105.5 ms\nPlayer position\n-1.700 / 0.000 / 0.000\nPlayer yaw\n1.662\nCPU position\n0.821 / 0.000 / -0.384\nCPU yaw\n4.026\nSeparation\n2.550\nMotion / animation\nidle / Idle · CPU walk / Walk\nSkinned meshes / bones\n2 meshes · 34 bones\nCamera\nbroadcast · -0.40 / 6.42 / 9.48\nHealth\n100 / 100\nStamina / momentum\n100 / 0\nCombat state\nIDLE · CPU IDLE\nSync state\nFREE · —\nSync event / cue\n— · normal\nLast event\n—\nGrounded / loaded\nYES / YES\n\nRing geometry, dual rigged characters and synchronized move timing.\nPhase 4 foundation active."
+    },
+    {
+      "url": "/entrance",
+      "canvases": 1,
+      "text": "Q/R RING LAB\n← Main game\n\nPHASE 06 / INDIVIDUAL ENTRANCES\n\nMake an entrance.\nCINEMATIC TIMELINE\nLIVE ENTRANCE SCENE\nRHEA · STAGE\nRHEA · THE ERADICATOR\nstage-hero\n\nDATA-DRIVEN PRESENTATION\n\nFour identities. Four rhythms.\n\nTemporary rigged humanoids follow distinct stage, ramp, ringside, entry and pose timelines.\n\nRHEA\nintimidating\nCHYNA\npowerhouse\nCHARLOTTE\ngrand\nBIANCA\nathletic\nSKIP ENTRANCE →\nState / time\nSTAGE · 0.7s\nCamera cue\nstage-hero\nPresentation\nRHEA · THE ERADICATOR\nFPS\n20\nLoaded\nYES\n\nTemporary locomotion clips; final entrance poses remain unavailable."
+    },
+    {
+      "url": "/backstage",
+      "canvases": 1,
+      "text": "Q/R RING LAB\n← Main game\n\nPHASE 07 / EXPLORABLE BACKSTAGE\n\nBehind the curtain.\nBACKSTAGE HUB\nLIVE BACKSTAGE\nMAIN_CORRIDOR\nWASD TO EXPLORE\nPRESS E NEAR ANCHOR\n\nCONNECTED 3D HUB\n\nExplore every room.\n\nWalk the corridor with the shared third-person controller. Doors and future interaction anchors are physically placed in the world.\n\nZone\nMAIN_CORRIDOR\nPosition\n0.00 / -12.00\nPrompt\n—\nInteraction\n—\nFPS\n16\nLoaded\nYES\n\nAreas: Rhea, Chyna, Charlotte and Bianca locker rooms · interview area · manager office · loading bay · arena access.\n\nPhase 7 supplies environment, navigation, collision boundaries and interaction anchors. Interviews and manager behavior remain future systems."
+    },
+    {
+      "url": "/",
+      "canvases": 5,
+      "text": "SELECT YOUR SUPERSTAR\n04 / FIGHTERS\n01\n● PLAYER 1\nTHE NIGHTMARE\nRHEA\nPOWER 94\nSPEED 78\n\nRIPTIDE\n\n02\nPOWERHOUSE\nTHE NINTH WONDER\nCHYNA\nPOWER 112\nSPEED 70\n\nGORILLA PRESS + PEDIGREE\n\n03\nSELECT\nTHE QUEEN\nCHARLOTTE\nPOWER 86\nSPEED 87\n\nNATURAL SELECTION\n\n04\nSELECT\nTHE EST\nBIANCA\nPOWER 91\nSPEED 95\n\nK.O.D.\n\nYOUR OPPONENT\nCHYNA\nCHARLOTTE\nBIANCA\n\nWear them down. Slam. Pin for three.\nChyna: G for Gorilla Press · I for Pedigree.\n\nPLAY RING ENTRANCES\nENTER THE RING →\nMOVE LIST\nW A S D\nMOVE\nJ\nPUNCH\nK\nKICK\nL\nSUPLEX\nG\nCHYNA PRESS\nT\nPOWER TOSS\nU\nSUBMIT\nN\nPIN\nSPACE\nBLOCK\nI\nFINISHER\nF\nPICK UP\nH\nWEAPON\nE\nESCAPE\nQ\nTAUNT\nB\nSNEAK ATTACK\n\nMouse: click the floor to move, click your rival to attack, hold right-click to block. On-screen buttons work with clicks or touch. G: Chyna’s overhead press · T: grapple and throw · F/H: weapons in Extreme Rules or backstage · Q: taunt for momentum. Tap E to break a hold. The thin green bar is stamina.\n\nQ/R · POWERHOUSE EDITION\nUnofficial 2D fan game · AI-rendered characters"
+    },
+    {
+      "url": "/3d-sandbox",
+      "canvases": 1,
+      "text": "TION FOUNDATION\n\nInto the third dimension.\n3D SANDBOX\nLIVE 3D SCENE\nY-UP · WORLD SPACE\nTEMPORARY DEVELOPMENT CHARACTER\nIDLE\n\nCONTROL THE CHARACTER\n\nMove. Turn. Explore.\n\nA generic rigged humanoid for testing movement and animation. This is not a final wrestler model.\n\nW\nASD\nW / S\nForward / backward\nA / D\nLeft / right\nSHIFT\nHold to run\nDRAG\nOrbit the follow camera\n\nMovement follows world axes. Click the scene to focus. Releasing the keys stops movement; changing focus clears held keys.\n\nHide diagnostics\nRuntime diagnostics\nFPS / frame\n24 / 41.7 ms\nPosition x / y / z\n0.000 / 0.000 / 0.000\nMovement\nidle\nActive animation\nIdle\nAnimation weights\nIdle 1.00 · Walk 0.00 · Run 0.00\nCharacter loaded\nYES\nSkeleton / skinned meshes\n17 bones / 1 mesh\nYaw / clip clock\n3.142 rad / 1.33 s\nSpine / thigh rotation\n0.0090 / 0.0000\nCamera x / y / z\n2.93 / 3.20 / 4.77\nDraw calls / triangles\n5 / 19170\nInput focus\nACTIVE\n\nOne humanoid. Three skeletal clips. A separate runtime.\nLegacy gameplay remains available."
+    },
+    {
+      "url": "/3d-match",
+      "canvases": 1,
+      "text": " SPACE FOUNDATION\n\nBroadcast the matchup.\n\nTwo generic rigged development humanoids share a raised ring. J/K strike, Space guards, G grapples and H submits.\n\nW\nASD\nW / S\nMove player\nA / D\nStrafe player\nSHIFT\nRun\nC\nSwitch camera\nJ / K\nLight / heavy\nSPACE\nBlock\nG / H\nGrapple / submit\nY / U\nSignature / finisher\n\nConnected moves lock both poses together, cue the camera, then release through recovery. Momentum gates signature and finisher moves.\n\nMatch diagnostics\nFPS / frame\n13 / 79.1 ms\nPlayer position\n-1.700 / 0.000 / 0.000\nPlayer yaw\n1.697\nCPU position\n0.780 / 0.000 / -0.460\nCPU yaw\n4.269\nSeparation\n2.523\nMotion / animation\nidle / Idle · CPU walk / Walk\nSkinned meshes / bones\n2 meshes · 34 bones\nCamera\nbroadcast · -0.42 / 6.41 / 9.42\nHealth\n100 / 100\nStamina / momentum\n100 / 0\nCombat state\nIDLE · CPU IDLE\nSync state\nFREE · —\nSync event / cue\n— · normal\nLast event\n—\nGrounded / loaded\nYES / YES\n\nRing geometry, dual rigged characters and synchronized move timing.\nPhase 4 foundation active."
+    },
+    {
+      "url": "/entrance",
+      "canvases": 1,
+      "text": "Q/R RING LAB\n← Main game\n\nPHASE 06 / INDIVIDUAL ENTRANCES\n\nMake an entrance.\nCINEMATIC TIMELINE\nLIVE ENTRANCE SCENE\nRHEA · STAGE\nRHEA · THE ERADICATOR\nstage-hero\n\nDATA-DRIVEN PRESENTATION\n\nFour identities. Four rhythms.\n\nTemporary rigged humanoids follow distinct stage, ramp, ringside, entry and pose timelines.\n\nRHEA\nintimidating\nCHYNA\npowerhouse\nCHARLOTTE\ngrand\nBIANCA\nathletic\nSKIP ENTRANCE →\nState / time\nSTAGE · 0.9s\nCamera cue\nstage-hero\nPresentation\nRHEA · THE ERADICATOR\nFPS\n11\nLoaded\nYES\n\nTemporary locomotion clips; final entrance poses remain unavailable."
+    },
+    {
+      "url": "/backstage",
+      "canvases": 1,
+      "text": "Q/R RING LAB\n← Main game\n\nPHASE 07 / EXPLORABLE BACKSTAGE\n\nBehind the curtain.\nBACKSTAGE HUB\nLIVE BACKSTAGE\nMAIN_CORRIDOR\nWASD TO EXPLORE\nPRESS E NEAR ANCHOR\n\nCONNECTED 3D HUB\n\nExplore every room.\n\nWalk the corridor with the shared third-person controller. Doors and future interaction anchors are physically placed in the world.\n\nZone\nMAIN_CORRIDOR\nPosition\n0.00 / -12.00\nPrompt\n—\nInteraction\n—\nFPS\n16\nLoaded\nYES\n\nAreas: Rhea, Chyna, Charlotte and Bianca locker rooms · interview area · manager office · loading bay · arena access.\n\nPhase 7 supplies environment, navigation, collision boundaries and interaction anchors. Interviews and manager behavior remain future systems."
+    },
+    {
+      "url": "/",
+      "canvases": 5,
+      "text": "SELECT YOUR SUPERSTAR\n04 / FIGHTERS\n01\n● PLAYER 1\nTHE NIGHTMARE\nRHEA\nPOWER 94\nSPEED 78\n\nRIPTIDE\n\n02\nPOWERHOUSE\nTHE NINTH WONDER\nCHYNA\nPOWER 112\nSPEED 70\n\nGORILLA PRESS + PEDIGREE\n\n03\nSELECT\nTHE QUEEN\nCHARLOTTE\nPOWER 86\nSPEED 87\n\nNATURAL SELECTION\n\n04\nSELECT\nTHE EST\nBIANCA\nPOWER 91\nSPEED 95\n\nK.O.D.\n\nYOUR OPPONENT\nCHYNA\nCHARLOTTE\nBIANCA\n\nWear them down. Slam. Pin for three.\nChyna: G for Gorilla Press · I for Pedigree.\n\nPLAY RING ENTRANCES\nENTER THE RING →\nMOVE LIST\nW A S D\nMOVE\nJ\nPUNCH\nK\nKICK\nL\nSUPLEX\nG\nCHYNA PRESS\nT\nPOWER TOSS\nU\nSUBMIT\nN\nPIN\nSPACE\nBLOCK\nI\nFINISHER\nF\nPICK UP\nH\nWEAPON\nE\nESCAPE\nQ\nTAUNT\nB\nSNEAK ATTACK\n\nMouse: click the floor to move, click your rival to attack, hold right-click to block. On-screen buttons work with clicks or touch. G: Chyna’s overhead press · T: grapple and throw · F/H: weapons in Extreme Rules or backstage · Q: taunt for momentum. Tap E to break a hold. The thin green bar is stamina.\n\nQ/R · POWERHOUSE EDITION\nUnofficial 2D fan game · AI-rendered characters"
+    },
+    {
+      "url": "/3d-sandbox",
+      "canvases": 1,
+      "text": "TION FOUNDATION\n\nInto the third dimension.\n3D SANDBOX\nLIVE 3D SCENE\nY-UP · WORLD SPACE\nTEMPORARY DEVELOPMENT CHARACTER\nIDLE\n\nCONTROL THE CHARACTER\n\nMove. Turn. Explore.\n\nA generic rigged humanoid for testing movement and animation. This is not a final wrestler model.\n\nW\nASD\nW / S\nForward / backward\nA / D\nLeft / right\nSHIFT\nHold to run\nDRAG\nOrbit the follow camera\n\nMovement follows world axes. Click the scene to focus. Releasing the keys stops movement; changing focus clears held keys.\n\nHide diagnostics\nRuntime diagnostics\nFPS / frame\n26 / 38.1 ms\nPosition x / y / z\n0.000 / 0.000 / 0.000\nMovement\nidle\nActive animation\nIdle\nAnimation weights\nIdle 1.00 · Walk 0.00 · Run 0.00\nCharacter loaded\nYES\nSkeleton / skinned meshes\n17 bones / 1 mesh\nYaw / clip clock\n3.142 rad / 1.33 s\nSpine / thigh rotation\n0.0090 / 0.0000\nCamera x / y / z\n2.93 / 3.20 / 4.77\nDraw calls / triangles\n5 / 19170\nInput focus\nACTIVE\n\nOne humanoid. Three skeletal clips. A separate runtime.\nLegacy gameplay remains available."
+    },
+    {
+      "url": "/3d-match",
+      "canvases": 1,
+      "text": " SPACE FOUNDATION\n\nBroadcast the matchup.\n\nTwo generic rigged development humanoids share a raised ring. J/K strike, Space guards, G grapples and H submits.\n\nW\nASD\nW / S\nMove player\nA / D\nStrafe player\nSHIFT\nRun\nC\nSwitch camera\nJ / K\nLight / heavy\nSPACE\nBlock\nG / H\nGrapple / submit\nY / U\nSignature / finisher\n\nConnected moves lock both poses together, cue the camera, then release through recovery. Momentum gates signature and finisher moves.\n\nMatch diagnostics\nFPS / frame\n12 / 83.3 ms\nPlayer position\n-1.700 / 0.000 / 0.000\nPlayer yaw\n1.671\nCPU position\n0.816 / 0.000 / -0.411\nCPU yaw\n4.033\nSeparation\n2.550\nMotion / animation\nidle / Idle · CPU walk / Walk\nSkinned meshes / bones\n2 meshes · 34 bones\nCamera\nbroadcast · -0.40 / 6.42 / 9.48\nHealth\n100 / 100\nStamina / momentum\n100 / 0\nCombat state\nIDLE · CPU IDLE\nSync state\nFREE · —\nSync event / cue\n— · normal\nLast event\n—\nGrounded / loaded\nYES / YES\n\nRing geometry, dual rigged characters and synchronized move timing.\nPhase 4 foundation active."
+    },
+    {
+      "url": "/entrance",
+      "canvases": 1,
+      "text": "Q/R RING LAB\n← Main game\n\nPHASE 06 / INDIVIDUAL ENTRANCES\n\nMake an entrance.\nCINEMATIC TIMELINE\nLIVE ENTRANCE SCENE\nRHEA · STAGE\nRHEA · THE ERADICATOR\nstage-hero\n\nDATA-DRIVEN PRESENTATION\n\nFour identities. Four rhythms.\n\nTemporary rigged humanoids follow distinct stage, ramp, ringside, entry and pose timelines.\n\nRHEA\nintimidating\nCHYNA\npowerhouse\nCHARLOTTE\ngrand\nBIANCA\nathletic\nSKIP ENTRANCE →\nState / time\nSTAGE · 0.5s\nCamera cue\nstage-hero\nPresentation\nRHEA · THE ERADICATOR\nFPS\n12\nLoaded\nYES\n\nTemporary locomotion clips; final entrance poses remain unavailable."
+    },
+    {
+      "url": "/backstage",
+      "canvases": 1,
+      "text": "Q/R RING LAB\n← Main game\n\nPHASE 07 / EXPLORABLE BACKSTAGE\n\nBehind the curtain.\nBACKSTAGE HUB\nLIVE BACKSTAGE\nMAIN_CORRIDOR\nWASD TO EXPLORE\nPRESS E NEAR ANCHOR\n\nCONNECTED 3D HUB\n\nExplore every room.\n\nWalk the corridor with the shared third-person controller. Doors and future interaction anchors are physically placed in the world.\n\nZone\nMAIN_CORRIDOR\nPosition\n0.00 / -12.00\nPrompt\n—\nInteraction\n—\nFPS\n20\nLoaded\nYES\n\nAreas: Rhea, Chyna, Charlotte and Bianca locker rooms · interview area · manager office · loading bay · arena access.\n\nPhase 7 supplies environment, navigation, collision boundaries and interaction anchors. Interviews and manager behavior remain future systems."
+    }
+  ],
+  "performance": [
+    {
+      "route": "/3d-sandbox",
+      "durationMs": 5029.10000000596,
+      "averageFps": 20.87848720444524,
+      "minimumFps": 14.992503748125875
+    },
+    {
+      "route": "/3d-match",
+      "durationMs": 5063.999999994039,
+      "averageFps": 7.1090047393448605,
+      "minimumFps": 3.0003000300029985
+    },
+    {
+      "route": "/entrance",
+      "durationMs": 5075.49999999106,
+      "averageFps": 8.866121564393511,
+      "minimumFps": 4.286326618088295
+    },
+    {
+      "route": "/backstage",
+      "durationMs": 5052.99999999106,
+      "averageFps": 9.697209578485394,
+      "minimumFps": 3.35908632851864
+    }
+  ],
+  "entrances": [
+    {
+      "identity": "RHEA",
+      "skip": {
+        "url": "/entrance",
+        "canvases": 1,
+        "text": "Q/R RING LAB\n← Main game\n\nPHASE 06 / INDIVIDUAL ENTRANCES\n\nMake an entrance.\nCINEMATIC TIMELINE\nLIVE ENTRANCE SCENE\nRHEA · SKIPPED\nSTAGE READY\nhard-camera\n\nDATA-DRIVEN PRESENTATION\n\nFour identities. Four rhythms.\n\nTemporary rigged humanoids follow distinct stage, ramp, ringside, entry and pose timelines.\n\nRHEA\nintimidating\nCHYNA\npowerhouse\nCHARLOTTE\ngrand\nBIANCA\nathletic\nSKIP ENTRANCE →Continue to match\nState / time\nSKIPPED · 8.7s\nCamera cue\nhard-camera\nPresentation\n—\nFPS\n10\nLoaded\nYES\n\nTemporary locomotion clips; final entrance poses remain unavailable."
+      }
+    },
+    {
+      "identity": "CHYNA",
+      "skip": {
+        "url": "/entrance",
+        "canvases": 1,
+        "text": "Q/R RING LAB\n← Main game\n\nPHASE 06 / INDIVIDUAL ENTRANCES\n\nMake an entrance.\nCINEMATIC TIMELINE\nLIVE ENTRANCE SCENE\nCHYNA · SKIPPED\nSTAGE READY\nhard-camera\n\nDATA-DRIVEN PRESENTATION\n\nFour identities. Four rhythms.\n\nTemporary rigged humanoids follow distinct stage, ramp, ringside, entry and pose timelines.\n\nRHEA\nintimidating\nCHYNA\npowerhouse\nCHARLOTTE\ngrand\nBIANCA\nathletic\nSKIP ENTRANCE →Continue to match\nState / time\nSKIPPED · 7.3s\nCamera cue\nhard-camera\nPresentation\n—\nFPS\n10\nLoaded\nYES\n\nTemporary locomotion clips; final entrance poses remain unavailable."
+      }
+    },
+    {
+      "identity": "CHARLOTTE",
+      "skip": {
+        "url": "/entrance",
+        "canvases": 1,
+        "text": "Q/R RING LAB\n← Main game\n\nPHASE 06 / INDIVIDUAL ENTRANCES\n\nMake an entrance.\nCINEMATIC TIMELINE\nLIVE ENTRANCE SCENE\nCHARLOTTE · SKIPPED\nSTAGE READY\nhard-camera\n\nDATA-DRIVEN PRESENTATION\n\nFour identities. Four rhythms.\n\nTemporary rigged humanoids follow distinct stage, ramp, ringside, entry and pose timelines.\n\nRHEA\nintimidating\nCHYNA\npowerhouse\nCHARLOTTE\ngrand\nBIANCA\nathletic\nSKIP ENTRANCE →Continue to match\nState / time\nSKIPPED · 9.3s\nCamera cue\nhard-camera\nPresentation\n—\nFPS\n10\nLoaded\nYES\n\nTemporary locomotion clips; final entrance poses remain unavailable."
+      }
+    },
+    {
+      "identity": "BIANCA",
+      "skip": {
+        "url": "/entrance",
+        "canvases": 1,
+        "text": "Q/R RING LAB\n← Main game\n\nPHASE 06 / INDIVIDUAL ENTRANCES\n\nMake an entrance.\nCINEMATIC TIMELINE\nLIVE ENTRANCE SCENE\nBIANCA · SKIPPED\nSTAGE READY\nhard-camera\n\nDATA-DRIVEN PRESENTATION\n\nFour identities. Four rhythms.\n\nTemporary rigged humanoids follow distinct stage, ramp, ringside, entry and pose timelines.\n\nRHEA\nintimidating\nCHYNA\npowerhouse\nCHARLOTTE\ngrand\nBIANCA\nathletic\nSKIP ENTRANCE →Continue to match\nState / time\nSKIPPED · 6.3s\nCamera cue\nhard-camera\nPresentation\n—\nFPS\n12\nLoaded\nYES\n\nTemporary locomotion clips; final entrance poses remain unavailable."
+      }
+    }
+  ],
+  "failures": [
+    "Canvas count: /",
+    "Canvas count: /",
+    "Canvas count: /",
+    "Canvas count: /"
+  ],
+  "soak": {
+    "healthBefore": "100 / 100",
+    "healthFirst": "100 / 96",
+    "healthSecond": "100 / 96",
+    "durationMs": 23924,
+    "snapshot": {
+      "url": "/3d-match",
+      "canvases": 1,
+      "text": "UNDATION\n\nBroadcast the matchup.\n\nTwo generic rigged development humanoids share a raised ring. J/K strike, Space guards, G grapples and H submits.\n\nW\nASD\nW / S\nMove player\nA / D\nStrafe player\nSHIFT\nRun\nC\nSwitch camera\nJ / K\nLight / heavy\nSPACE\nBlock\nG / H\nGrapple / submit\nY / U\nSignature / finisher\n\nConnected moves lock both poses together, cue the camera, then release through recovery. Momentum gates signature and finisher moves.\n\nMatch diagnostics\nFPS / frame\n6 / 175.0 ms\nPlayer position\n-1.841 / 0.000 / -0.081\nPlayer yaw\n1.809\nCPU position\n-0.626 / 0.000 / -0.377\nCPU yaw\n-0.251\nSeparation\n1.250\nMotion / animation\nidle / Idle · CPU idle / Idle\nSkinned meshes / bones\n2 meshes · 34 bones\nCamera\nbroadcast · -1.22 / 6.01 / 8.76\nHealth\n100 / 0\nStamina / momentum\n5 / 27\nCombat state\nIDLE · CPU IDLE\nSync state\nFREE · —\nSync event / cue\nrecover · normal\nLast event\nstun\nGrounded / loaded\nYES / YES\n\nRing geometry, dual rigged characters and synchronized move timing.\nPhase 4 foundation active."
+    },
+    "blur": {
+      "url": "/3d-match",
+      "canvases": 1,
+      "text": "UNDATION\n\nBroadcast the matchup.\n\nTwo generic rigged development humanoids share a raised ring. J/K strike, Space guards, G grapples and H submits.\n\nW\nASD\nW / S\nMove player\nA / D\nStrafe player\nSHIFT\nRun\nC\nSwitch camera\nJ / K\nLight / heavy\nSPACE\nBlock\nG / H\nGrapple / submit\nY / U\nSignature / finisher\n\nConnected moves lock both poses together, cue the camera, then release through recovery. Momentum gates signature and finisher moves.\n\nMatch diagnostics\nFPS / frame\n5 / 200.0 ms\nPlayer position\n-1.841 / 0.000 / -0.081\nPlayer yaw\n1.809\nCPU position\n-0.626 / 0.000 / -0.377\nCPU yaw\n-1.114\nSeparation\n1.250\nMotion / animation\nidle / Idle · CPU idle / Idle\nSkinned meshes / bones\n2 meshes · 34 bones\nCamera\nbroadcast · -1.23 / 6.02 / 8.77\nHealth\n100 / 0\nStamina / momentum\n8 / 27\nCombat state\nIDLE · CPU IDLE\nSync state\nFREE · —\nSync event / cue\nrecover · normal\nLast event\nstun\nGrounded / loaded\nYES / YES\n\nRing geometry, dual rigged characters and synchronized move timing.\nPhase 4 foundation active."
+    }
+  },
+  "assetFailure": [
+    {
+      "url": "/3d-sandbox",
+      "canvases": 1,
+      "text": "· WORLD SPACE\nThe 3D character could not load.\n\nModel request failed (404): /models/development/humanoid.glb\n\nReload sandbox\nTEMPORARY DEVELOPMENT CHARACTER\nIDLE\n\nCONTROL THE CHARACTER\n\nMove. Turn. Explore.\n\nA generic rigged humanoid for testing movement and animation. This is not a final wrestler model.\n\nW\nASD\nW / S\nForward / backward\nA / D\nLeft / right\nSHIFT\nHold to run\nDRAG\nOrbit the follow camera\n\nMovement follows world axes. Click the scene to focus. Releasing the keys stops movement; changing focus clears held keys.\n\nHide diagnostics\nRuntime diagnostics\nFPS / frame\n25 / 39.6 ms\nPosition x / y / z\n0.000 / 0.000 / 0.000\nMovement\nidle\nActive animation\n—\nAnimation weights\n—\nCharacter loaded\nNO\nSkeleton / skinned meshes\n0 bones / 0 mesh\nYaw / clip clock\n3.142 rad / 0.00 s\nSpine / thigh rotation\n0.0000 / 0.0000\nCamera x / y / z\n2.93 / 3.20 / 4.77\nDraw calls / triangles\n3 / 866\nInput focus\nACTIVE\n\nOne humanoid. Three skeletal clips. A separate runtime.\nLegacy gameplay remains available."
+    },
+    {
+      "url": "/3d-match",
+      "canvases": 1,
+      "text": "ST\n\nWRESTLING SPACE FOUNDATION\n\nBroadcast the matchup.\n\nTwo generic rigged development humanoids share a raised ring. J/K strike, Space guards, G grapples and H submits.\n\nW\nASD\nW / S\nMove player\nA / D\nStrafe player\nSHIFT\nRun\nC\nSwitch camera\nJ / K\nLight / heavy\nSPACE\nBlock\nG / H\nGrapple / submit\nY / U\nSignature / finisher\n\nConnected moves lock both poses together, cue the camera, then release through recovery. Momentum gates signature and finisher moves.\n\nMatch diagnostics\nFPS / frame\n0 / 0.0 ms\nPlayer position\n0.000 / 0.000 / 0.000\nPlayer yaw\n0.000\nCPU position\n0.000 / 0.000 / 0.000\nCPU yaw\n0.000\nSeparation\n0.000\nMotion / animation\nidle / — · CPU idle / —\nSkinned meshes / bones\n0 meshes · 0 bones\nCamera\nbroadcast · 0.00 / 0.00 / 0.00\nHealth\n100 / 100\nStamina / momentum\n100 / 0\nCombat state\nIDLE · CPU IDLE\nSync state\nFREE · —\nSync event / cue\n— · normal\nLast event\n—\nGrounded / loaded\nYES / NO\n\nRing geometry, dual rigged characters and synchronized move timing.\nPhase 4 foundation active."
+    },
+    {
+      "url": "/entrance",
+      "canvases": 1,
+      "text": "Q/R RING LAB\n← Main game\n\nPHASE 06 / INDIVIDUAL ENTRANCES\n\nMake an entrance.\nCINEMATIC TIMELINE\nLIVE ENTRANCE SCENE\nRHEA · ERROR: Model request failed (404): /models/development/humanoid.glb\nSTAGE READY\nstage-hero\n\nDATA-DRIVEN PRESENTATION\n\nFour identities. Four rhythms.\n\nTemporary rigged humanoids follow distinct stage, ramp, ringside, entry and pose timelines.\n\nRHEA\nintimidating\nCHYNA\npowerhouse\nCHARLOTTE\ngrand\nBIANCA\nathletic\nSKIP ENTRANCE →\nState / time\nERROR: Model request failed (404): /models/development/humanoid.glb · 0.0s\nCamera cue\n—\nPresentation\n—\nFPS\n0\nLoaded\nLOADING\n\nTemporary locomotion clips; final entrance poses remain unavailable."
+    },
+    {
+      "url": "/backstage",
+      "canvases": 1,
+      "text": "Q/R RING LAB\n← Main game\n\nPHASE 07 / EXPLORABLE BACKSTAGE\n\nBehind the curtain.\nBACKSTAGE HUB\nBACKSTAGE LOAD FAILED\nModel request failed (404): /models/development/humanoid.glb\nWASD TO EXPLORE\nPRESS E NEAR ANCHOR\n\nCONNECTED 3D HUB\n\nExplore every room.\n\nWalk the corridor with the shared third-person controller. Doors and future interaction anchors are physically placed in the world.\n\nZone\nModel request failed (404): /models/development/humanoid.glb\nPosition\n0.00 / -12.00\nPrompt\n—\nInteraction\n—\nFPS\n0\nLoaded\nLOADING\n\nAreas: Rhea, Chyna, Charlotte and Bianca locker rooms · interview area · manager office · loading bay · arena access.\n\nPhase 7 supplies environment, navigation, collision boundaries and interaction anchors. Interviews and manager behavior remain future systems."
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+original=0
+phases=0
+new=0
+acceptance=1
+asset=0
+typescript=0
+lint=1
+build=0

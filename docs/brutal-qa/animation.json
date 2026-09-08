@@ -1,0 +1,10 @@
+{
+  "transitions": 1800,
+  "finiteBones": true,
+  "weights": {
+    "Idle": 1,
+    "Walk": 0,
+    "Run": 0
+  },
+  "active": "Idle"
+}
