@@ -28,6 +28,8 @@ Existing adapter/controller supplies all three clips, cross-fade blending, fixed
 
 The existing third-person and broadcast camera paths are retained. FPS is environment/device dependent; prior headless QA measured low software-rendered FPS, while browser runtime remains stable without NaN transforms.
 
+Automated localhost browser smoke reached `/3d-sandbox` and `/3d-match`; each rendered one WebGL canvas and reported `Character loaded YES`, `17 bones / 1 mesh` (sandbox), and `2 meshes · 34 bones` (match). The run artifact is `docs/rhea-stage1-browser.json`.
+
 ## KNOWN VISUAL DEFECTS
 
 This is a convincing technical vertical slice, not a final likeness model. The body/face remains the generic development humanoid, accessories are procedural, and tattoo detail, facial expressions, and final match/entrance attire are not yet authored as a bespoke sculpt/texture set.
