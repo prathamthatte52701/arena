@@ -37,3 +37,6 @@ next-env.d.ts
 /.wrangler/
 /outputs/
 /work/
+
+# Local performance-only voice references (never commit recordings)
+voice-references/

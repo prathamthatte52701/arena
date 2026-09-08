@@ -1,0 +1,42 @@
+{
+  "character": "rhea",
+  "pack_version": 2,
+  "status": "usable_current_pack",
+  "canonical_master": "body-front.png",
+  "reference_categories": {
+    "01_face_front": "face-front.png",
+    "02_face_3quarter": "face-3quarter.png",
+    "03_body_front": "body-front.png",
+    "04_body_side": "body-side.png",
+    "05_body_back": "body-back.png",
+    "06_hair": [
+      "hair-front.png",
+      "hair-back.png"
+    ],
+    "07_match_attire": [
+      "match-attire-front.png",
+      "match-attire-back.png"
+    ],
+    "08_entrance_attire": [
+      "entrance-attire-front.png",
+      "entrance-attire-back.png"
+    ],
+    "09_tattoos_details": "tattoos.png",
+    "10_expressions": [
+      "expression-confident-smirk.png",
+      "expression-aggressive-intimidating.png",
+      "expression-neutral.png"
+    ],
+    "11_face_profile": "face-profile.png",
+    "12_body_3quarter_front": "body-3quarter-front.png"
+  },
+  "optional_future_reference": "body-3quarter-back.png",
+  "continuity_rules": {
+    "same_identity": true,
+    "same_body_proportions": true,
+    "same_hair": true,
+    "same_tattoo_placement": true,
+    "same_match_attire_construction": true,
+    "do_not_redesign_between_views": true
+  }
+}

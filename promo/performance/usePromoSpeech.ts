@@ -4,13 +4,15 @@ import { REST_MOUTH, type MouthTarget, type Viseme } from '../face/mouth.ts';
 import { createVisemeTimeline, segmentAt, timelineDeformation, timelineDuration, type TimelineSegment } from '../speech/textTimeline.ts';
 import { DEFAULT_SPEECH_RATE } from '../speech/timing.ts';
 import { beginSpeechSession, createSpeechSessionState, invalidateSpeechSession, isCurrentSpeechSession } from '../speech/session.ts';
-import { advanceSpeechClock, applySpeechBoundaryAnchor, type SpeechClockState } from '../speech/clock.ts';
+import { advanceSpeechClock, type SpeechClockState } from '../speech/clock.ts';
 import { createPerformanceTimeline, finalPerformance, performanceAt, type PerformanceFrame } from './timeline.ts';
+import { calibrateVisemeTimeline, createTtsRequest, monotonicAudioElapsed } from '../voice/pipeline.ts';
 import type { Expression, Gaze, Tone } from './types.ts';
 
 export const SAMPLE_PROMO = "You really think you're ready for me? Then prove it.";
 export const SAMPLE_LIP_SYNC_PHRASE = 'Maybe we prove who really belongs here.';
-export type SpeechStatus = 'READY' | 'SPEAKING' | 'PAUSED' | 'STOPPED' | 'COMPLETE' | 'ERROR';
+export type SpeechStatus = 'READY' | 'GENERATING' | 'SPEAKING' | 'PAUSED' | 'STOPPED' | 'COMPLETE' | 'ERROR';
+export type VoiceEngine = 'LOCAL NEURAL' | 'BROWSER FALLBACK';
 export interface SpeechDebug {
   word: string;
   viseme: Viseme;
@@ -30,10 +32,17 @@ interface Runtime extends SpeechClockState {
   id: number;
   timeline: TimelineSegment[];
   performanceTimeline: ReturnType<typeof createPerformanceTimeline>;
+  audio: HTMLAudioElement | null;
+  objectUrl: string | null;
+  generatedDurationMs: number;
+  engine: VoiceEngine;
+  lastAudioElapsedMs: number;
   paused: boolean;
   pausedAt: number;
   started: boolean;
 }
+
+const EMPTY_DEBUG: SpeechDebug = { word: '—', viseme: 'REST', elapsedMs: 0, timelinePosition: 0, sessionId: null, sentence: '—', beatIndex: null, expression: 'NEUTRAL', gaze: 'INTERVIEWER', intensity: 0, headBias: { x: 0, y: 0 }, finalHold: false };
 
 function preferredVoice(): SpeechSynthesisVoice | undefined {
   const voices = window.speechSynthesis.getVoices().filter(voice => voice.localService);
@@ -41,16 +50,32 @@ function preferredVoice(): SpeechSynthesisVoice | undefined {
   return english.find(voice => /microsoft|google|samantha|alex|daniel|david|english/i.test(voice.name)) ?? english[0] ?? voices[0];
 }
 
+function releaseAudio(audio: HTMLAudioElement | null, objectUrl: string | null) {
+  if (!audio) return;
+  audio.onplay = null;
+  audio.onpause = null;
+  audio.onended = null;
+  audio.onerror = null;
+  audio.pause();
+  audio.currentTime = 0;
+  audio.removeAttribute('src');
+  audio.load();
+  if (objectUrl) URL.revokeObjectURL(objectUrl);
+}
+
 export function usePromoSpeech() {
   const [text, setText] = useState(SAMPLE_PROMO);
   const [tone, setTone] = useState<Tone>('AUTO');
   const [status, setStatus] = useState<SpeechStatus>('READY');
+  const [voiceEngine, setVoiceEngine] = useState<VoiceEngine>('LOCAL NEURAL');
+  const [generatedDurationMs, setGeneratedDurationMs] = useState<number | null>(null);
   const [lastDeliveredText, setLastDeliveredText] = useState<string | null>(null);
   const [debugEnabled, setDebugEnabled] = useState(false);
-  const [debug, setDebug] = useState<SpeechDebug>({ word: '—', viseme: 'REST', elapsedMs: 0, timelinePosition: 0, sessionId: null, sentence: '—', beatIndex: null, expression: 'NEUTRAL', gaze: 'INTERVIEWER', intensity: 0, headBias: { x: 0, y: 0 }, finalHold: false });
+  const [debug, setDebug] = useState<SpeechDebug>(EMPTY_DEBUG);
   const utterance = useRef<SpeechSynthesisUtterance | null>(null);
   const sessions = useRef(createSpeechSessionState());
   const runtime = useRef<Runtime | null>(null);
+  const abortController = useRef<AbortController | null>(null);
   const debugLastUpdate = useRef(0);
   const lastDeliveredTone = useRef<Tone>('AUTO');
   const finalHold = useRef<{ until: number; performance: PerformanceFrame } | null>(null);
@@ -67,34 +92,44 @@ export function usePromoSpeech() {
       current.onresume = null;
     }
     utterance.current = null;
+    abortController.current?.abort();
+    abortController.current = null;
+    releaseAudio(runtime.current?.audio ?? null, runtime.current?.objectUrl ?? null);
     invalidateSpeechSession(sessions.current);
     runtime.current = null;
     finalHold.current = null;
     sampleCache.current = null;
     window.speechSynthesis?.cancel();
     if (publish) {
-      setDebug({ word: '—', viseme: 'REST', elapsedMs: 0, timelinePosition: 0, sessionId: null, sentence: '—', beatIndex: null, expression: 'NEUTRAL', gaze: 'INTERVIEWER', intensity: 0, headBias: { x: 0, y: 0 }, finalHold: false });
+      setDebug(EMPTY_DEBUG);
+      setGeneratedDurationMs(null);
       if (nextStatus) setStatus(nextStatus);
     }
   }, []);
 
-  const speak = useCallback((source: string, remember: boolean, selectedTone: Tone) => {
-    cancelCurrent(null);
-    if (!source.trim()) {
-      setStatus('READY');
-      return;
-    }
-    if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) {
-      setStatus('ERROR');
-      return;
-    }
-    const previousLastDelivered = sessions.current.lastDeliveredText;
+  const finishSpeech = useCallback((id: number) => {
+    if (!isCurrentSpeechSession(sessions.current, id)) return;
+    const now = window.performance.now();
+    const active = runtime.current;
+    const final = active ? finalPerformance(active.performanceTimeline) : null;
+    if (final) finalHold.current = { until: now + final.beat.holdMs, performance: final };
+    releaseAudio(active?.audio ?? null, active?.objectUrl ?? null);
+    sessions.current.activeId = null;
+    runtime.current = null;
+    utterance.current = null;
+    abortController.current = null;
+    sampleCache.current = null;
+    console.debug('[promo-voice] playback-end', JSON.stringify({ sessionId: id, engine: active?.engine ?? 'unknown', wallMs: now, durationMs: active?.generatedDurationMs ?? 0, finalHoldMs: final?.beat.holdMs ?? 0 }));
+    setStatus('COMPLETE');
+    if (final) setDebug({ word: '—', viseme: 'REST', elapsedMs: 0, timelinePosition: 1, sessionId: id, sentence: final.sentence, beatIndex: final.beatIndex, expression: final.expression, gaze: 'CAMERA', intensity: final.intensity, headBias: final.headBias, finalHold: true });
+  }, []);
+
+  const startBrowserFallback = useCallback((source: string, selectedTone: Tone) => {
     const id = beginSpeechSession(sessions.current, source);
-    if (!remember) sessions.current.lastDeliveredText = previousLastDelivered;
     const timeline = createVisemeTimeline(source, DEFAULT_SPEECH_RATE);
     const performanceTimeline = createPerformanceTimeline(source, selectedTone);
     const startedAt = window.performance.now();
-    runtime.current = { id, timeline, performanceTimeline, startedAt, offsetMs: 0, targetOffsetMs: 0, lastSampleAt: startedAt, lastElapsedMs: 0, floorElapsedMs: 0, paused: false, pausedAt: 0, started: false };
+    runtime.current = { id, timeline, performanceTimeline, audio: null, objectUrl: null, generatedDurationMs: timelineDuration(timeline), engine: 'BROWSER FALLBACK', lastAudioElapsedMs: 0, startedAt, offsetMs: 0, targetOffsetMs: 0, lastSampleAt: startedAt, lastElapsedMs: 0, floorElapsedMs: 0, paused: false, pausedAt: 0, started: false };
     sampleCache.current = null;
     const speech = new SpeechSynthesisUtterance(source);
     speech.rate = DEFAULT_SPEECH_RATE;
@@ -111,86 +146,112 @@ export function usePromoSpeech() {
       runtime.current.floorElapsedMs = 0;
       runtime.current.started = true;
       finalHold.current = null;
-      console.debug('[promo-speech] onstart', JSON.stringify({ sessionId: id, wallMs: now }));
-      setStatus('SPEAKING');
-    };
-    speech.onpause = () => {
-      if (!isCurrentSpeechSession(sessions.current, id) || !runtime.current) return;
-      runtime.current.paused = true;
-      runtime.current.pausedAt = window.performance.now();
-      setStatus('PAUSED');
-    };
-    speech.onresume = () => {
-      if (!isCurrentSpeechSession(sessions.current, id) || !runtime.current) return;
-      const resumedAt = window.performance.now();
-      runtime.current.startedAt += resumedAt - runtime.current.pausedAt;
-      runtime.current.lastSampleAt = resumedAt;
-      runtime.current.paused = false;
+      console.debug('[promo-voice] fallback-start', JSON.stringify({ sessionId: id, wallMs: now }));
       setStatus('SPEAKING');
     };
     speech.onboundary = event => {
       if (!isCurrentSpeechSession(sessions.current, id) || !runtime.current?.started || event.name !== 'word' || typeof event.charIndex !== 'number') return;
       const matchingSegment = runtime.current.timeline.find(segment => segment.kind === 'articulation' && segment.charStart <= event.charIndex && event.charIndex < segment.charEnd);
-      const wordStart = matchingSegment
-        ? runtime.current.timeline.find(segment => segment.kind === 'articulation' && segment.charStart === matchingSegment.charStart)
-        : runtime.current.timeline.find(segment => segment.kind === 'articulation' && segment.charStart >= event.charIndex);
+      const wordStart = matchingSegment ? runtime.current.timeline.find(segment => segment.kind === 'articulation' && segment.charStart === matchingSegment.charStart) : runtime.current.timeline.find(segment => segment.kind === 'articulation' && segment.charStart >= event.charIndex);
       if (!wordStart) return;
       const now = window.performance.now();
       const limit = timelineDuration(runtime.current.timeline);
-      applySpeechBoundaryAnchor(runtime.current, wordStart.startMs, now, limit);
-      console.debug('[promo-speech] boundary', JSON.stringify({ sessionId: id, name: event.name, charIndex: event.charIndex, wallMs: now, visualFloorMs: runtime.current.floorElapsedMs }));
+      const elapsed = Math.max(0, wordStart.startMs);
+      runtime.current.targetOffsetMs = Math.min(limit, elapsed);
+      runtime.current.floorElapsedMs = Math.max(runtime.current.floorElapsedMs, elapsed);
+      runtime.current.lastSampleAt = now;
+      console.debug('[promo-voice] fallback-boundary', JSON.stringify({ sessionId: id, charIndex: event.charIndex, wallMs: now, visualFloorMs: runtime.current.floorElapsedMs }));
     };
-    speech.onend = () => {
-      if (!isCurrentSpeechSession(sessions.current, id)) return;
-      const now = window.performance.now();
-      const final = runtime.current ? finalPerformance(runtime.current.performanceTimeline) : null;
-      if (final) finalHold.current = { until: now + final.beat.holdMs, performance: final };
-      sessions.current.activeId = null;
-      runtime.current = null;
-      utterance.current = null;
-      sampleCache.current = null;
-      console.debug('[promo-speech] onend', JSON.stringify({ sessionId: id, wallMs: now, finalHoldMs: final?.beat.holdMs ?? 0 }));
-      setStatus('COMPLETE');
-      if (final) setDebug({ word: '—', viseme: 'REST', elapsedMs: 0, timelinePosition: 1, sessionId: id, sentence: final.sentence, beatIndex: final.beatIndex, expression: final.expression, gaze: 'CAMERA', intensity: final.intensity, headBias: final.headBias, finalHold: true });
-    };
-    speech.onerror = event => {
-      if (!isCurrentSpeechSession(sessions.current, id) || event.error === 'canceled') return;
-      sessions.current.activeId = null;
-      runtime.current = null;
-      utterance.current = null;
-      setStatus('ERROR');
-    };
+    speech.onpause = () => { if (isCurrentSpeechSession(sessions.current, id) && runtime.current) { runtime.current.paused = true; runtime.current.pausedAt = window.performance.now(); setStatus('PAUSED'); } };
+    speech.onresume = () => { if (isCurrentSpeechSession(sessions.current, id) && runtime.current) { const resumedAt = window.performance.now(); runtime.current.startedAt += resumedAt - runtime.current.pausedAt; runtime.current.lastSampleAt = resumedAt; runtime.current.paused = false; setStatus('SPEAKING'); } };
+    speech.onend = () => finishSpeech(id);
+    speech.onerror = event => { if (!isCurrentSpeechSession(sessions.current, id) || event.error === 'canceled') return; sessions.current.activeId = null; runtime.current = null; utterance.current = null; setStatus('ERROR'); };
     utterance.current = speech;
+    setStatus('READY');
+    window.speechSynthesis.speak(speech);
+  }, [finishSpeech]);
+
+  const speak = useCallback(async (source: string, remember: boolean, selectedTone: Tone) => {
+    cancelCurrent(null);
+    if (!source.trim()) { setStatus('READY'); return; }
+    let requestData;
+    try { requestData = createTtsRequest(source, selectedTone); } catch { setStatus('ERROR'); return; }
     if (remember) {
       sessions.current.lastDeliveredText = source;
       setLastDeliveredText(source);
       lastDeliveredTone.current = selectedTone;
     }
-    setStatus('READY');
-    window.speechSynthesis.speak(speech);
-  }, [cancelCurrent]);
+    const id = beginSpeechSession(sessions.current, source);
+    const timeline = createVisemeTimeline(source, DEFAULT_SPEECH_RATE);
+    const performanceTimeline = createPerformanceTimeline(source, selectedTone);
+    const startedAt = window.performance.now();
+    runtime.current = { id, timeline, performanceTimeline, audio: null, objectUrl: null, generatedDurationMs: 0, engine: 'LOCAL NEURAL', lastAudioElapsedMs: 0, startedAt, offsetMs: 0, targetOffsetMs: 0, lastSampleAt: startedAt, lastElapsedMs: 0, floorElapsedMs: 0, paused: false, pausedAt: 0, started: false };
+    finalHold.current = null;
+    sampleCache.current = null;
+    setVoiceEngine('LOCAL NEURAL');
+    setGeneratedDurationMs(null);
+    setStatus('GENERATING');
+    const controller = new AbortController();
+    abortController.current = controller;
+    try {
+      const response = await fetch('/api/promo-voice', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: requestData.text, tone: requestData.tone }), signal: controller.signal });
+      if (!response.ok) throw new Error(`Local neural voice unavailable (${response.status})`);
+      const blob = await response.blob();
+      if (!isCurrentSpeechSession(sessions.current, id) || controller.signal.aborted || !runtime.current) return;
+      const audio = new Audio();
+      const objectUrl = URL.createObjectURL(blob);
+      audio.preload = 'auto';
+      audio.src = objectUrl;
+      const active = runtime.current;
+      active.audio = audio;
+      active.objectUrl = objectUrl;
+      active.engine = 'LOCAL NEURAL';
+      audio.onplay = () => {
+        if (!isCurrentSpeechSession(sessions.current, id) || !runtime.current) return;
+        runtime.current.started = true;
+        runtime.current.paused = false;
+        finalHold.current = null;
+        console.debug('[promo-voice] audio-start', JSON.stringify({ sessionId: id, engine: 'LOCAL NEURAL', durationMs: runtime.current.generatedDurationMs }));
+        setStatus('SPEAKING');
+      };
+      audio.onpause = () => { if (isCurrentSpeechSession(sessions.current, id) && runtime.current && !audio.ended) { runtime.current.paused = true; setStatus('PAUSED'); } };
+      audio.onended = () => finishSpeech(id);
+      audio.onerror = () => { if (isCurrentSpeechSession(sessions.current, id)) { console.error('[promo-voice] generated audio playback failed'); cancelCurrent(null, false); setVoiceEngine('BROWSER FALLBACK'); startBrowserFallback(source, selectedTone); } };
+      await new Promise<void>((resolve, reject) => {
+        const onMetadata = () => { const duration = Number.isFinite(audio.duration) ? audio.duration * 1000 : 0; if (runtime.current && isCurrentSpeechSession(sessions.current, id)) { runtime.current.generatedDurationMs = duration || Number(response.headers.get('X-Promo-TTS-Duration-Ms')) || 0; runtime.current.timeline = calibrateVisemeTimeline(runtime.current.timeline, runtime.current.generatedDurationMs); setGeneratedDurationMs(runtime.current.generatedDurationMs); } resolve(); };
+        const onError = () => reject(new Error('Generated audio metadata failed'));
+        audio.addEventListener('loadedmetadata', onMetadata, { once: true });
+        audio.addEventListener('error', onError, { once: true });
+        audio.load();
+      });
+      if (!isCurrentSpeechSession(sessions.current, id) || controller.signal.aborted || !runtime.current) return;
+      await audio.play();
+    } catch (error) {
+      if (!isCurrentSpeechSession(sessions.current, id) || controller.signal.aborted) return;
+      console.warn('[promo-voice] using explicit browser fallback', error);
+      cancelCurrent(null, false);
+      setVoiceEngine('BROWSER FALLBACK');
+      startBrowserFallback(source, selectedTone);
+    }
+  }, [cancelCurrent, startBrowserFallback, finishSpeech]);
 
-  const deliver = useCallback(() => speak(text, true, tone), [speak, text, tone]);
-  const replay = useCallback(() => {
-    const last = sessions.current.lastDeliveredText;
-    if (last) speak(last, true, lastDeliveredTone.current);
-  }, [speak]);
+  const deliver = useCallback(() => { void speak(text, true, tone); }, [speak, text, tone]);
+  const replay = useCallback(() => { const last = sessions.current.lastDeliveredText; if (last) void speak(last, true, lastDeliveredTone.current); }, [speak]);
   const stop = useCallback(() => cancelCurrent('STOPPED'), [cancelCurrent]);
-  const speakPreview = useCallback((source: string) => speak(source, false, tone), [speak, tone]);
+  const speakPreview = useCallback((source: string) => { void speak(source, false, tone); }, [speak, tone]);
 
   const sampleSpeech = useCallback((nowMs: number) => {
     if (sampleCache.current?.nowMs === nowMs) return sampleCache.current.sample;
     const active = runtime.current;
-    if (!active || !active.timeline.length || !isCurrentSpeechSession(sessions.current, active.id) || !active.started) {
-      sampleCache.current = { nowMs, sample: null };
-      return null;
-    }
-    const elapsedMs = active.paused ? active.lastElapsedMs : advanceSpeechClock(active, nowMs);
+    if (!active || !active.timeline.length || !isCurrentSpeechSession(sessions.current, active.id) || !active.started) { sampleCache.current = { nowMs, sample: null }; return null; }
+    const elapsedMs = active.engine === 'LOCAL NEURAL' && active.audio ? monotonicAudioElapsed(active.lastAudioElapsedMs, active.audio.currentTime, active.generatedDurationMs || timelineDuration(active.timeline)) : active.paused ? active.lastElapsedMs : advanceSpeechClock(active, nowMs);
+    if (active.engine === 'LOCAL NEURAL') active.lastAudioElapsedMs = elapsedMs;
     const segment = segmentAt(active.timeline, elapsedMs);
     const performance = performanceAt(active.performanceTimeline, segment?.charStart ?? (elapsedMs >= timelineDuration(active.timeline) ? Number.MAX_SAFE_INTEGER : 0));
     if (debugEnabled && nowMs - debugLastUpdate.current >= 80) {
       debugLastUpdate.current = nowMs;
-      setDebug({ word: segment?.word || '—', viseme: segment?.viseme ?? 'REST', elapsedMs: Math.round(elapsedMs), timelinePosition: timelineDuration(active.timeline) ? Math.min(1, elapsedMs / timelineDuration(active.timeline)) : 0, sessionId: active.id, sentence: performance?.sentence ?? '—', beatIndex: performance?.beatIndex ?? null, expression: performance?.expression ?? 'NEUTRAL', gaze: performance?.gaze ?? 'INTERVIEWER', intensity: performance?.intensity ?? 0, headBias: performance?.headBias ?? { x: 0, y: 0 }, finalHold: false });
+      const duration = active.generatedDurationMs || timelineDuration(active.timeline);
+      setDebug({ word: segment?.word || '—', viseme: segment?.viseme ?? 'REST', elapsedMs: Math.round(elapsedMs), timelinePosition: duration ? Math.min(1, elapsedMs / duration) : 0, sessionId: active.id, sentence: performance?.sentence ?? '—', beatIndex: performance?.beatIndex ?? null, expression: performance?.expression ?? 'NEUTRAL', gaze: performance?.gaze ?? 'INTERVIEWER', intensity: performance?.intensity ?? 0, headBias: performance?.headBias ?? { x: 0, y: 0 }, finalHold: false });
     }
     const sample = { deformation: timelineDeformation(segment), performance, elapsedMs, segment };
     sampleCache.current = { nowMs, sample };
@@ -214,5 +275,5 @@ export function usePromoSpeech() {
   }, [sampleSpeech]);
 
   useEffect(() => () => cancelCurrent(null, false), [cancelCurrent]);
-  return { text, setText, tone, setTone, status, lastDeliveredText, deliver, replay, stop, speakPreview, sampleMouth, samplePerformance, debugEnabled, setDebugEnabled, debug };
+  return { text, setText, tone, setTone, status, voiceEngine, generatedDurationMs, lastDeliveredText, deliver, replay, stop, speakPreview, sampleMouth, samplePerformance, debugEnabled, setDebugEnabled, debug };
 }
