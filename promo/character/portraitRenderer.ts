@@ -66,23 +66,37 @@ void main() {
   // A closed-mouth smile is asymmetric at the corners, limited to a few pixels.
   p.y += expression.x*(1.-expression.y*.65)*region(p,vec2(302.,546.),vec2(39.,34.));
   p.y += expression.x*(1.+expression.y*.55)*region(p,vec2(423.,546.),vec2(36.,34.));
-  // Localized mouth/jaw deformation. The original portrait remains the only texture;
-  // no overlay is composited and the head/neck are not scaled.
-  vec2 mouthCenter = vec2(365.,548.);
-  float mouthArea = region(p, mouthCenter, vec2(142.,92.));
-  float lowerFace = region(p, vec2(365.,592.), vec2(152.,100.));
-  float mouthX = p.x - mouthCenter.x;
-  mouthX /= 1. + mouth.y * .055 * mouthArea;
-  p.x = mouthCenter.x + mouthX;
-  p.y += mouth.x * 5.5 * mouthArea;
-  p.y -= mouth.z * 2.3 * mouthArea;
-  p.y += mouthDetail.y * 6.5 * lowerFace;
-  p.y -= mouthDetail.x * 3.2 * region(p, vec2(365.,575.), vec2(118.,75.));
-  p.x += mouthDetail.z * 2.4 * (p.x < mouthCenter.x ? -mouthArea : mouthArea);
-  p = mouthCenter + (p - mouthCenter) / (1. + mouth.w * .035 * mouthArea);
+  // Split the original seam into independent upper/lower lip edges.
+  vec2 center = vec2(360.,550.);
+  float local = region(p, center, vec2(108.,49.));
+  float widthScale = 1. + mouth.y*.35 - mouth.w*.37;
+  p.x = center.x + (p.x-center.x)/mix(1.,widthScale,local);
+  float x = (p.x-center.x)/67.;
+  float arch = max(0., 1.-x*x);
+  float seam = 550. - 3.*x*x;
+  float opening = mouth.x*43.*pow(arch,.65);
+  float top = seam-opening*.32;
+  float bottom = seam+opening*.68;
+  float y = p.y;
+  float interior = 0.;
+  if (abs(x)<1. && opening>.01 && y>=top && y<=bottom) {
+    // Expand source seam pixels into the cavity, preserving texture variation.
+    float depth = (y-top)/max(opening,.001);
+    p.y = seam + (depth-.5)*1.2;
+    interior = smoothstep(0.,1.2,y-top)*smoothstep(0.,1.2,bottom-y);
+  } else if (y<top && y>490.) {
+    p.y = mix(490.,seam,(y-490.)/(top-490.));
+  } else if (y>bottom && y<650.) {
+    p.y = mix(seam,650.,(y-bottom)/(650.-bottom));
+  }
+  float lip = region(p,center,vec2(78.,30.));
+  p.y = seam+(p.y-seam)*(1.+mouth.z*.65*lip);
+  p.y += mouthDetail.x*10.*region(p,vec2(360.,571.),vec2(65.,24.));
+  p.y -= mouthDetail.y*3.*region(p,vec2(360.,612.),vec2(90.,42.));
   p = eye(p,eyeA);
   p = eye(p,eyeB);
   gl_FragColor = texture2D(portrait,clamp(p/size,vec2(.001),vec2(.999)));
+  gl_FragColor.rgb *= 1.-interior*.62;
 }`;
 
 export function createPortraitRenderer(canvas: HTMLCanvasElement, image: HTMLImageElement) {

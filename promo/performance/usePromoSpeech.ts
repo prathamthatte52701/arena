@@ -25,10 +25,11 @@ interface Runtime {
   lastSampleAt: number;
   paused: boolean;
   pausedAt: number;
+  started: boolean;
 }
 
 function preferredVoice(): SpeechSynthesisVoice | undefined {
-  const voices = window.speechSynthesis.getVoices();
+  const voices = window.speechSynthesis.getVoices().filter(voice => voice.localService);
   const english = voices.filter(voice => /^en(?:-|_)/i.test(voice.lang));
   return english.find(voice => /microsoft|google|samantha|alex|daniel|david|english/i.test(voice.name)) ?? english[0] ?? voices[0];
 }
@@ -44,7 +45,7 @@ export function usePromoSpeech() {
   const runtime = useRef<Runtime | null>(null);
   const debugLastUpdate = useRef(0);
 
-  const cancelCurrent = useCallback((nextStatus: SpeechStatus | null) => {
+  const cancelCurrent = useCallback((nextStatus: SpeechStatus | null, publish = true) => {
     const current = utterance.current;
     if (current) {
       current.onstart = null;
@@ -58,8 +59,10 @@ export function usePromoSpeech() {
     invalidateSpeechSession(sessions.current);
     runtime.current = null;
     window.speechSynthesis?.cancel();
-    setDebug({ word: '—', viseme: 'REST', elapsedMs: 0, timelinePosition: 0, sessionId: null });
-    if (nextStatus) setStatus(nextStatus);
+    if (publish) {
+      setDebug({ word: '—', viseme: 'REST', elapsedMs: 0, timelinePosition: 0, sessionId: null });
+      if (nextStatus) setStatus(nextStatus);
+    }
   }, []);
 
   const speak = useCallback((source: string, remember: boolean) => {
@@ -77,14 +80,21 @@ export function usePromoSpeech() {
     if (!remember) sessions.current.lastDeliveredText = previousLastDelivered;
     const timeline = createVisemeTimeline(source, DEFAULT_SPEECH_RATE);
     const startedAt = window.performance.now();
-    runtime.current = { id, timeline, startedAt, offsetMs: 0, targetOffsetMs: 0, lastSampleAt: startedAt, paused: false, pausedAt: 0 };
+    runtime.current = { id, timeline, startedAt, offsetMs: 0, targetOffsetMs: 0, lastSampleAt: startedAt, paused: false, pausedAt: 0, started: false };
     const speech = new SpeechSynthesisUtterance(source);
     speech.rate = DEFAULT_SPEECH_RATE;
     speech.pitch = 0.72;
     speech.volume = 1;
     const voice = preferredVoice();
     if (voice) speech.voice = voice;
-    speech.onstart = () => { if (isCurrentSpeechSession(sessions.current, id)) setStatus('SPEAKING'); };
+    speech.onstart = () => {
+      if (!isCurrentSpeechSession(sessions.current, id) || !runtime.current) return;
+      const now = window.performance.now();
+      runtime.current.startedAt = now;
+      runtime.current.lastSampleAt = now;
+      runtime.current.started = true;
+      setStatus('SPEAKING');
+    };
     speech.onpause = () => {
       if (!isCurrentSpeechSession(sessions.current, id) || !runtime.current) return;
       runtime.current.paused = true;
@@ -100,11 +110,12 @@ export function usePromoSpeech() {
       setStatus('SPEAKING');
     };
     speech.onboundary = event => {
-      if (!isCurrentSpeechSession(sessions.current, id) || !runtime.current || typeof event.charIndex !== 'number') return;
+      if (!isCurrentSpeechSession(sessions.current, id) || !runtime.current?.started || event.name !== 'word' || typeof event.charIndex !== 'number') return;
       const wordStart = runtime.current.timeline.find(segment => segment.kind === 'articulation' && segment.charStart >= event.charIndex);
       if (!wordStart) return;
       const elapsed = window.performance.now() - runtime.current.startedAt;
-      runtime.current.targetOffsetMs = Math.max(-1000, Math.min(1000, wordStart.startMs - elapsed));
+      const limit = timelineDuration(runtime.current.timeline);
+      runtime.current.targetOffsetMs = Math.max(-limit, Math.min(limit, wordStart.startMs - elapsed));
     };
     speech.onend = () => {
       if (!isCurrentSpeechSession(sessions.current, id)) return;
@@ -126,7 +137,7 @@ export function usePromoSpeech() {
       sessions.current.lastDeliveredText = source;
       setLastDeliveredText(source);
     }
-    setStatus('SPEAKING');
+    setStatus('READY');
     window.speechSynthesis.speak(speech);
   }, [cancelCurrent]);
 
@@ -141,10 +152,13 @@ export function usePromoSpeech() {
   const sampleMouth = useCallback((nowMs: number): MouthTarget => {
     const active = runtime.current;
     if (!active || !active.timeline.length || !isCurrentSpeechSession(sessions.current, active.id)) return { deformation: REST_MOUTH, immediate: true };
-    if (active.paused) return { deformation: REST_MOUTH, immediate: true };
+    if (!active.started || active.paused) return { deformation: REST_MOUTH, immediate: true };
     const dt = Math.max(0, nowMs - active.lastSampleAt);
     active.lastSampleAt = nowMs;
-    active.offsetMs += (active.targetOffsetMs - active.offsetMs) * (1 - Math.exp(-dt / 180));
+    // Limit correction velocity: boundary events can slow/speed the clock,
+    // but must never make a word play backward or jump across a pause.
+    const correction = (active.targetOffsetMs - active.offsetMs) * (1 - Math.exp(-dt / 180));
+    active.offsetMs += Math.max(-dt * .35, Math.min(dt * .35, correction));
     const elapsedMs = Math.max(0, nowMs - active.startedAt + active.offsetMs);
     const segment = segmentAt(active.timeline, elapsedMs);
     const duration = timelineDuration(active.timeline);
@@ -158,9 +172,9 @@ export function usePromoSpeech() {
         sessionId: active.id,
       });
     }
-    return { deformation: timelineDeformation(segment) };
+    return { deformation: timelineDeformation(segment), immediate: !segment || (segment.kind === 'pause' && elapsedMs - segment.startMs >= 100) };
   }, [debugEnabled]);
 
-  useEffect(() => () => cancelCurrent(null), [cancelCurrent]);
+  useEffect(() => () => cancelCurrent(null, false), [cancelCurrent]);
   return { text, setText, status, lastDeliveredText, deliver, replay, stop, speakPreview, sampleMouth, debugEnabled, setDebugEnabled, debug };
 }

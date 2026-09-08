@@ -14,6 +14,12 @@ test('identical input generates an identical deterministic timeline', () => {
   assert.deepEqual(createVisemeTimeline(phrase), createVisemeTimeline(phrase));
 });
 
+test('ordinary consonants and apostrophes never create silence inside words', () => {
+  const timeline = createVisemeTimeline("You think you're ready for me? Then prove it. T D N R S Z K G H J C X");
+  assert.ok(timeline.filter(segment => segment.kind === 'articulation').every(segment => segment.viseme !== 'REST'));
+  assert.equal(MOUTH_DEFORMATIONS.MBP.mouthOpen, 0);
+});
+
 test('phonetic groups map plosives, FV, vowels and combinations to the seven stable states', () => {
   assert.equal(visemeForGroup('M'), 'MBP');
   assert.equal(visemeForGroup('B'), 'MBP');

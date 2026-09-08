@@ -1,0 +1,85 @@
+{
+  "pass": true,
+  "results": [
+    {
+      "name": "REST vs AE",
+      "pass": true,
+      "detail": {
+        "mean": 14.152766203703642,
+        "changed": 11056
+      }
+    },
+    {
+      "name": "REST vs O",
+      "pass": true,
+      "detail": {
+        "mean": 16.91298611111117,
+        "changed": 12218
+      }
+    },
+    {
+      "name": "AE vs O",
+      "pass": true,
+      "detail": {
+        "mean": 19.476076388888902,
+        "changed": 11209
+      }
+    },
+    {
+      "name": "REST vs MBP",
+      "pass": true,
+      "detail": {
+        "mean": 10.013020833333337,
+        "changed": 6173
+      }
+    },
+    {
+      "name": "REST vs FV",
+      "pass": true,
+      "detail": {
+        "mean": 4.385451388888879,
+        "changed": 3465
+      }
+    },
+    {
+      "name": "REST vs L",
+      "pass": true,
+      "detail": {
+        "mean": 5.95760416666672,
+        "changed": 5574
+      }
+    },
+    {
+      "name": "REST vs WQ",
+      "pass": true,
+      "detail": {
+        "mean": 11.734594907407416,
+        "changed": 9336
+      }
+    },
+    {
+      "name": "MBP closed band",
+      "pass": true,
+      "detail": {
+        "mbp": 96,
+        "ae": 300
+      }
+    },
+    {
+      "name": "STOP rendered REST",
+      "pass": true,
+      "detail": {
+        "mean": 0,
+        "changed": 0
+      }
+    },
+    {
+      "name": "punctuation rendered REST",
+      "pass": true,
+      "detail": {
+        "mean": 0,
+        "changed": 0
+      }
+    }
+  ]
+}

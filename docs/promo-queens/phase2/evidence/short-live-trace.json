@@ -1,0 +1,198 @@
+[
+  {
+    "time": 1788884979112,
+    "status": [
+      "SPEAKING"
+    ],
+    "debug": "WORD You\nVISEME WQ\nELAPSED 9MS · POS 0.00\nSESSION 2"
+  },
+  {
+    "time": 1788884979540,
+    "status": [
+      "SPEAKING"
+    ],
+    "debug": "WORD think\nVISEME AE\nELAPSED 347MS · POS 0.08\nSESSION 2"
+  },
+  {
+    "time": 1788884979654,
+    "status": [
+      "SPEAKING"
+    ],
+    "debug": "WORD think\nVISEME AE\nELAPSED 513MS · POS 0.12\nSESSION 2"
+  },
+  {
+    "time": 1788884979750,
+    "status": [
+      "SPEAKING"
+    ],
+    "debug": "WORD —\nVISEME REST\nELAPSED 626MS · POS 0.15\nSESSION 2"
+  },
+  {
+    "time": 1788884979861,
+    "status": [
+      "SPEAKING"
+    ],
+    "debug": "WORD you're\nVISEME O\nELAPSED 738MS · POS 0.18\nSESSION 2"
+  },
+  {
+    "time": 1788884979971,
+    "status": [
+      "SPEAKING"
+    ],
+    "debug": "WORD —\nVISEME REST\nELAPSED 963MS · POS 0.23\nSESSION 2"
+  },
+  {
+    "time": 1788884980081,
+    "status": [
+      "SPEAKING"
+    ],
+    "debug": "WORD ready\nVISEME L\nELAPSED 1075MS · POS 0.26\nSESSION 2"
+  },
+  {
+    "time": 1788884980202,
+    "status": [
+      "SPEAKING"
+    ],
+    "debug": "WORD ready\nVISEME AE\nELAPSED 1188MS · POS 0.29\nSESSION 2"
+  },
+  {
+    "time": 1788884980306,
+    "status": [
+      "SPEAKING"
+    ],
+    "debug": "WORD ready\nVISEME AE\nELAPSED 1413MS · POS 0.34\nSESSION 2"
+  },
+  {
+    "time": 1788884980417,
+    "status": [
+      "SPEAKING"
+    ],
+    "debug": "WORD —\nVISEME REST\nELAPSED 1525MS · POS 0.37\nSESSION 2"
+  },
+  {
+    "time": 1788884980606,
+    "status": [
+      "SPEAKING"
+    ],
+    "debug": "WORD for\nVISEME L\nELAPSED 1751MS · POS 0.42\nSESSION 2"
+  },
+  {
+    "time": 1788884980697,
+    "status": [
+      "SPEAKING"
+    ],
+    "debug": "WORD me\nVISEME MBP\nELAPSED 1863MS · POS 0.45\nSESSION 2"
+  },
+  {
+    "time": 1788884980786,
+    "status": [
+      "SPEAKING"
+    ],
+    "debug": "WORD me\nVISEME AE\nELAPSED 1975MS · POS 0.48\nSESSION 2"
+  },
+  {
+    "time": 1788884980873,
+    "status": [
+      "SPEAKING"
+    ],
+    "debug": "WORD —\nVISEME REST\nELAPSED 2088MS · POS 0.51\nSESSION 2"
+  },
+  {
+    "time": 1788884980981,
+    "status": [
+      "SPEAKING"
+    ],
+    "debug": "WORD —\nVISEME REST\nELAPSED 2313MS · POS 0.56\nSESSION 2"
+  },
+  {
+    "time": 1788884981252,
+    "status": [
+      "SPEAKING"
+    ],
+    "debug": "WORD Then\nVISEME WQ\nELAPSED 2650MS · POS 0.64\nSESSION 2"
+  },
+  {
+    "time": 1788884981370,
+    "status": [
+      "SPEAKING"
+    ],
+    "debug": "WORD Then\nVISEME AE\nELAPSED 2762MS · POS 0.67\nSESSION 2"
+  },
+  {
+    "time": 1788884981475,
+    "status": [
+      "SPEAKING"
+    ],
+    "debug": "WORD prove\nVISEME MBP\nELAPSED 2953MS · POS 0.72\nSESSION 2"
+  },
+  {
+    "time": 1788884981581,
+    "status": [
+      "SPEAKING"
+    ],
+    "debug": "WORD prove\nVISEME L\nELAPSED 3007MS · POS 0.73\nSESSION 2"
+  },
+  {
+    "time": 1788884981678,
+    "status": [
+      "SPEAKING"
+    ],
+    "debug": "WORD prove\nVISEME O\nELAPSED 3061MS · POS 0.74\nSESSION 2"
+  },
+  {
+    "time": 1788884981776,
+    "status": [
+      "SPEAKING"
+    ],
+    "debug": "WORD prove\nVISEME O\nELAPSED 3115MS · POS 0.76\nSESSION 2"
+  },
+  {
+    "time": 1788884981874,
+    "status": [
+      "SPEAKING"
+    ],
+    "debug": "WORD prove\nVISEME FV\nELAPSED 3169MS · POS 0.77\nSESSION 2"
+  },
+  {
+    "time": 1788884981976,
+    "status": [
+      "SPEAKING"
+    ],
+    "debug": "WORD —\nVISEME REST\nELAPSED 3325MS · POS 0.81\nSESSION 2"
+  },
+  {
+    "time": 1788884982080,
+    "status": [
+      "SPEAKING"
+    ],
+    "debug": "WORD it\nVISEME AE\nELAPSED 3438MS · POS 0.83\nSESSION 2"
+  },
+  {
+    "time": 1788884982666,
+    "status": [
+      "SPEAKING"
+    ],
+    "debug": "WORD —\nVISEME REST\nELAPSED 4100MS · POS 0.99\nSESSION 2"
+  },
+  {
+    "time": 1788884982763,
+    "status": [
+      "SPEAKING"
+    ],
+    "debug": "WORD —\nVISEME REST\nELAPSED 4185MS · POS 1.00\nSESSION 2"
+  },
+  {
+    "time": 1788884982861,
+    "status": [
+      "SPEAKING"
+    ],
+    "debug": "WORD —\nVISEME REST\nELAPSED 4269MS · POS 1.00\nSESSION 2"
+  },
+  {
+    "time": 1788884983059,
+    "status": [
+      "COMPLETE"
+    ],
+    "debug": "WORD —\nVISEME REST\nELAPSED 0MS · POS 1.00\nSESSION 2"
+  }
+]

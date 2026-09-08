@@ -20,13 +20,16 @@ export function visemeForGroup(group: string): Viseme {
   if ('OU'.includes(value)) return 'O';
   if (value === 'L') return 'L';
   if ('WQ'.includes(value)) return 'WQ';
-  return 'REST';
+  if ('TDNRSZ'.includes(value)) return 'L';
+  if ('KGHJCX'.includes(value)) return 'AE';
+  return 'L';
 }
 
 export function phoneticGroups(word: string): string[] {
   const groups: string[] = [];
   const value = word.toUpperCase();
   for (let index = 0; index < value.length;) {
+    if (/['’-]/.test(value[index])) { index += 1; continue; }
     const digraph = value.slice(index, index + 2);
     if (DIGRAPH_TO_VISEME[digraph]) {
       groups.push(digraph);

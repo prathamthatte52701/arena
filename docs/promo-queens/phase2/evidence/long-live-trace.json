@@ -1,0 +1,516 @@
+{
+  "text": "Maybe people believe promises, but I believe in showing up. Every time I enter this arena, I bring everything I have. You think you're ready for me? Then prove it. Fight for every victory, find your voice, and make every moment count. I will be here, ready for the challenge, when the lights come on again.",
+  "trace": [
+    {
+      "wallMs": 22,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD Maybe\nVISEME AE\nELAPSED 93MS · POS 0.00\nSESSION 4"
+    },
+    {
+      "wallMs": 292,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD Maybe\nVISEME MBP\nELAPSED 290MS · POS 0.01\nSESSION 4"
+    },
+    {
+      "wallMs": 556,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD —\nVISEME REST\nELAPSED 487MS · POS 0.02\nSESSION 4"
+    },
+    {
+      "wallMs": 827,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD people\nVISEME L\nELAPSED 874MS · POS 0.03\nSESSION 4"
+    },
+    {
+      "wallMs": 1123,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD believe\nVISEME AE\nELAPSED 1212MS · POS 0.04\nSESSION 4"
+    },
+    {
+      "wallMs": 1383,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD believe\nVISEME AE\nELAPSED 1549MS · POS 0.06\nSESSION 4"
+    },
+    {
+      "wallMs": 1654,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD promises\nVISEME O\nELAPSED 1887MS · POS 0.07\nSESSION 4"
+    },
+    {
+      "wallMs": 1929,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD —\nVISEME REST\nELAPSED 2337MS · POS 0.09\nSESSION 4"
+    },
+    {
+      "wallMs": 2200,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD but\nVISEME O\nELAPSED 2674MS · POS 0.10\nSESSION 4"
+    },
+    {
+      "wallMs": 2827,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD believe\nVISEME AE\nELAPSED 3387MS · POS 0.12\nSESSION 4"
+    },
+    {
+      "wallMs": 3100,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD —\nVISEME REST\nELAPSED 3721MS · POS 0.14\nSESSION 4"
+    },
+    {
+      "wallMs": 3389,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD showing\nVISEME WQ\nELAPSED 4058MS · POS 0.15\nSESSION 4"
+    },
+    {
+      "wallMs": 3698,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD —\nVISEME REST\nELAPSED 4509MS · POS 0.17\nSESSION 4"
+    },
+    {
+      "wallMs": 3989,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD —\nVISEME REST\nELAPSED 4846MS · POS 0.18\nSESSION 4"
+    },
+    {
+      "wallMs": 4297,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD —\nVISEME REST\nELAPSED 5294MS · POS 0.19\nSESSION 4"
+    },
+    {
+      "wallMs": 4597,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD Every\nVISEME AE\nELAPSED 5655MS · POS 0.21\nSESSION 4"
+    },
+    {
+      "wallMs": 4888,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD time\nVISEME L\nELAPSED 5818MS · POS 0.21\nSESSION 4"
+    },
+    {
+      "wallMs": 5170,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD time\nVISEME AE\nELAPSED 6117MS · POS 0.22\nSESSION 4"
+    },
+    {
+      "wallMs": 5497,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD enter\nVISEME L\nELAPSED 6515MS · POS 0.24\nSESSION 4"
+    },
+    {
+      "wallMs": 5781,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD —\nVISEME REST\nELAPSED 6809MS · POS 0.25\nSESSION 4"
+    },
+    {
+      "wallMs": 6059,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD this\nVISEME L\nELAPSED 7084MS · POS 0.26\nSESSION 4"
+    },
+    {
+      "wallMs": 6549,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD arena\nVISEME AE\nELAPSED 7593MS · POS 0.28\nSESSION 4"
+    },
+    {
+      "wallMs": 7055,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD bring\nVISEME MBP\nELAPSED 8110MS · POS 0.30\nSESSION 4"
+    },
+    {
+      "wallMs": 7361,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD bring\nVISEME AE\nELAPSED 8376MS · POS 0.31\nSESSION 4"
+    },
+    {
+      "wallMs": 7670,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD everything\nVISEME AE\nELAPSED 8709MS · POS 0.32\nSESSION 4"
+    },
+    {
+      "wallMs": 7957,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD everything\nVISEME AE\nELAPSED 9043MS · POS 0.33\nSESSION 4"
+    },
+    {
+      "wallMs": 8286,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD I\nVISEME AE\nELAPSED 9376MS · POS 0.34\nSESSION 4"
+    },
+    {
+      "wallMs": 8555,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD have\nVISEME AE\nELAPSED 9626MS · POS 0.35\nSESSION 4"
+    },
+    {
+      "wallMs": 8868,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD —\nVISEME REST\nELAPSED 9959MS · POS 0.37\nSESSION 4"
+    },
+    {
+      "wallMs": 9207,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD —\nVISEME REST\nELAPSED 10292MS · POS 0.38\nSESSION 4"
+    },
+    {
+      "wallMs": 9761,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD think\nVISEME AE\nELAPSED 10826MS · POS 0.40\nSESSION 4"
+    },
+    {
+      "wallMs": 10299,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD you're\nVISEME AE\nELAPSED 11377MS · POS 0.42\nSESSION 4"
+    },
+    {
+      "wallMs": 10737,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD ready\nVISEME L\nELAPSED 11809MS · POS 0.43\nSESSION 4"
+    },
+    {
+      "wallMs": 11061,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD for\nVISEME O\nELAPSED 12094MS · POS 0.44\nSESSION 4"
+    },
+    {
+      "wallMs": 11698,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD —\nVISEME REST\nELAPSED 12676MS · POS 0.47\nSESSION 4"
+    },
+    {
+      "wallMs": 11994,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD —\nVISEME REST\nELAPSED 13027MS · POS 0.48\nSESSION 4"
+    },
+    {
+      "wallMs": 12294,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD —\nVISEME REST\nELAPSED 13359MS · POS 0.49\nSESSION 4"
+    },
+    {
+      "wallMs": 12648,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD prove\nVISEME AE\nELAPSED 13742MS · POS 0.50\nSESSION 4"
+    },
+    {
+      "wallMs": 13373,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD —\nVISEME REST\nELAPSED 14359MS · POS 0.53\nSESSION 4"
+    },
+    {
+      "wallMs": 13698,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD Fight\nVISEME AE\nELAPSED 14776MS · POS 0.54\nSESSION 4"
+    },
+    {
+      "wallMs": 14076,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD —\nVISEME REST\nELAPSED 15142MS · POS 0.56\nSESSION 4"
+    },
+    {
+      "wallMs": 14355,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD —\nVISEME REST\nELAPSED 15392MS · POS 0.57\nSESSION 4"
+    },
+    {
+      "wallMs": 14633,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD every\nVISEME AE\nELAPSED 15726MS · POS 0.58\nSESSION 4"
+    },
+    {
+      "wallMs": 14912,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD —\nVISEME REST\nELAPSED 15977MS · POS 0.59\nSESSION 4"
+    },
+    {
+      "wallMs": 15199,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD victory\nVISEME AE\nELAPSED 16226MS · POS 0.60\nSESSION 4"
+    },
+    {
+      "wallMs": 15476,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD —\nVISEME REST\nELAPSED 16559MS · POS 0.61\nSESSION 4"
+    },
+    {
+      "wallMs": 15758,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD —\nVISEME REST\nELAPSED 16809MS · POS 0.62\nSESSION 4"
+    },
+    {
+      "wallMs": 16033,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD find\nVISEME L\nELAPSED 17059MS · POS 0.63\nSESSION 4"
+    },
+    {
+      "wallMs": 16316,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD your\nVISEME L\nELAPSED 17392MS · POS 0.64\nSESSION 4"
+    },
+    {
+      "wallMs": 16591,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD voice\nVISEME O\nELAPSED 17642MS · POS 0.65\nSESSION 4"
+    },
+    {
+      "wallMs": 16878,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD —\nVISEME REST\nELAPSED 17976MS · POS 0.66\nSESSION 4"
+    },
+    {
+      "wallMs": 17137,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD and\nVISEME AE\nELAPSED 18225MS · POS 0.67\nSESSION 4"
+    },
+    {
+      "wallMs": 17387,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD —\nVISEME REST\nELAPSED 18475MS · POS 0.68\nSESSION 4"
+    },
+    {
+      "wallMs": 17681,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD make\nVISEME AE\nELAPSED 18725MS · POS 0.69\nSESSION 4"
+    },
+    {
+      "wallMs": 17929,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD every\nVISEME AE\nELAPSED 18976MS · POS 0.70\nSESSION 4"
+    },
+    {
+      "wallMs": 18175,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD every\nVISEME L\nELAPSED 19226MS · POS 0.71\nSESSION 4"
+    },
+    {
+      "wallMs": 18432,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD moment\nVISEME MBP\nELAPSED 19475MS · POS 0.72\nSESSION 4"
+    },
+    {
+      "wallMs": 18683,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD moment\nVISEME AE\nELAPSED 19726MS · POS 0.72\nSESSION 4"
+    },
+    {
+      "wallMs": 18940,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD —\nVISEME REST\nELAPSED 19975MS · POS 0.73\nSESSION 4"
+    },
+    {
+      "wallMs": 19197,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD count\nVISEME L\nELAPSED 20225MS · POS 0.74\nSESSION 4"
+    },
+    {
+      "wallMs": 19461,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD —\nVISEME REST\nELAPSED 20559MS · POS 0.76\nSESSION 4"
+    },
+    {
+      "wallMs": 19714,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD —\nVISEME REST\nELAPSED 20809MS · POS 0.76\nSESSION 4"
+    },
+    {
+      "wallMs": 19964,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD —\nVISEME REST\nELAPSED 21059MS · POS 0.77\nSESSION 4"
+    },
+    {
+      "wallMs": 20232,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD will\nVISEME L\nELAPSED 21309MS · POS 0.78\nSESSION 4"
+    },
+    {
+      "wallMs": 20509,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD be\nVISEME AE\nELAPSED 21559MS · POS 0.79\nSESSION 4"
+    },
+    {
+      "wallMs": 20781,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD here\nVISEME AE\nELAPSED 21809MS · POS 0.80\nSESSION 4"
+    },
+    {
+      "wallMs": 21056,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD —\nVISEME REST\nELAPSED 22142MS · POS 0.81\nSESSION 4"
+    },
+    {
+      "wallMs": 21346,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD ready\nVISEME AE\nELAPSED 22392MS · POS 0.82\nSESSION 4"
+    },
+    {
+      "wallMs": 21815,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD for\nVISEME FV\nELAPSED 22842MS · POS 0.84\nSESSION 4"
+    },
+    {
+      "wallMs": 22125,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD the\nVISEME WQ\nELAPSED 23175MS · POS 0.85\nSESSION 4"
+    },
+    {
+      "wallMs": 22414,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD challenge\nVISEME AE\nELAPSED 23509MS · POS 0.86\nSESSION 4"
+    },
+    {
+      "wallMs": 22841,
+      "status": [
+        "SPEAKING"
+      ],
+      "debug": "WORD challenge\nVISEME AE\nELAPSED 23926MS · POS 0.88\nSESSION 4"
+    },
+    {
+      "wallMs": 23110,
+      "status": [
+        "COMPLETE"
+      ],
+      "debug": "WORD —\nVISEME REST\nELAPSED 0MS · POS 1.00\nSESSION 4"
+    }
+  ]
+}

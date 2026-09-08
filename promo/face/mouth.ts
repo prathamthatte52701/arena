@@ -27,7 +27,7 @@ export const REST_MOUTH: MouthDeformation = {
 
 export const MOUTH_DEFORMATIONS: Record<Viseme, MouthDeformation> = {
   REST: { ...REST_MOUTH },
-  MBP: { mouthOpen: 0.02, mouthWidth: -0.12, lipCompress: 0.82, lipRound: 0.02, lowerLip: 0, jawDrop: 0, cornerPull: -0.05 },
+  MBP: { mouthOpen: 0, mouthWidth: -0.12, lipCompress: 0.82, lipRound: 0.02, lowerLip: 0, jawDrop: 0, cornerPull: -0.05 },
   FV: { mouthOpen: 0.12, mouthWidth: 0.05, lipCompress: 0.18, lipRound: 0.02, lowerLip: 0.68, jawDrop: 0.04, cornerPull: 0 },
   AE: { mouthOpen: 0.58, mouthWidth: 0.16, lipCompress: 0, lipRound: 0.04, lowerLip: 0.08, jawDrop: 0.42, cornerPull: 0.12 },
   O: { mouthOpen: 0.46, mouthWidth: -0.18, lipCompress: 0, lipRound: 0.82, lowerLip: 0.05, jawDrop: 0.3, cornerPull: -0.08 },

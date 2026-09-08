@@ -1,0 +1,47 @@
+{
+  "pass": true,
+  "results": [
+    {
+      "name": "utterance text unchanged",
+      "pass": true
+    },
+    {
+      "name": "delayed onstart keeps rendered mouth REST",
+      "pass": true
+    },
+    {
+      "name": "onstart releases visible articulation",
+      "pass": true,
+      "changed": 10161
+    },
+    {
+      "name": "punctuation returns rendered pixels to REST",
+      "pass": true,
+      "changed": 0
+    },
+    {
+      "name": "articulation resumes after punctuation",
+      "pass": true
+    },
+    {
+      "name": "STOP immediately restores rendered REST",
+      "pass": true
+    },
+    {
+      "name": "replay retains delivered text",
+      "pass": true
+    },
+    {
+      "name": "stale completion cannot end replay",
+      "pass": true
+    },
+    {
+      "name": "end restores rendered REST and COMPLETE",
+      "pass": true
+    },
+    {
+      "name": "unmount cancels pending synthesis",
+      "pass": true
+    }
+  ]
+}

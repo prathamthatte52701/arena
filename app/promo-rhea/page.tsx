@@ -31,9 +31,9 @@ export default function PromoRhea() {
           <label htmlFor="promo-text">YOUR PROMO</label>
           <textarea id="promo-text" value={speech.text} onChange={event => speech.setText(event.target.value)} maxLength={420} />
           <div className={styles.actions}>
-            <button className={styles.primary} onClick={speech.deliver}>DELIVER PROMO</button>
-            <button onClick={speech.stop}>STOP</button>
-            <button onClick={speech.replay}>REPLAY</button>
+            <button className={styles.primary} onClick={() => { setControls(current => ({ ...current, mouthPreview: null })); speech.deliver(); }}>DELIVER PROMO</button>
+            <button onClick={() => { setControls(current => ({ ...current, mouthPreview: null })); speech.stop(); }}>STOP</button>
+            <button onClick={() => { setControls(current => ({ ...current, mouthPreview: null })); speech.replay(); }}>REPLAY</button>
           </div>
           <output className={styles.status}>{speech.status}</output>
           <p className={styles.note}>Local synthetic speech · deterministic mouth timeline · last delivered promo replays exactly</p>
