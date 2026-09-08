@@ -1,5 +1,9 @@
 # PROMO QUEENS — PIVOT CLEANUP REPORT
 
+Historical record of the first, incomplete cleanup. Its retained UI/CSS claims
+and validation results describe that earlier commit, not the current tree.
+See [the final cleanup report](final-cleanup-report.md) for the corrected inventory.
+
 BASE COMMIT: `502d351`
 
 FINAL COMMIT: `0ced77c`

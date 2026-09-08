@@ -1,8 +1,6 @@
 'use client';
 /* oxlint-disable */
 import { useEffect, useMemo, useRef, useState } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
 import styles from './promo.module.css';
 
 const refs = { neutral: '/character-references/rhea/expression-neutral.png', smirk: '/character-references/rhea/expression-confident-smirk.png', angry: '/character-references/rhea/expression-aggressive-intimidating.png', threeQuarter: '/character-references/rhea/face-3quarter.png' } as const;

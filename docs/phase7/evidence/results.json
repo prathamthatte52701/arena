@@ -1,9 +1,0 @@
-{
-  "phase": 7,
-  "status": "PASS",
-  "routes": ["/", "/3d-sandbox", "/3d-match", "/entrance", "/backstage"],
-  "tests": { "original": 24, "phase0": 8, "phase1": 13, "phase2": 6, "phase3": 8, "phase4": 6, "phase5": 3, "phase6": 3, "phase7": 3, "failures": 0 },
-  "static": { "typescript": "passed", "build": "passed", "focusedLint": { "exit": 0, "newDiagnostics": 0 }, "repositoryLint": { "exit": 1, "preExistingDiagnostics": 30 } },
-  "browser": { "localDev": { "match": "loaded; 2 meshes / 34 bones", "entrance": "loaded; CHYNA profile reached RAMP", "backstage": "loaded; MAIN_CORRIDOR at finite position" }, "consoleErrors": 0, "stableMatchFps": 60, "stableMatchFrameMs": 16.7 },
-  "scope": { "phase8Started": false, "externalHosting": false, "cloudUrlsAdded": false }
-}

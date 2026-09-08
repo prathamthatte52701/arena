@@ -1,8 +1,0 @@
-{
-  "phase": 4,
-  "status": "PASS",
-  "route": "/3d-match",
-  "tests": { "phase4": { "passed": 6, "failed": 0 }, "phase0To3": "passed", "legacyCombat": { "passed": 24, "failed": 0 } },
-  "static": { "typescript": "passed", "build": "passed", "focusedLint": { "exit": 0, "newDiagnostics": 0 }, "repositoryLint": { "exit": 1, "baselineDiagnostics": 30 } },
-  "browser": { "consoleErrors": 0, "skinnedMeshes": 2, "bones": 34, "activeFps": 56, "activeFrameMs": 17.7, "stableFps": 60, "stableFrameMs": 16.7, "grapple": { "state": "SYNCHRONIZED_MOVE", "event": "connected", "cameraCue": true, "separation": 1.4, "cpuHealthAfterImpact": 88 }, "submission": { "state": "SUBMISSION", "event": "connected", "cameraCue": true, "stamina": 80, "momentum": 90, "cpuHealthAfterCompletion": 88 } }
-}
