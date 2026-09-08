@@ -1,0 +1,26 @@
+{
+  "idleObservedSeconds": 46.67,
+  "expressions": [
+    "NEUTRAL",
+    "CONFIDENT",
+    "SMIRK",
+    "SERIOUS",
+    "INTIMIDATING",
+    "MOCKING"
+  ],
+  "gazeTargets": [
+    "INTERVIEWER",
+    "CAMERA",
+    "LEFT",
+    "RIGHT",
+    "CENTER"
+  ],
+  "console": [],
+  "blinkEvidence": "Open, 50%, closed inspection frames; manual 240ms blink triggered separately",
+  "rapidSwitch": {
+    "changes": 6,
+    "elapsedMilliseconds": 5320,
+    "finalExpression": "NEUTRAL"
+  },
+  "reload": "Live portrait"
+}

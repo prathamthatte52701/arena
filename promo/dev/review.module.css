@@ -1,0 +1,13 @@
+.review { padding:24px; background:#17151e; border:1px solid #4a3749; border-radius:12px; }
+.heading { color:#e0b18f; font-size:14px; font-weight:700; letter-spacing:.1em; margin:0 0 24px; }
+.heading span { display:block; color:#a79aa9; font-size:12px; margin-top:8px; letter-spacing:.06em; }
+.review fieldset { border:0; padding:0; margin:0 0 22px; }
+.review legend { font-size:12px; letter-spacing:.14em; color:#b4a7b9; margin-bottom:10px; }
+.buttons { display:flex; flex-wrap:wrap; gap:7px; }
+.review button { font-size:12px; padding:10px 12px; }
+.review button[aria-pressed=true] { background:#75354c; border-color:#cd889c; color:white; }
+.scrub { display:block; font-size:13px; margin-top:22px; color:#cabbc9; }
+.scrub span { float:right; }
+.scrub input { display:block; width:100%; margin:12px 0; accent-color:#d696a8; }
+.review .release { font-size:11px; padding:7px 10px; }
+.readout { font:12px/1.8 monospace; color:#b9a4b7; margin:20px 0 0; }
