@@ -4,7 +4,7 @@
 
 BASE COMMIT: `5c37c29f68e7a95e64f22ca1952e39f3a5678912`
 
-FINAL COMMIT: this completed main-branch commit; resolve with `git rev-parse HEAD`
+FINAL COMMIT: Phase 2.1 completed main-branch commit; resolve with `git rev-parse HEAD`
 
 TTS METHOD: local browser `window.speechSynthesis` with `SpeechSynthesisUtterance`.
 
@@ -14,9 +14,9 @@ EXACT TEXT: PASS — the delivered utterance is created from the authoritative t
 
 VISEMES: REST, MBP, FV, AE, O, L, WQ.
 
-TEXT → VISEME METHOD: pure deterministic phonetic approximation in `promo/speech/visemes.ts`, with stable rules for consonant families, vowels, and TH/SH/CH/PH/OO/EE/OU combinations. `promo/speech/textTimeline.ts` weights phonetic groups, words, and punctuation into bounded timeline segments.
+TEXT → VISEME METHOD: pure deterministic phonetic approximation in `promo/speech/visemes.ts`, with stable rules for consonant families, vowels, and TH/SH/CH/PH/OO/EE/OU combinations. `promo/speech/textTimeline.ts` weights phonetic groups and punctuation into bounded timeline segments; adjacent words co-articulate without inserted silent gaps.
 
-BOUNDARY EVENT SUPPORT: YES — word boundary events gently correct the fallback clock when a browser provides usable `charIndex` data.
+BOUNDARY EVENT SUPPORT: YES — usable word boundaries are monotonic forward anchors; they can move the visual clock immediately to the corresponding word and never rewind it.
 
 FALLBACK TIMELINE: YES — text analysis and timing are independent of boundary events and work when events are missing or unreliable.
 
@@ -36,9 +36,9 @@ PHASE 1 REGRESSION: PASS — existing face controller behavior remains intact; s
 
 OLD TESTS: 9/9
 
-NEW TESTS: 10/10
+NEW TESTS: 14/14
 
-TOTAL TESTS: 19/19
+TOTAL TESTS: 23/23
 
 TYPECHECK: PASS
 
@@ -50,11 +50,19 @@ LOCALHOST: PASS — dev and production-local `/` and `/promo-rhea` returned HTTP
 
 CONSOLE ERRORS: 0 persistent application errors after clean reload.
 
-SYNC QUALITY: QUALIFIED — deterministic articulation follows the estimated timeline convincingly; browser TTS duration and boundary behavior can introduce small timing drift, which is gently corrected when boundary events are available.
+SYNC QUALITY: QUALIFIED PASS — short and long real local SpeechSynthesis traces reached the final spoken words before COMPLETE. Long fallback timing is calibrated against the collected 23.11s audio trace, while boundary anchors remain authoritative when available.
 
 KNOWN LIMITATIONS: Web Speech voice inventories and boundary events vary by browser and operating system. The texture-deformation rig is intentionally restrained and visually plausible rather than a phoneme-perfect 3D facial model. The LIP-SYNC review and timeline debug readout are dev-only.
 
 REFERENCE FILES UNCHANGED: YES — `public/character-references/rhea/` SHA-256 hashes were recorded before implementation and rechecked after implementation.
+
+## Phase 2.1 long-promo drift repair
+
+The 306-character promo previously produced a 27.222s visual timeline while the real local voice completed in about 23.110s. The old timeline contained 44 ordinary inter-word REST gaps worth about 4.181s after scaling. Phase 2.1 removes those artificial gaps, retains punctuation REST, and applies a length-calibrated fallback estimate. The resulting long timeline is 23.109s.
+
+The monotonic speech clock stores the greatest elapsed position reached and a forward floor from each usable word boundary. Late or repeated boundary events cannot rewind the mouth. The committed [long-live-trace-v2.json](evidence/long-live-trace-v2.json) records all 56 real word boundaries and the final section `ready → for → the → challenge → when → the → lights → come → on → again → REST → COMPLETE`; the final word was reached at position 0.97 before COMPLETE.
+
+PHASE 2.1 TESTS: 23/23 automated tests, 10/10 rendered mouth ROI assertions, and 10/10 rendered speech integration assertions.
 
 ## Browser QA evidence
 
@@ -70,4 +78,3 @@ Local browser checks covered:
 - clean localhost reload with no persistent console errors.
 
 The production-local server was run on port 3001 for route verification; no cloud deployment was made.
-

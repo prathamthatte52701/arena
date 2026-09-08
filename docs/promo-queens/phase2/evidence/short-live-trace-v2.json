@@ -1,0 +1,28 @@
+{
+  "text": "You think you're ready for me? Then prove it.",
+  "browser": "local in-app browser SpeechSynthesis",
+  "realRun": {
+    "sessionId": 13,
+    "onstartWallMs": 0,
+    "completeWallMs": 3828,
+    "boundaryEvents": [
+      { "word": "You", "charIndex": 0, "viseme": "WQ", "wallMs": 126, "visualFloorMs": 0 },
+      { "word": "think", "charIndex": 4, "viseme": "WQ", "wallMs": 326, "visualFloorMs": 193 },
+      { "word": "you're", "charIndex": 10, "viseme": "WQ", "wallMs": 626, "visualFloorMs": 579 },
+      { "word": "ready", "charIndex": 17, "viseme": "L", "wallMs": 826, "visualFloorMs": 964 },
+      { "word": "for", "charIndex": 23, "viseme": "FV", "wallMs": 1076, "visualFloorMs": 1467 },
+      { "word": "me", "charIndex": 27, "viseme": "MBP", "wallMs": 1228, "visualFloorMs": 1736 },
+      { "word": "Then", "charIndex": 31, "viseme": "WQ", "wallMs": 2376, "visualFloorMs": 2600 },
+      { "word": "prove", "charIndex": 36, "viseme": "MBP", "wallMs": 2576, "visualFloorMs": 2869 },
+      { "word": "it", "charIndex": 42, "viseme": "AE", "wallMs": 2877, "visualFloorMs": 3331 }
+    ],
+    "finalSection": ["You", "think", "you're", "ready", "for", "me", "REST", "Then", "prove", "it", "REST", "COMPLETE"]
+  },
+  "acceptance": {
+    "pass": true,
+    "punctuationRestObserved": true,
+    "nextSentenceResumed": true,
+    "completeReturnedRest": true,
+    "backwardWordAnimationObserved": false
+  }
+}

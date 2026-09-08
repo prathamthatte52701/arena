@@ -4,6 +4,7 @@ import { REST_MOUTH, type MouthTarget, type Viseme } from '../face/mouth.ts';
 import { createVisemeTimeline, segmentAt, timelineDeformation, timelineDuration, type TimelineSegment } from '../speech/textTimeline.ts';
 import { DEFAULT_SPEECH_RATE } from '../speech/timing.ts';
 import { beginSpeechSession, createSpeechSessionState, invalidateSpeechSession, isCurrentSpeechSession } from '../speech/session.ts';
+import { advanceSpeechClock, applySpeechBoundaryAnchor, type SpeechClockState } from '../speech/clock.ts';
 
 export const SAMPLE_PROMO = "You really think you're ready for me? Then prove it.";
 export const SAMPLE_LIP_SYNC_PHRASE = 'Maybe we prove who really belongs here.';
@@ -16,13 +17,9 @@ export interface SpeechDebug {
   sessionId: number | null;
 }
 
-interface Runtime {
+interface Runtime extends SpeechClockState {
   id: number;
   timeline: TimelineSegment[];
-  startedAt: number;
-  offsetMs: number;
-  targetOffsetMs: number;
-  lastSampleAt: number;
   paused: boolean;
   pausedAt: number;
   started: boolean;
@@ -80,7 +77,7 @@ export function usePromoSpeech() {
     if (!remember) sessions.current.lastDeliveredText = previousLastDelivered;
     const timeline = createVisemeTimeline(source, DEFAULT_SPEECH_RATE);
     const startedAt = window.performance.now();
-    runtime.current = { id, timeline, startedAt, offsetMs: 0, targetOffsetMs: 0, lastSampleAt: startedAt, paused: false, pausedAt: 0, started: false };
+    runtime.current = { id, timeline, startedAt, offsetMs: 0, targetOffsetMs: 0, lastSampleAt: startedAt, lastElapsedMs: 0, floorElapsedMs: 0, paused: false, pausedAt: 0, started: false };
     const speech = new SpeechSynthesisUtterance(source);
     speech.rate = DEFAULT_SPEECH_RATE;
     speech.pitch = 0.72;
@@ -92,7 +89,10 @@ export function usePromoSpeech() {
       const now = window.performance.now();
       runtime.current.startedAt = now;
       runtime.current.lastSampleAt = now;
+      runtime.current.lastElapsedMs = 0;
+      runtime.current.floorElapsedMs = 0;
       runtime.current.started = true;
+      console.debug('[promo-speech] onstart', JSON.stringify({ sessionId: id, wallMs: now }));
       setStatus('SPEAKING');
     };
     speech.onpause = () => {
@@ -111,17 +111,22 @@ export function usePromoSpeech() {
     };
     speech.onboundary = event => {
       if (!isCurrentSpeechSession(sessions.current, id) || !runtime.current?.started || event.name !== 'word' || typeof event.charIndex !== 'number') return;
-      const wordStart = runtime.current.timeline.find(segment => segment.kind === 'articulation' && segment.charStart >= event.charIndex);
+      const matchingSegment = runtime.current.timeline.find(segment => segment.kind === 'articulation' && segment.charStart <= event.charIndex && event.charIndex < segment.charEnd);
+      const wordStart = matchingSegment
+        ? runtime.current.timeline.find(segment => segment.kind === 'articulation' && segment.charStart === matchingSegment.charStart)
+        : runtime.current.timeline.find(segment => segment.kind === 'articulation' && segment.charStart >= event.charIndex);
       if (!wordStart) return;
-      const elapsed = window.performance.now() - runtime.current.startedAt;
+      const now = window.performance.now();
       const limit = timelineDuration(runtime.current.timeline);
-      runtime.current.targetOffsetMs = Math.max(-limit, Math.min(limit, wordStart.startMs - elapsed));
+      applySpeechBoundaryAnchor(runtime.current, wordStart.startMs, now, limit);
+      console.debug('[promo-speech] boundary', JSON.stringify({ sessionId: id, name: event.name, charIndex: event.charIndex, wallMs: now, visualFloorMs: runtime.current.floorElapsedMs }));
     };
     speech.onend = () => {
       if (!isCurrentSpeechSession(sessions.current, id)) return;
       sessions.current.activeId = null;
       runtime.current = null;
       utterance.current = null;
+      console.debug('[promo-speech] onend', JSON.stringify({ sessionId: id, wallMs: window.performance.now() }));
       setStatus('COMPLETE');
       setDebug({ word: '—', viseme: 'REST', elapsedMs: 0, timelinePosition: 1, sessionId: id });
     };
@@ -153,13 +158,7 @@ export function usePromoSpeech() {
     const active = runtime.current;
     if (!active || !active.timeline.length || !isCurrentSpeechSession(sessions.current, active.id)) return { deformation: REST_MOUTH, immediate: true };
     if (!active.started || active.paused) return { deformation: REST_MOUTH, immediate: true };
-    const dt = Math.max(0, nowMs - active.lastSampleAt);
-    active.lastSampleAt = nowMs;
-    // Limit correction velocity: boundary events can slow/speed the clock,
-    // but must never make a word play backward or jump across a pause.
-    const correction = (active.targetOffsetMs - active.offsetMs) * (1 - Math.exp(-dt / 180));
-    active.offsetMs += Math.max(-dt * .35, Math.min(dt * .35, correction));
-    const elapsedMs = Math.max(0, nowMs - active.startedAt + active.offsetMs);
+    const elapsedMs = advanceSpeechClock(active, nowMs);
     const segment = segmentAt(active.timeline, elapsedMs);
     const duration = timelineDuration(active.timeline);
     if (debugEnabled && nowMs - debugLastUpdate.current >= 80) {

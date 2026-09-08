@@ -26,12 +26,10 @@ export function createVisemeTimeline(text: string, rate = DEFAULT_SPEECH_RATE): 
   const source = text.slice(0, 420);
   if (!source.trim()) return segments;
   let cursor = 0;
-  let previousWasWord = false;
   let match: RegExpExecArray | null;
   while ((match = TOKEN.exec(source))) {
     const token = match[0];
     const tokenStart = match.index;
-    if (previousWasWord) cursor = pushSegment(segments, cursor, 84 / Math.max(rate, 0.5), 'REST', '', tokenStart - 1, tokenStart, 'pause');
     if (/^[A-Za-z0-9]/.test(token)) {
       const groups = phoneticGroups(token);
       const unitWeight = 54 / Math.max(rate, 0.5);
@@ -41,18 +39,16 @@ export function createVisemeTimeline(text: string, rate = DEFAULT_SPEECH_RATE): 
         const weight = viseme === 'AE' || viseme === 'O' ? unitWeight * vowelHold : unitWeight;
         cursor = pushSegment(segments, cursor, weight, viseme, token, tokenStart, tokenStart + token.length, 'articulation');
       }
-      previousWasWord = true;
     } else {
       for (const mark of token) {
         cursor = pushSegment(segments, cursor, (PAUSE_MS[mark] ?? 180) / Math.max(rate, 0.5), 'REST', '', tokenStart, tokenStart + token.length, 'pause');
       }
-      previousWasWord = false;
     }
     TOKEN.lastIndex = tokenStart + token.length;
   }
   const expected = estimateSpeechDuration(source, rate);
   const duration = segments.at(-1)?.endMs ?? 0;
-  const scale = duration > 0 ? Math.min(1.25, Math.max(0.72, expected / duration)) : 1;
+  const scale = duration > 0 ? Math.min(1.35, Math.max(0.72, expected / duration)) : 1;
   const scaled = segments.map(segment => ({ ...segment, startMs: Math.round(segment.startMs * scale), endMs: Math.round(segment.endMs * scale) }));
   const boundedDuration = scaled.at(-1)?.endMs ?? 0;
   if (boundedDuration <= MAX_TIMELINE_MS) return scaled;

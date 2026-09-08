@@ -5,6 +5,7 @@ import { createVisemeTimeline, segmentAt, timelineDeformation, timelineDuration 
 import { phoneticGroups, visemeForGroup } from '../promo/speech/visemes.ts';
 import { MAX_TIMELINE_MS } from '../promo/speech/timing.ts';
 import { beginSpeechSession, createSpeechSessionState, invalidateSpeechSession, isCurrentSpeechSession, replayText } from '../promo/speech/session.ts';
+import { advanceSpeechClock, applySpeechBoundaryAnchor } from '../promo/speech/clock.ts';
 import { createFaceController } from '../promo/face/controller.ts';
 
 const faceDefaults = { expression: 'NEUTRAL', gaze: 'CENTER', idle: false, blinkRequest: 0, blinkPreview: null };
@@ -18,6 +19,46 @@ test('ordinary consonants and apostrophes never create silence inside words', ()
   const timeline = createVisemeTimeline("You think you're ready for me? Then prove it. T D N R S Z K G H J C X");
   assert.ok(timeline.filter(segment => segment.kind === 'articulation').every(segment => segment.viseme !== 'REST'));
   assert.equal(MOUTH_DEFORMATIONS.MBP.mouthOpen, 0);
+});
+
+test('adjacent words co-articulate without artificial long REST gaps', () => {
+  const phrase = 'Maybe people believe promises, but I believe in showing up.';
+  const timeline = createVisemeTimeline(phrase);
+  const artificialGaps = timeline.filter(segment => segment.kind === 'pause' && segment.charEnd === segment.charStart + 1 && phrase[segment.charStart] === ' ');
+  assert.equal(artificialGaps.length, 0);
+  assert.ok(timeline.some(segment => segment.kind === 'pause' && segment.endMs - segment.startMs >= 140));
+});
+
+test('speech clock is monotonic and boundary anchors move it forward immediately', () => {
+  const clock = { startedAt: 0, offsetMs: 0, targetOffsetMs: 0, lastSampleAt: 0, lastElapsedMs: 0, floorElapsedMs: 0 };
+  const beforeAnchor = advanceSpeechClock(clock, 100);
+  applySpeechBoundaryAnchor(clock, 900, 120, 2000);
+  const anchored = advanceSpeechClock(clock, 130);
+  const later = advanceSpeechClock(clock, 240);
+  assert.ok(anchored >= 900);
+  assert.ok(later >= anchored);
+  assert.ok(anchored >= beforeAnchor);
+});
+
+test('calibrated fallback reaches final words across short, medium, long and near-max inputs', () => {
+  const longPromo = "Maybe people believe promises, but I believe in showing up. Every time I enter this arena, I bring everything I have. You think you're ready for me? Then prove it. Fight for every victory, find your voice, and make every moment count. I will be here, ready for the challenge, when the lights come on again.";
+  const inputs = [
+    "You think you're ready for me? Then prove it.",
+    'Every fight starts with a choice, and I choose to stand tall when the room gets quiet.',
+    longPromo,
+    'a'.repeat(420),
+  ];
+  for (const text of inputs) {
+    const timeline = createVisemeTimeline(text);
+    assert.ok(timelineDuration(timeline) > 0);
+    assert.ok(segmentAt(timeline, timelineDuration(timeline) - 1)?.kind === 'articulation' || timeline.at(-1)?.kind === 'pause');
+  }
+  const finalWords = [];
+  for (const segment of createVisemeTimeline(longPromo).filter(segment => segment.kind === 'articulation')) {
+    if (finalWords.at(-1) !== segment.word) finalWords.push(segment.word);
+  }
+  const finalSection = finalWords.slice(finalWords.lastIndexOf('ready'));
+  assert.deepEqual(finalSection, ['ready', 'for', 'the', 'challenge', 'when', 'the', 'lights', 'come', 'on', 'again']);
 });
 
 test('phonetic groups map plosives, FV, vowels and combinations to the seven stable states', () => {
