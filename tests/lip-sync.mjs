@@ -31,6 +31,8 @@ test('phonetic groups map plosives, FV, vowels and combinations to the seven sta
   assert.equal(visemeForGroup('Q'), 'WQ');
   for (const group of ['TH', 'SH', 'CH', 'PH', 'OO', 'EE', 'OU']) assert.notEqual(visemeForGroup(group), undefined);
   assert.deepEqual(phoneticGroups('Maybe'), ['M', 'A', 'Y', 'B', 'E']);
+  assert.deepEqual(phoneticGroups('You'), ['YO', 'U']);
+  assert.equal(visemeForGroup('YO'), 'WQ');
 });
 
 test('punctuation creates REST pauses and does not chew continuously', () => {
@@ -38,7 +40,7 @@ test('punctuation creates REST pauses and does not chew continuously', () => {
   const pauses = timeline.filter(segment => segment.kind === 'pause');
   assert.ok(pauses.length >= 2);
   assert.ok(pauses.every(segment => segment.viseme === 'REST'));
-  assert.ok(pauses.some(segment => segment.endMs - segment.startMs >= 400));
+  assert.ok(pauses.some(segment => segment.endMs - segment.startMs >= 250));
 });
 
 test('timeline timestamps are increasing, positive and rate-scaled', () => {

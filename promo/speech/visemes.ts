@@ -8,6 +8,7 @@ const DIGRAPH_TO_VISEME: Record<string, Viseme> = {
   OO: 'O',
   EE: 'AE',
   OU: 'O',
+  YO: 'WQ',
 };
 
 export function visemeForGroup(group: string): Viseme {

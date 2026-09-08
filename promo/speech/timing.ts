@@ -7,7 +7,6 @@ export function estimateSpeechDuration(text: string, rate = DEFAULT_SPEECH_RATE)
   if (!characters) return 0;
   const words = text.match(/[A-Za-z0-9]+(?:['’-][A-Za-z0-9]+)*/g)?.length ?? 0;
   const punctuation = text.match(/[,;:.!?…]/g)?.length ?? 0;
-  const base = characters * 58 + words * 96 + punctuation * 160;
+  const base = characters * 38 + words * 60 + punctuation * 170;
   return Math.min(MAX_TIMELINE_MS, Math.max(260, Math.round(base / normalizedRate)));
 }
-
