@@ -20,6 +20,8 @@
 .description { max-width:330px; font-size:16px; color:#a699aa; line-height:1.65; }
 .panel { padding:24px; background:#111119; border:1px solid #302a3b; border-radius:12px; }
 .panel label { display:block; font-size:12px; letter-spacing:.15em; color:#b9a9ab; }
+.panel .toneLabel { margin-top:16px; }
+.panel select { width:100%; margin-top:8px; background:#0a0a10; border:1px solid #454050; color:#fff; border-radius:6px; padding:11px 12px; font-size:14px; }
 .panel textarea { width:100%; margin-top:12px; background:#0a0a10; border:1px solid #454050; color:#fff; border-radius:6px; padding:14px; min-height:122px; resize:vertical; font-size:16px; line-height:1.5; }
 .actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:18px; }
 .actions button { font-size:12px; }

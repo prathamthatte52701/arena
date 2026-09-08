@@ -4,7 +4,7 @@
 
 BASE COMMIT: `5c37c29f68e7a95e64f22ca1952e39f3a5678912`
 
-FINAL COMMIT: Phase 2.1 completed main-branch commit; resolve with `git rev-parse HEAD`
+FINAL COMMIT: Phase 3 completed main-branch commit; resolve with `git rev-parse HEAD`
 
 TTS METHOD: local browser `window.speechSynthesis` with `SpeechSynthesisUtterance`.
 
@@ -34,11 +34,11 @@ STALE SESSION PROTECTION: PASS — monotonically increasing session IDs guard en
 
 PHASE 1 REGRESSION: PASS — existing face controller behavior remains intact; speech is an added mouth channel.
 
-OLD TESTS: 9/9
+OLD TESTS: 23/23
 
-NEW TESTS: 14/14
+PHASE 3 TESTS: 15/15
 
-TOTAL TESTS: 23/23
+TOTAL TESTS: 38/38
 
 TYPECHECK: PASS
 
@@ -50,7 +50,7 @@ LOCALHOST: PASS — dev and production-local `/` and `/promo-rhea` returned HTTP
 
 CONSOLE ERRORS: 0 persistent application errors after clean reload.
 
-SYNC QUALITY: QUALIFIED PASS — short and long real local SpeechSynthesis traces reached the final spoken words before COMPLETE. Long fallback timing is calibrated against the collected 23.11s audio trace, while boundary anchors remain authoritative when available.
+SYNC QUALITY: QUALIFIED PASS — short and long real local SpeechSynthesis traces reached the final spoken words before COMPLETE. Long fallback timing is calibrated against the collected 23.11s audio trace, while boundary anchors remain authoritative when available. Browser speech variance is recorded rather than hidden.
 
 KNOWN LIMITATIONS: Web Speech voice inventories and boundary events vary by browser and operating system. The texture-deformation rig is intentionally restrained and visually plausible rather than a phoneme-perfect 3D facial model. The LIP-SYNC review and timeline debug readout are dev-only.
 
@@ -78,3 +78,19 @@ Local browser checks covered:
 - clean localhost reload with no persistent console errors.
 
 The production-local server was run on port 3001 for route verification; no cloud deployment was made.
+
+## Phase 3 deterministic performance director
+
+Phase 3 adds a pure text-and-tone performance timeline in `promo/performance/timeline.ts`. The normal promo screen exposes the dev-safe tone selector `AUTO`, `CONFIDENT`, `COLD`, `MOCKING`, `ANGRY`, `INTIMIDATING`, and `SMIRKING`. Each delivered script creates one authoritative beat timeline from sentence boundaries and meaningful punctuation; no external AI, randomness, or second animation timer is used.
+
+Each beat selects one existing expression and gaze, a bounded intensity, and a small head bias that is added to the existing idle drift. Questions and challenges move toward CAMERA, mocking favors INTERVIEWER or a slight RIGHT glance, confident delivery uses CENTER, and the final beat uses CAMERA. The final beat is held for 1.7s after `onend` while the mouth is already REST; STOP clears both speech and performance state.
+
+The dev-only TIMELINE DEBUG readout now records sentence, beat, expression, gaze, intensity, head bias, speech position, and final-hold state. Performance sampling is derived from the same speech clock and session guard as the mouth timeline, so punctuation REST, stale callbacks, replay, and boundary anchors cannot create a second clock or rewind a beat.
+
+PHASE 3 TESTS: 15/15 deterministic and behavioral performance tests; all Phase 1 and Phase 2.1 tests remain green for 38/38 total.
+
+## Phase 3 browser QA evidence
+
+The committed [phase3-performance-qa.json](evidence/phase3-performance-qa.json) records localhost browser traces for Script A and the 306-character multi-sentence promo with AUTO, CONFIDENT, MOCKING, and INTIMIDATING. The real traces observed `SPEAKING` after `onstart`, visible visemes after start, sentence/beat changes, punctuation REST, final-word progression, `COMPLETE` with mouth REST, and a CAMERA final hold. Close and MEDIUM framing were inspected through DEV REVIEW; all seven lip states remained localized to the mouth/lower-face region, with nose, piercings, eyes, and outer cheeks stable.
+
+The visual result is a PASS for human-visible mouth opening and shaping on the normal promo screen. Timing is QUALIFIED because browser-installed voices can vary in boundary delivery and utterance duration; the implementation keeps the visual clock monotonic and records the observed variance.

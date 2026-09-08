@@ -1,0 +1,39 @@
+{
+  "phase": "3",
+  "date": "2026-09-09",
+  "route": "http://127.0.0.1:3000/promo-rhea",
+  "browser": "Codex In-app Browser",
+  "speech": "window.speechSynthesis",
+  "scripts": {
+    "A": {
+      "text": "You think you're ready for me? Then prove it.",
+      "tones": {
+        "AUTO": {
+          "start": "SPEAKING/session 5; first sampled articulation after start",
+          "question": "REST pause observed after me?",
+          "resume": "Then beat 1 / INTIMIDATING / CAMERA",
+          "end": "COMPLETE / REST / finalHold YES"
+        },
+        "CONFIDENT": "completed with deterministic beat trace and final CAMERA hold",
+        "MOCKING": "completed with deterministic beat trace and final CAMERA hold",
+        "INTIMIDATING": "completed with deterministic beat trace and final CAMERA hold"
+      }
+    },
+    "B": {
+      "textLength": 306,
+      "tones": {
+        "AUTO": "completed; beats 0, 2, and 5 observed; final word reached before COMPLETE",
+        "CONFIDENT": "completed; confidence beat and final CAMERA hold observed",
+        "MOCKING": "completed; RIGHT mocking glance and final CAMERA hold observed",
+        "INTIMIDATING": "completed; challenge beat CAMERA and final CAMERA hold observed"
+      }
+    }
+  },
+  "visualStates": {
+    "framing": ["CLOSE", "MEDIUM"],
+    "states": ["REST", "MBP", "FV", "AE", "O", "L", "WQ"],
+    "result": "PASS: AE open, O/WQ round-open, MBP compressed/closed, FV and L distinct; deformation stayed local to mouth/lower-face"
+  },
+  "console": "No persistent application console errors observed",
+  "timingVerdict": "QUALIFIED: monotonic speech clock; browser voice duration/boundary variance remains possible"
+}

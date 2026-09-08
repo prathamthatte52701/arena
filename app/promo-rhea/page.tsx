@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { RheaPortraitRig } from '../../promo/character/RheaPortraitRig';
 import { RheaFaceReview } from '../../promo/dev/RheaFaceReview';
 import { SAMPLE_LIP_SYNC_PHRASE, usePromoSpeech } from '../../promo/performance/usePromoSpeech';
-import type { FaceControls, Framing } from '../../promo/performance/types';
+import type { FaceControls, Framing, Tone } from '../../promo/performance/types';
 import styles from './promo.module.css';
 
 export default function PromoRhea() {
@@ -20,7 +20,7 @@ export default function PromoRhea() {
     </header>
     <section className={styles.stage}>
       <div className={styles.set}>
-        <RheaPortraitRig controls={controls} framing={framing} sampleMouth={speech.sampleMouth} />
+        <RheaPortraitRig controls={controls} framing={framing} sampleMouth={speech.sampleMouth} samplePerformance={speech.samplePerformance} />
         <div className={styles.topline}><span>BACKSTAGE / 01</span><span className={styles.live}>● LIVE</span></div>
         <div className={styles.nameplate}><p>THE INTERVIEW</p><h1>RHEA</h1><span>{controls.expression} / {controls.gaze}</span></div>
       </div>
@@ -29,6 +29,10 @@ export default function PromoRhea() {
           <div className={styles.prompt}><p className={styles.kicker}>RHEA / BACKSTAGE INTERVIEW</p><h2>Say it to her face.</h2><p className={styles.question}>“What&apos;s next for you?”</p><p className={styles.description}>The room goes quiet. She waits for your next words.</p></div>}
         <section className={styles.panel} aria-label="Promo dialogue">
           <label htmlFor="promo-text">YOUR PROMO</label>
+          <label className={styles.toneLabel} htmlFor="promo-tone">PERFORMANCE TONE</label>
+          <select id="promo-tone" aria-label="Performance tone" value={speech.tone} onChange={event => speech.setTone(event.target.value as Tone)}>
+            {(['AUTO', 'CONFIDENT', 'COLD', 'MOCKING', 'ANGRY', 'INTIMIDATING', 'SMIRKING'] as Tone[]).map(option => <option key={option} value={option}>{option}</option>)}
+          </select>
           <textarea id="promo-text" value={speech.text} onChange={event => speech.setText(event.target.value)} maxLength={420} />
           <div className={styles.actions}>
             <button className={styles.primary} onClick={() => { setControls(current => ({ ...current, mouthPreview: null })); speech.deliver(); }}>DELIVER PROMO</button>

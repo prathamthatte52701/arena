@@ -42,7 +42,7 @@ export function RheaFaceReview({ controls, setControls, framing, setFraming, onS
       <button onClick={onSamplePhrase}>SAMPLE PHRASE</button>
     </div></fieldset>
     <label className={styles.debugToggle}><input type="checkbox" checked={debugEnabled} onChange={event => setDebugEnabled(event.target.checked)} /> TIMELINE DEBUG</label>
-    {debugEnabled && <p className={styles.debug} data-testid="timeline-debug">WORD {debug.word}<br />VISEME {debug.viseme}<br />ELAPSED {debug.elapsedMs}MS · POS {debug.timelinePosition.toFixed(2)}<br />SESSION {debug.sessionId ?? '—'}</p>}
+    {debugEnabled && <p className={styles.debug} data-testid="timeline-debug">WORD {debug.word}<br />VISEME {debug.viseme}<br />ELAPSED {debug.elapsedMs}MS · POS {debug.timelinePosition.toFixed(2)}<br />SENTENCE {debug.sentence}<br />BEAT {debug.beatIndex ?? '—'} · {debug.expression} · {debug.gaze}<br />INTENSITY {debug.intensity.toFixed(2)} · HEAD {debug.headBias.x.toFixed(2)},{debug.headBias.y.toFixed(2)}<br />FINAL HOLD {debug.finalHold ? 'YES' : 'NO'}<br />SESSION {debug.sessionId ?? '—'}</p>}
     <p className={styles.readout}>{controls.expression} · {controls.gaze} · {framing}<br />Original portrait · bounded region motion · deterministic lip-sync</p>
   </section>;
 }

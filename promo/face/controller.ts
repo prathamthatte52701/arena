@@ -67,15 +67,21 @@ export function createFaceController(random: () => number = Math.random) {
           breathPeriod = 3.8 + random() * 1.9;
         }
       }
-      const target = GAZE_POINTS[controls.gaze];
+      const performance = controls.performance;
+      const intensity = Math.max(0, Math.min(1, performance?.intensity ?? 1));
+      const expression = performance?.expression ?? controls.expression;
+      const gazeName = performance?.gaze ?? controls.gaze;
+      const basePose = POSES[expression];
+      const targetPose = performance ? Object.fromEntries(Object.entries(basePose).map(([key, value]) => [key, value * intensity])) as unknown as FacePose : basePose;
+      const target = GAZE_POINTS[gazeName];
       const targetMouth = controls.mouthPreview ? { deformation: deformationForViseme(controls.mouthPreview), immediate: true } : mouthTarget;
       frame = {
-        pose: blendPose(frame.pose, POSES[controls.expression], dt),
+        pose: blendPose(frame.pose, targetPose, dt),
         gazeX: follow(frame.gazeX, target.x + (controls.idle && now < glanceEnd ? glance : 0), dt, 0.065),
         gazeY: follow(frame.gazeY, target.y, dt, 0.085),
         blink: controls.blinkPreview === null ? blinkClosure(now - blinkStart) : Math.min(1, Math.max(0, controls.blinkPreview)),
-        headX: follow(frame.headX, controls.idle ? driftX : 0, dt, 0.9),
-        headY: follow(frame.headY, controls.idle ? driftY : 0, dt, 1.1),
+        headX: follow(frame.headX, (controls.idle ? driftX : 0) + (performance?.headBias.x ?? 0) * intensity, dt, 0.9),
+        headY: follow(frame.headY, (controls.idle ? driftY : 0) + (performance?.headBias.y ?? 0) * intensity, dt, 1.1),
         breath: follow(frame.breath, controls.idle ? Math.sin(breathPhase) * 1.7 : 0, dt, 0.4),
         mouth: targetMouth.immediate ? { ...targetMouth.deformation } : blendMouth(frame.mouth, targetMouth.deformation, dt),
       };

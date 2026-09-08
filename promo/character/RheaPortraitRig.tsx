@@ -2,19 +2,22 @@
 /* oxlint-disable jsx-a11y/prefer-tag-over-role -- The canvas itself is the live image; img cannot render animated texture coordinates. */
 import { useEffect, useRef, useState } from 'react';
 import type { FaceControls, Framing } from '../performance/types';
+import type { PerformanceTarget } from '../performance/types';
 import { createFaceController } from '../face/controller';
 import { createPortraitRenderer } from './portraitRenderer';
 import { rheaProfile } from './rheaProfile';
 import type { MouthTarget } from '../face/mouth.ts';
 import styles from './rig.module.css';
 
-export function RheaPortraitRig({ controls, framing, sampleMouth }: { controls: FaceControls; framing: Framing; sampleMouth: (nowMs: number) => MouthTarget }) {
+export function RheaPortraitRig({ controls, framing, sampleMouth, samplePerformance }: { controls: FaceControls; framing: Framing; sampleMouth: (nowMs: number) => MouthTarget; samplePerformance: (nowMs: number) => PerformanceTarget | null }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const controlsRef = useRef(controls);
   const sampleMouthRef = useRef(sampleMouth);
+  const samplePerformanceRef = useRef(samplePerformance);
   const [status, setStatus] = useState('Loading portrait');
   useEffect(() => { controlsRef.current = controls; }, [controls]);
   useEffect(() => { sampleMouthRef.current = sampleMouth; }, [sampleMouth]);
+  useEffect(() => { samplePerformanceRef.current = samplePerformance; }, [samplePerformance]);
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -34,7 +37,10 @@ export function RheaPortraitRig({ controls, framing, sampleMouth }: { controls: 
         const animate = (timestamp: number) => {
           if (disposed) return;
           const settings = controlsRef.current;
-          if (!document.hidden) renderer?.draw(controller.update(timestamp / 1000, { ...settings, idle: settings.idle && !reducedMotion.matches }, sampleMouthRef.current(timestamp)));
+          if (!document.hidden) {
+            const performance = samplePerformanceRef.current(timestamp);
+            renderer?.draw(controller.update(timestamp / 1000, { ...settings, idle: settings.idle && !reducedMotion.matches, performance }, sampleMouthRef.current(timestamp)));
+          }
           raf = window.requestAnimationFrame(animate);
         };
         raf = window.requestAnimationFrame(animate);
