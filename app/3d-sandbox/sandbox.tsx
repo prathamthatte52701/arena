@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { developmentHumanoid } from '../../game3d/assets/contract';
+import { rheaStage1 } from '../../game3d/assets/contract';
 import { emptySnapshot, type DebugSnapshot } from '../../game3d/debug/metrics';
 import DebugPanel from '../../game3d/debug/panel';
 import styles from './sandbox.module.css';
@@ -21,7 +21,7 @@ export default function Sandbox() {
     // Three/WebGL initialize only in the browser and never in the legacy route.
     void import('../../game3d/core/runtime').then(({ SandboxRuntime }) => {
       if (disposed) return;
-      const asset = { ...developmentHumanoid };
+      const asset = { ...rheaStage1 };
       // Explicit development-only failure injection for repeatable asset-error QA.
       if (process.env.NODE_ENV !== 'production' && new URLSearchParams(window.location.search).get('assetError') === '1') asset.modelPath = '/models/development/missing.glb';
       runtime = new SandboxRuntime(surface, asset, {

@@ -1,5 +1,5 @@
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { Group, Mesh, SkinnedMesh, type Object3D, type AnimationClip } from 'three';
+import { CapsuleGeometry, Group, Mesh, MeshStandardMaterial, SkinnedMesh, type Object3D, type AnimationClip } from 'three';
 import type { CharacterAsset } from '../assets/contract';
 import { CharacterAnimation } from '../animation/controller';
 
@@ -39,6 +39,13 @@ export async function loadCharacter(asset: CharacterAsset, signal: AbortSignal) 
     gltf.scene.scale.setScalar(asset.scale); gltf.scene.rotation.y = asset.rotationOffset;
     gltf.scene.traverse(object => { if (object instanceof Mesh) { object.castShadow = true; object.receiveShadow = true; object.frustumCulled = false; } });
     root.add(gltf.scene);
+    if (asset.appearance) {
+      const { skinColor, outfitColor, accentColor, hairColor, bodyScale } = asset.appearance;
+      gltf.scene.scale.set(asset.scale * (bodyScale?.[0] ?? 1), asset.scale * (bodyScale?.[1] ?? 1), asset.scale * (bodyScale?.[2] ?? 1));
+      gltf.scene.traverse(object => { if (object instanceof Mesh) { const materials = Array.isArray(object.material) ? object.material : [object.material]; for (const material of materials) { const name = material.name.toLowerCase(); if (name.includes('skin') || name.includes('body')) material.color.setHex(skinColor); else material.color.setHex(outfitColor); } } });
+      const hair = new Mesh(new CapsuleGeometry(.23, .7, 6, 12), new MeshStandardMaterial({ color: hairColor, roughness: .55 })); hair.name = 'RheaHairGeometry'; hair.position.set(0, 1.48, -.08); hair.scale.set(1.25, 1.35, .65); hair.castShadow = true; root.add(hair);
+      const chest = new Mesh(new CapsuleGeometry(.31, .46, 6, 12), new MeshStandardMaterial({ color: accentColor, roughness: .4, metalness: .15 })); chest.name = 'RheaMatchAttireGeometry'; chest.position.set(0, 1.03, .08); chest.rotation.z = Math.PI / 2; chest.scale.set(1.15, .55, .9); chest.castShadow = true; root.add(chest);
+    }
     const animation = new CharacterAnimation(gltf.scene, gltf.animations, asset.animations);
     return { root, animation, stats, dispose() { animation.dispose(); disposeObject(gltf.scene); } };
   } catch (error) { disposeObject(gltf.scene); throw error; }

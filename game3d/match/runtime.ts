@@ -1,5 +1,5 @@
 import { ACESFilmicToneMapping, DirectionalLight, PerspectiveCamera, PCFShadowMap, WebGLRenderer } from 'three';
-import { developmentHumanoid } from '../assets/contract';
+import { developmentHumanoid, rheaStage1 } from '../assets/contract';
 import { loadCharacter, disposeObject } from '../character/adapter';
 import { FollowCamera } from '../camera/follow';
 import { FixedClock } from '../core/movement';
@@ -62,7 +62,7 @@ export class MatchRuntime {
   }
   private async load() {
     try {
-      const [player, cpu] = await Promise.all([loadCharacter(developmentHumanoid, this.abort.signal), loadCharacter(developmentHumanoid, this.abort.signal)]);
+      const [player, cpu] = await Promise.all([loadCharacter(rheaStage1, this.abort.signal), loadCharacter(developmentHumanoid, this.abort.signal)]);
       if (this.disposed) { player.dispose(); cpu.dispose(); return; }
       if (this.qaMomentum) this.combat.player.momentum = 100;
       clearTimeout(this.timeout); this.playerCharacter = player; this.cpuCharacter = cpu; this.world.scene.add(player.root, cpu.root); this.callbacks.ready();
