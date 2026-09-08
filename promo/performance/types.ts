@@ -1,6 +1,7 @@
 export type Expression = 'NEUTRAL' | 'CONFIDENT' | 'SMIRK' | 'SERIOUS' | 'INTIMIDATING' | 'MOCKING';
 export type Gaze = 'INTERVIEWER' | 'CAMERA' | 'LEFT' | 'RIGHT' | 'CENTER';
 export type Framing = 'MEDIUM' | 'CLOSE';
+import type { Viseme } from '../face/mouth.ts';
 export interface FacePose {
   head: number;
   chin: number;
@@ -16,4 +17,5 @@ export interface FaceControls {
   idle: boolean;
   blinkRequest: number;
   blinkPreview: number | null;
+  mouthPreview?: Viseme | null;
 }

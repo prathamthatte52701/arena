@@ -2,6 +2,7 @@ import type { FaceControls, FacePose } from '../performance/types';
 import { blendPose, follow, POSES } from './expressions.ts';
 import { BLINK_DURATION, blinkClosure, nextBlinkDelay } from './blink.ts';
 import { GAZE_POINTS } from './gaze.ts';
+import { blendMouth, deformationForViseme, REST_MOUTH, type MouthDeformation, type MouthTarget } from './mouth.ts';
 
 export interface FaceFrame {
   pose: FacePose;
@@ -11,6 +12,7 @@ export interface FaceFrame {
   headX: number;
   headY: number;
   breath: number;
+  mouth: MouthDeformation;
 }
 
 // Clock and RNG are injected: no React dependency, timers or hidden globals.
@@ -28,10 +30,10 @@ export function createFaceController(random: () => number = Math.random) {
   let driftY = 0;
   let breathPhase = 0;
   let breathPeriod = 4.3;
-  let frame: FaceFrame = { pose: { ...POSES.NEUTRAL }, gazeX: 0, gazeY: 0, blink: 0, headX: 0, headY: 0, breath: 0 };
+  let frame: FaceFrame = { pose: { ...POSES.NEUTRAL }, gazeX: 0, gazeY: 0, blink: 0, headX: 0, headY: 0, breath: 0, mouth: { ...REST_MOUTH } };
 
   return {
-    update(now: number, controls: FaceControls): FaceFrame {
+    update(now: number, controls: FaceControls, mouthTarget: MouthTarget = { deformation: REST_MOUTH }): FaceFrame {
       const dt = previous === null ? 0 : Math.min(0.05, Math.max(0, now - previous));
       previous = now;
       if (controls.idle && !idleWasOn) {
@@ -66,6 +68,7 @@ export function createFaceController(random: () => number = Math.random) {
         }
       }
       const target = GAZE_POINTS[controls.gaze];
+      const targetMouth = controls.mouthPreview ? { deformation: deformationForViseme(controls.mouthPreview), immediate: true } : mouthTarget;
       frame = {
         pose: blendPose(frame.pose, POSES[controls.expression], dt),
         gazeX: follow(frame.gazeX, target.x + (controls.idle && now < glanceEnd ? glance : 0), dt, 0.065),
@@ -74,6 +77,7 @@ export function createFaceController(random: () => number = Math.random) {
         headX: follow(frame.headX, controls.idle ? driftX : 0, dt, 0.9),
         headY: follow(frame.headY, controls.idle ? driftY : 0, dt, 1.1),
         breath: follow(frame.breath, controls.idle ? Math.sin(breathPhase) * 1.7 : 0, dt, 0.4),
+        mouth: targetMouth.immediate ? { ...targetMouth.deformation } : blendMouth(frame.mouth, targetMouth.deformation, dt),
       };
       return { ...frame, pose: { ...frame.pose } };
     },

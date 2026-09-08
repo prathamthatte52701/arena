@@ -21,6 +21,8 @@ uniform vec2 gaze;
 uniform vec4 pose; // head angle, chin, brow, squint
 uniform vec4 life; // head drift x/y, breath, posture
 uniform vec3 expression; // smile, asymmetry, blink
+uniform vec4 mouth; // open, width, compression, round
+uniform vec3 mouthDetail; // lower lip, jaw drop, corner pull
 
 float region(vec2 p, vec2 center, vec2 radius) {
   vec2 d = (p-center)/radius;
@@ -64,6 +66,20 @@ void main() {
   // A closed-mouth smile is asymmetric at the corners, limited to a few pixels.
   p.y += expression.x*(1.-expression.y*.65)*region(p,vec2(302.,546.),vec2(39.,34.));
   p.y += expression.x*(1.+expression.y*.55)*region(p,vec2(423.,546.),vec2(36.,34.));
+  // Localized mouth/jaw deformation. The original portrait remains the only texture;
+  // no overlay is composited and the head/neck are not scaled.
+  vec2 mouthCenter = vec2(365.,548.);
+  float mouthArea = region(p, mouthCenter, vec2(142.,92.));
+  float lowerFace = region(p, vec2(365.,592.), vec2(152.,100.));
+  float mouthX = p.x - mouthCenter.x;
+  mouthX /= 1. + mouth.y * .055 * mouthArea;
+  p.x = mouthCenter.x + mouthX;
+  p.y += mouth.x * 5.5 * mouthArea;
+  p.y -= mouth.z * 2.3 * mouthArea;
+  p.y += mouthDetail.y * 6.5 * lowerFace;
+  p.y -= mouthDetail.x * 3.2 * region(p, vec2(365.,575.), vec2(118.,75.));
+  p.x += mouthDetail.z * 2.4 * (p.x < mouthCenter.x ? -mouthArea : mouthArea);
+  p = mouthCenter + (p - mouthCenter) / (1. + mouth.w * .035 * mouthArea);
   p = eye(p,eyeA);
   p = eye(p,eyeB);
   gl_FragColor = texture2D(portrait,clamp(p/size,vec2(.001),vec2(.999)));
@@ -108,6 +124,7 @@ export function createPortraitRenderer(canvas: HTMLCanvasElement, image: HTMLIma
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
   const uniform = (name: string) => gl.getUniformLocation(program, name);
   const gaze = uniform('gaze'), pose = uniform('pose'), life = uniform('life'), expression = uniform('expression');
+  const mouth = uniform('mouth'), mouthDetail = uniform('mouthDetail');
   gl.uniform1i(uniform('portrait'), 0);
   gl.uniform2f(uniform('size'), rheaProfile.width, rheaProfile.height);
   gl.uniform2f(uniform('eyeA'), rheaProfile.eyes[0].x, rheaProfile.eyes[0].y);
@@ -119,6 +136,8 @@ export function createPortraitRenderer(canvas: HTMLCanvasElement, image: HTMLIma
       gl.uniform4f(pose, frame.pose.head, frame.pose.chin, frame.pose.brow, frame.pose.squint);
       gl.uniform4f(life, frame.headX, frame.headY, frame.breath, frame.pose.posture);
       gl.uniform3f(expression, frame.pose.smile, frame.pose.asymmetry, frame.blink);
+      gl.uniform4f(mouth, frame.mouth.mouthOpen, frame.mouth.mouthWidth, frame.mouth.lipCompress, frame.mouth.lipRound);
+      gl.uniform3f(mouthDetail, frame.mouth.lowerLip, frame.mouth.jawDrop, frame.mouth.cornerPull);
       gl.drawArrays(gl.TRIANGLES, 0, 6);
     },
     dispose() {

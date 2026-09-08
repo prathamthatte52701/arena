@@ -3,12 +3,12 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { RheaPortraitRig } from '../../promo/character/RheaPortraitRig';
 import { RheaFaceReview } from '../../promo/dev/RheaFaceReview';
-import { usePromoSpeech } from '../../promo/performance/usePromoSpeech';
+import { SAMPLE_LIP_SYNC_PHRASE, usePromoSpeech } from '../../promo/performance/usePromoSpeech';
 import type { FaceControls, Framing } from '../../promo/performance/types';
 import styles from './promo.module.css';
 
 export default function PromoRhea() {
-  const [controls, setControls] = useState<FaceControls>({ expression: 'NEUTRAL', gaze: 'INTERVIEWER', idle: true, blinkRequest: 0, blinkPreview: null });
+  const [controls, setControls] = useState<FaceControls>({ expression: 'NEUTRAL', gaze: 'INTERVIEWER', idle: true, blinkRequest: 0, blinkPreview: null, mouthPreview: null });
   const [framing, setFraming] = useState<Framing>('MEDIUM');
   const [review, setReview] = useState(false);
   const speech = usePromoSpeech();
@@ -20,12 +20,12 @@ export default function PromoRhea() {
     </header>
     <section className={styles.stage}>
       <div className={styles.set}>
-        <RheaPortraitRig controls={controls} framing={framing} />
+        <RheaPortraitRig controls={controls} framing={framing} sampleMouth={speech.sampleMouth} />
         <div className={styles.topline}><span>BACKSTAGE / 01</span><span className={styles.live}>● LIVE</span></div>
         <div className={styles.nameplate}><p>THE INTERVIEW</p><h1>RHEA</h1><span>{controls.expression} / {controls.gaze}</span></div>
       </div>
       <aside className={styles.side}>
-        {review ? <RheaFaceReview controls={controls} setControls={setControls} framing={framing} setFraming={setFraming} /> :
+        {review ? <RheaFaceReview controls={controls} setControls={setControls} framing={framing} setFraming={setFraming} onStopSpeech={speech.stop} onSamplePhrase={() => { setControls(current => ({ ...current, mouthPreview: null })); speech.speakPreview(SAMPLE_LIP_SYNC_PHRASE); }} debugEnabled={speech.debugEnabled} setDebugEnabled={speech.setDebugEnabled} debug={speech.debug} /> :
           <div className={styles.prompt}><p className={styles.kicker}>RHEA / BACKSTAGE INTERVIEW</p><h2>Say it to her face.</h2><p className={styles.question}>“What&apos;s next for you?”</p><p className={styles.description}>The room goes quiet. She waits for your next words.</p></div>}
         <section className={styles.panel} aria-label="Promo dialogue">
           <label htmlFor="promo-text">YOUR PROMO</label>
@@ -33,10 +33,10 @@ export default function PromoRhea() {
           <div className={styles.actions}>
             <button className={styles.primary} onClick={speech.deliver}>DELIVER PROMO</button>
             <button onClick={speech.stop}>STOP</button>
-            <button onClick={speech.deliver}>REPLAY</button>
+            <button onClick={speech.replay}>REPLAY</button>
           </div>
           <output className={styles.status}>{speech.status}</output>
-          <p className={styles.note}>Local speech prototype · face articulation at rest</p>
+          <p className={styles.note}>Local synthetic speech · deterministic mouth timeline · last delivered promo replays exactly</p>
         </section>
       </aside>
     </section>

@@ -5,13 +5,16 @@ import type { FaceControls, Framing } from '../performance/types';
 import { createFaceController } from '../face/controller';
 import { createPortraitRenderer } from './portraitRenderer';
 import { rheaProfile } from './rheaProfile';
+import type { MouthTarget } from '../face/mouth.ts';
 import styles from './rig.module.css';
 
-export function RheaPortraitRig({ controls, framing }: { controls: FaceControls; framing: Framing }) {
+export function RheaPortraitRig({ controls, framing, sampleMouth }: { controls: FaceControls; framing: Framing; sampleMouth: (nowMs: number) => MouthTarget }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const controlsRef = useRef(controls);
+  const sampleMouthRef = useRef(sampleMouth);
   const [status, setStatus] = useState('Loading portrait');
   useEffect(() => { controlsRef.current = controls; }, [controls]);
+  useEffect(() => { sampleMouthRef.current = sampleMouth; }, [sampleMouth]);
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -31,7 +34,7 @@ export function RheaPortraitRig({ controls, framing }: { controls: FaceControls;
         const animate = (timestamp: number) => {
           if (disposed) return;
           const settings = controlsRef.current;
-          if (!document.hidden) renderer?.draw(controller.update(timestamp / 1000, { ...settings, idle: settings.idle && !reducedMotion.matches }));
+          if (!document.hidden) renderer?.draw(controller.update(timestamp / 1000, { ...settings, idle: settings.idle && !reducedMotion.matches }, sampleMouthRef.current(timestamp)));
           raf = window.requestAnimationFrame(animate);
         };
         raf = window.requestAnimationFrame(animate);

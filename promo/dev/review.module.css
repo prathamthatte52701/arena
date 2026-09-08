@@ -11,3 +11,6 @@
 .scrub input { display:block; width:100%; margin:12px 0; accent-color:#d696a8; }
 .review .release { font-size:11px; padding:7px 10px; }
 .readout { font:12px/1.8 monospace; color:#b9a4b7; margin:20px 0 0; }
+.debugToggle { display:block; margin-top:18px; color:#cabbc9; font-size:12px; letter-spacing:.08em; }
+.debugToggle input { accent-color:#d696a8; margin-right:8px; }
+.debug { font:11px/1.8 monospace; color:#e0b18f; padding:10px; background:#0b0a10; border:1px solid #3d3040; border-radius:6px; }
