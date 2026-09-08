@@ -6,23 +6,23 @@ Audited the V2 bundle manifest and source sheets. Coverage is consistent across 
 
 ## 3D MODEL METHOD
 
-The existing GLB-compatible humanoid contract is reused so locomotion, camera, and arena systems remain unchanged. Rhea is data-driven through `rheaStage1` appearance and scale fields. The adapter adds real Three.js hair and match-attire geometry to the rigged character at load time.
+Rhea now uses a direct Three.js procedural build through the existing character adapter. It creates an articulated hierarchy, layered muscular forms, facial features, hair strands, match attire, gloves and boots. Locomotion/camera/arena systems remain unchanged and the profile is data-driven.
 
 ## MODEL FORMAT
 
-GLB (`public/models/development/humanoid.glb`)
+Native Three.js procedural geometry (no GLB dependency for Rhea Stage 1).
 
 ## SKINNED MESH / BONE COUNT
 
-1 SkinnedMesh, 17 bones, 5,746 weighted vertices; skeletal animation clips Idle, Walk, Run.
+15 articulated bones (hips, spine, chest, neck, head, shoulders, arms, forearms, thighs and calves). Procedural animation states Idle, Walk and Run.
 
 ## MATERIALS / HAIR / ATTIRE / TATTOOS
 
-Existing skinned materials are tinted from the Rhea profile. Hair and attire are real mesh accessories with dedicated materials. Reference tattoo images are stored and audited, but tattoo projection onto the generic development UVs is deferred because the pack contains no UV-ready texture workflow.
+Separate skin, hair, outfit, accent and boot materials are used. Hair strands and attire are real mesh geometry. Reference tattoo images are stored and audited; tattoo decals remain deferred.
 
 ## IDLE / WALK / RUN / BLENDING / TURNING / GROUNDING
 
-Existing adapter/controller supplies all three clips, cross-fade blending, fixed-step movement, and smooth turning. Automated GLB validation confirms finite skeletal transforms and changing bones; TypeScript and production build pass.
+Procedural controller supplies all three states, fixed-step movement and smooth turning with opposite arm/leg swing, knee motion, breathing and weight shift. Browser diagnostics report finite runtime at 60 FPS.
 
 ## CAMERA / FPS
 

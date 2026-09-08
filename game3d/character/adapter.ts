@@ -2,6 +2,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { CapsuleGeometry, Group, Mesh, MeshStandardMaterial, SkinnedMesh, type Object3D, type AnimationClip } from 'three';
 import type { CharacterAsset } from '../assets/contract';
 import { CharacterAnimation } from '../animation/controller';
+import { createProceduralRhea } from './procedural-rhea';
 
 export function validateCharacter(root: Object3D, clips: AnimationClip[], asset: CharacterAsset) {
   let skins = 0, bones = 0;
@@ -29,6 +30,7 @@ export function disposeObject(root: Object3D) {
   });
 }
 export async function loadCharacter(asset: CharacterAsset, signal: AbortSignal) {
+  if (asset.procedural) return createProceduralRhea(asset);
   const response = await fetch(asset.modelPath, { signal });
   if (!response.ok) throw new Error(`Model request failed (${response.status}): ${asset.modelPath}`);
   const gltf = await new GLTFLoader().parseAsync(await response.arrayBuffer(), '/');
