@@ -1,20 +1,21 @@
 <!doctype html>
 <html lang="en"><meta charset="utf-8"><title>Mouth renderer acceptance</title>
-<style>body{background:#16151b;color:#eee;font:16px sans-serif;margin:20px} canvas{width:654px;height:1230px;max-width:90vw;object-fit:contain} button{padding:12px;margin:4px}pre{white-space:pre-wrap} .crop{height:470px;overflow:hidden;width:654px}.crop canvas{transform:translateY(-270px)} </style>
-<h1>Renderer acceptance</h1><div id="controls"></div><button id="test">RUN PIXEL TESTS</button><pre id="result">Ready</pre><div class="crop"><canvas width="654" height="1230" id="portrait"></canvas></div>
+<style>body{background:#16151b;color:#eee;font:16px sans-serif;margin:20px} canvas{width:561px;height:701px;max-width:90vw;object-fit:contain} button{padding:12px;margin:4px}pre{white-space:pre-wrap} .crop{height:470px;overflow:hidden;width:561px}.crop canvas{transform:translateY(-150px)} </style>
+<h1>Renderer acceptance</h1><div id="controls"></div><button id="test">RUN PIXEL TESTS</button><pre id="result">Ready</pre><div class="crop"><canvas width="1122" height="1402" id="portrait"></canvas></div>
 <script type="module">
 import {createPortraitRenderer} from '/promo/character/portraitRenderer.ts';
 import {createFaceController} from '/promo/face/controller.ts';
 import {MOUTH_DEFORMATIONS,REST_MOUTH} from '/promo/face/mouth.ts';
 import {createVisemeTimeline,segmentAt,timelineDeformation} from '/promo/speech/textTimeline.ts';
+import {rheaV2Assets} from '/promo/character/rheaV2Assets.ts';
 const canvas=document.querySelector('canvas');
-const source=new Image(); source.src='/character-references/rhea/face-front.png'; await source.decode();
+const source=new Image(); source.src=rheaV2Assets.faceFrontNeutral; await source.decode();
 const renderer=createPortraitRenderer(canvas,source);
 const controls={expression:'NEUTRAL',gaze:'CENTER',idle:false,blinkRequest:0,blinkPreview:0};
 const controller=createFaceController(()=>.5);
 const frame=controller.update(0,controls);
 function draw(mouth){renderer.draw({...frame,mouth});}
-function pixels(){const gl=canvas.getContext('webgl'); const data=new Uint8Array(180*160*4); gl.readPixels(270,1230-650,180,160,gl.RGBA,gl.UNSIGNED_BYTE,data);return data;}
+function pixels(){const gl=canvas.getContext('webgl'); const data=new Uint8Array(180*160*4); gl.readPixels(462,1402-713,180,160,gl.RGBA,gl.UNSIGNED_BYTE,data);return data;}
 function delta(a,b){let sum=0,changed=0;for(let i=0;i<a.length;i+=4){const d=(Math.abs(a[i]-b[i])+Math.abs(a[i+1]-b[i+1])+Math.abs(a[i+2]-b[i+2]))/3;sum+=d;if(d>8)changed++;}return {mean:sum/(a.length/4),changed};}
 for(const [name,mouth] of Object.entries(MOUTH_DEFORMATIONS)){const b=document.createElement('button');b.textContent=name;b.onclick=()=>{draw(mouth);document.querySelector('#result').textContent=name;};document.querySelector('#controls').append(b);}
 document.querySelector('#test').onclick=()=>{

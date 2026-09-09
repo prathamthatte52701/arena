@@ -1,7 +1,7 @@
 import type { Expression, FacePose } from '../performance/types';
 
 export const EXPRESSIONS: Expression[] = ['NEUTRAL', 'CONFIDENT', 'SMIRK', 'SERIOUS', 'INTIMIDATING', 'MOCKING'];
-// Pixel displacements use the 654 × 1230 reference, never screen pixels.
+// Pixel displacements use the 1122 × 1402 V2 front reference, never screen pixels.
 // Closed lips are preserved. These are restrained listening/performance poses.
 export const POSES: Record<Expression, FacePose> = {
   NEUTRAL: { head: 0, chin: 0, brow: 0, squint: 0, smile: 0, asymmetry: 0, posture: 0 },

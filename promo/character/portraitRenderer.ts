@@ -31,50 +31,50 @@ float region(vec2 p, vec2 center, vec2 radius) {
 vec2 eye(vec2 p, vec2 center) {
   float x = p.x-center.x;
   float y = p.y-center.y;
-  float width = 1.-smoothstep(23.,42.,abs(x));
+  float width = 1.-smoothstep(30.,56.,abs(x));
   float closure = expression.z + (1.-expression.z)*pose.w;
   // Resample the upper lid skin downward and lower lid upward. The eye
   // aperture collapses between them; no coloured rectangle is composited.
-  float top = -13.;
-  float bottom = 13.;
-  float upper = top + 19.*closure;
-  float lower = bottom - 7.*closure;
+  float top = -15.;
+  float bottom = 15.;
+  float upper = top + 22.*closure;
+  float lower = bottom - 8.*closure;
   float mapped = y;
-  if (y > -38. && y < upper) mapped = mix(-38.,top,(y+38.)/(upper+38.));
+  if (y > -45. && y < upper) mapped = mix(-45.,top,(y+45.)/(upper+45.));
   else if (y >= upper && y <= lower) mapped = mix(top,bottom,(y-upper)/max(.001,lower-upper));
-  else if (y > lower && y < 35.) mapped = mix(bottom,35.,(y-lower)/(35.-lower));
+  else if (y > lower && y < 41.) mapped = mix(bottom,41.,(y-lower)/(41.-lower));
   p.y += (mapped-y)*width;
   // Only iris/sclera interior shifts; canthi, lashes and eye outline stay put.
-  float inside = region(p,center,vec2(32.,12.5));
+  float inside = region(p,center,vec2(40.,15.5));
   p -= gaze*inside;
   return p;
 }
 void main() {
   vec2 p = uv*size;
-  float headWeight = 1.-smoothstep(650.,820.,p.y);
-  vec2 pivot = vec2(350.,690.);
+  float headWeight = 1.-smoothstep(745.,940.,p.y);
+  vec2 pivot = vec2(561.,790.);
   float angle = -(pose.x+life.x*.16)*.0174533*headWeight;
   vec2 d = p-pivot;
   p = pivot + mat2(cos(angle),sin(angle),-sin(angle),cos(angle))*d;
   p -= vec2(life.x,life.y+pose.y)*headWeight;
-  float shoulders = smoothstep(650.,950.,p.y);
+  float shoulders = smoothstep(745.,1080.,p.y);
   p.y += (life.z+life.w)*shoulders;
-  p.x = 327. + (p.x-327.)/(1.+life.z*.0006*shoulders);
+  p.x = 561. + (p.x-561.)/(1.+life.z*.0006*shoulders);
   // Small, feathered brow offsets; never scale the full face.
-  p.y -= pose.z*region(p,vec2(294.,329.),vec2(55.,28.));
-  p.y -= (pose.z+expression.y*1.4)*region(p,vec2(429.,326.),vec2(55.,28.));
+  p.y -= pose.z*region(p,vec2(445.,371.),vec2(72.,32.));
+  p.y -= (pose.z+expression.y*1.4)*region(p,vec2(636.,371.),vec2(72.,32.));
   // A closed-mouth smile is asymmetric at the corners, limited to a few pixels.
-  p.y += expression.x*(1.-expression.y*.65)*region(p,vec2(302.,546.),vec2(39.,34.));
-  p.y += expression.x*(1.+expression.y*.55)*region(p,vec2(423.,546.),vec2(36.,34.));
+  p.y += expression.x*(1.-expression.y*.65)*region(p,vec2(482.,630.),vec2(52.,38.));
+  p.y += expression.x*(1.+expression.y*.55)*region(p,vec2(622.,630.),vec2(52.,38.));
   // Split the original seam into independent upper/lower lip edges.
-  vec2 center = vec2(360.,550.);
-  float local = region(p, center, vec2(108.,49.));
+  vec2 center = vec2(552.,633.);
+  float local = region(p, center, vec2(134.,58.));
   float widthScale = 1. + mouth.y*.35 - mouth.w*.37;
   p.x = center.x + (p.x-center.x)/mix(1.,widthScale,local);
-  float x = (p.x-center.x)/67.;
+  float x = (p.x-center.x)/88.;
   float arch = max(0., 1.-x*x);
-  float seam = 550. - 3.*x*x;
-  float opening = mouth.x*43.*pow(arch,.65);
+  float seam = 633. - 3.*x*x;
+  float opening = mouth.x*54.*pow(arch,.65);
   float top = seam-opening*.32;
   float bottom = seam+opening*.68;
   float y = p.y;
@@ -84,15 +84,15 @@ void main() {
     float depth = (y-top)/max(opening,.001);
     p.y = seam + (depth-.5)*1.2;
     interior = smoothstep(0.,1.2,y-top)*smoothstep(0.,1.2,bottom-y);
-  } else if (y<top && y>490.) {
-    p.y = mix(490.,seam,(y-490.)/(top-490.));
-  } else if (y>bottom && y<650.) {
-    p.y = mix(seam,650.,(y-bottom)/(650.-bottom));
+  } else if (y<top && y>560.) {
+    p.y = mix(560.,seam,(y-560.)/(top-560.));
+  } else if (y>bottom && y<740.) {
+    p.y = mix(seam,740.,(y-bottom)/(740.-bottom));
   }
-  float lip = region(p,center,vec2(78.,30.));
+  float lip = region(p,center,vec2(98.,34.));
   p.y = seam+(p.y-seam)*(1.+mouth.z*.65*lip);
-  p.y += mouthDetail.x*10.*region(p,vec2(360.,571.),vec2(65.,24.));
-  p.y -= mouthDetail.y*3.*region(p,vec2(360.,612.),vec2(90.,42.));
+  p.y += mouthDetail.x*12.*region(p,vec2(552.,658.),vec2(83.,28.));
+  p.y -= mouthDetail.y*4.*region(p,vec2(552.,710.),vec2(120.,52.));
   p = eye(p,eyeA);
   p = eye(p,eyeB);
   gl_FragColor = texture2D(portrait,clamp(p/size,vec2(.001),vec2(.999)));

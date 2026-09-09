@@ -1,0 +1,126 @@
+{
+  "version": "rhea-v2",
+  "imageCount": 20,
+  "files": [
+    {
+      "file": "01-face-front-neutral.png",
+      "width": 1122,
+      "height": 1402,
+      "sha256": "c9e2918a0a6715b4941af201a8a77dc27eaf6eca4f085439aa160ff8d3299bd2"
+    },
+    {
+      "file": "02-face-3quarter-neutral.png",
+      "width": 1122,
+      "height": 1402,
+      "sha256": "569d60c70342dbadf22ddfc90f82531d701442508fd03510d0362736d8c647d0"
+    },
+    {
+      "file": "03-face-profile.png",
+      "width": 1122,
+      "height": 1402,
+      "sha256": "71430332abef06afb8c067b734c0c9a911711834a88f6e9aba3595f75cd7d293"
+    },
+    {
+      "file": "04-face-closeup-confident-smirk.png",
+      "width": 1122,
+      "height": 1402,
+      "sha256": "4f744e5d051bb18e15c370db3f0abf5bece296f76a0498eb5968ba8c85d4663d"
+    },
+    {
+      "file": "05-face-closeup-aggressive-intimidating.png",
+      "width": 1122,
+      "height": 1402,
+      "sha256": "8c1883323e5e97967b4cd1d1e6c25ba2137e76e5702b09e5301958b0d6996f4d"
+    },
+    {
+      "file": "06-face-closeup-cold-neutral.png",
+      "width": 1122,
+      "height": 1402,
+      "sha256": "3a94fcc97d62fb9267a2978e1424aa1eca9d15f0e5c4ba6254406453aa9540e5"
+    },
+    {
+      "file": "07-body-front.png",
+      "width": 1122,
+      "height": 1402,
+      "sha256": "daed3325721778d62433fea231a346ced29755139c1a5d6dc796205c1f34e205"
+    },
+    {
+      "file": "08-body-side.png",
+      "width": 1122,
+      "height": 1402,
+      "sha256": "c4ff708cf4fc3b2025ee9aa71ffeb0be46258f3f311ddae76f708fbdbce9e335"
+    },
+    {
+      "file": "09-body-back.png",
+      "width": 1024,
+      "height": 1536,
+      "sha256": "b8601c601c16b6384ad4633f295e31cf8b353cf2e6ea13bf4fb07ef3ff7fbd2e"
+    },
+    {
+      "file": "10-body-3quarter-front.png",
+      "width": 1086,
+      "height": 1448,
+      "sha256": "beb36d92cc332e9ffb43ae791951575fff5b8b19abdc6d90d28d12f85b71f2ee"
+    },
+    {
+      "file": "11-upperbody-promo-front.png",
+      "width": 1122,
+      "height": 1402,
+      "sha256": "29c2c74b7f9cf37baaf322f9078f4acda72b27bc1c3599b0a7ac370ecee41a73"
+    },
+    {
+      "file": "12-upperbody-camera-stare.png",
+      "width": 1122,
+      "height": 1402,
+      "sha256": "f3d327fac68f1407b29780a3d992a19d1d5a6106728059e448dc2e716f160287"
+    },
+    {
+      "file": "13-upperbody-interviewer-look.png",
+      "width": 1122,
+      "height": 1402,
+      "sha256": "9101003f4e99f8075a165f63ac1ce9dc396c7a93bb753fdaf3a4c3677670df91"
+    },
+    {
+      "file": "14-hair-front.png",
+      "width": 1122,
+      "height": 1402,
+      "sha256": "2a74c164302b40535dbdce2c4a5ad3aa65ac2dfd416f0f626c4499d86823b145"
+    },
+    {
+      "file": "15-hair-back.png",
+      "width": 1122,
+      "height": 1402,
+      "sha256": "9858fb4acd667ee115df9ab8d43f9ecb0ad4db6b38145c5a9027d53ca0d976d1"
+    },
+    {
+      "file": "16-match-attire-reference.png",
+      "width": 1086,
+      "height": 1448,
+      "sha256": "299c7af46b4143eed90601c2013f207fbd7829e747ee4550bfcf4f111a898e49"
+    },
+    {
+      "file": "17-entrance-attire-reference.png",
+      "width": 1024,
+      "height": 1536,
+      "sha256": "b0b9c29ce57dc6207b9916dfce028becdf84797c83d6febb8c6f6ddde3dd4320"
+    },
+    {
+      "file": "18-tattoos-details-closeup.png",
+      "width": 1122,
+      "height": 1402,
+      "sha256": "7b0d67039e2a15aa9b9c4333b24711097b26d76b034b8f99e559005d6a609523"
+    },
+    {
+      "file": "19-expression-mocking.png",
+      "width": 1122,
+      "height": 1402,
+      "sha256": "39cf1b5eecd8d6d811e274396179b7b4b46ca6c939db14e7cf6344c1993fecbf"
+    },
+    {
+      "file": "20-expression-speaking-mouth-open.png",
+      "width": 1122,
+      "height": 1402,
+      "sha256": "35845a62c5194bde3c9294012df7d8dae4ea11b5e842f5db4594cf47f80d69bd"
+    }
+  ]
+}

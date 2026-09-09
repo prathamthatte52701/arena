@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { usePromoSpeech } from '../promo/performance/usePromoSpeech';
 import { createFaceController } from '../promo/face/controller';
 import { createPortraitRenderer } from '../promo/character/portraitRenderer';
+import { rheaV2Assets } from '../promo/character/rheaV2Assets';
 import { createVisemeTimeline } from '../promo/speech/textTimeline';
 
 // Synthetic event driver tests the real hook and renderer. This is explicitly
@@ -17,7 +18,7 @@ function Harness() { const speech = usePromoSpeech(); useEffect(() => { api = sp
 const host = document.createElement('div'); document.body.append(host);
 const root = createRoot(host); root.render(<Harness />);
 const tick = () => new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
-const source = new Image(); source.src = '/character-references/rhea/face-front.png'; await source.decode();
+const source = new Image(); source.src = rheaV2Assets.faceFrontNeutral; await source.decode();
 const canvas = document.querySelector('canvas')!;
 const renderer = createPortraitRenderer(canvas, source);
 const controller = createFaceController(() => .5);
@@ -27,7 +28,7 @@ function pixels(now: number) {
   const target = api.sampleMouth(now);
   renderer.draw(controller.update(frameTime += .05, controls, target));
   const gl = canvas.getContext('webgl')!; const data = new Uint8Array(180*160*4);
-  gl.readPixels(270,580,180,160,gl.RGBA,gl.UNSIGNED_BYTE,data); return data;
+  gl.readPixels(462,689,180,160,gl.RGBA,gl.UNSIGNED_BYTE,data); return data;
 }
 function difference(a: Uint8Array,b: Uint8Array) { let count=0;for(let i=0;i<a.length;i+=4)if(Math.abs(a[i]-b[i])+Math.abs(a[i+1]-b[i+1])+Math.abs(a[i+2]-b[i+2])>24)count++;return count; }
 const phrase = "You think you're ready for me? Then prove it.";

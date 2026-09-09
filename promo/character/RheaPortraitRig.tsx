@@ -60,7 +60,7 @@ export function RheaPortraitRig({ controls, framing, sampleMouth, samplePerforma
     };
   }, []);
   return <div className={`${styles.viewport} ${framing === 'CLOSE' ? styles.close : ''}`}>
-    <canvas ref={canvasRef} className={styles.portrait} width={654} height={1230}
+    <canvas ref={canvasRef} className={styles.portrait} width={rheaProfile.width} height={rheaProfile.height}
       role="img" aria-label={`Rhea portrait, ${controls.expression.toLowerCase()}, looking toward ${controls.gaze.toLowerCase()}`}
       data-testid="rhea-portrait" data-status={status} />
     {status !== 'Live portrait' && <output className={styles.notice}>{status}</output>}
