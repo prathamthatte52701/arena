@@ -5,6 +5,20 @@ import { createSpeechSessionState, beginSpeechSession, invalidateSpeechSession, 
 
 const short = "You really think you're ready for me? Then prove it.";
 const long = "Maybe people believe promises, but I believe in showing up. Every time I enter this arena, I bring everything I have. You think you're ready for me? Then prove it. Fight for every victory, find your voice, and make every moment count. I will be here, ready for the challenge, when the lights come on again.";
+const toneChallenge = "You think you're ready for me? Then prove it. I don't need your respect. I need you to understand exactly who you're standing across from.";
+const selectableTones = ['AUTO', 'CONFIDENT', 'COLD', 'MOCKING', 'ANGRY', 'INTIMIDATING', 'SMIRKING'];
+
+function performanceSignature(tone) {
+  return JSON.stringify(createPerformanceTimeline(toneChallenge, tone).map(beat => ({
+    position: [beat.startChar, beat.endChar],
+    expression: beat.expression,
+    gaze: beat.gaze,
+    intensity: beat.intensity,
+    head: beat.headBias,
+    holdMs: beat.holdMs,
+    finalBeat: beat.finalBeat,
+  })));
+}
 
 test('same text and tone generate an identical performance timeline', () => {
   assert.deepEqual(createPerformanceTimeline(long, 'AUTO'), createPerformanceTimeline(long, 'AUTO'));
@@ -13,6 +27,16 @@ test('same text and tone generate an identical performance timeline', () => {
 test('different tones create different performance choices', () => {
   const choices = ['AUTO', 'CONFIDENT', 'MOCKING', 'INTIMIDATING'].map(tone => JSON.stringify(createPerformanceTimeline(short, tone)));
   assert.ok(new Set(choices).size >= 3);
+});
+
+test('all seven selectable tones have pairwise-distinct deterministic signatures', () => {
+  const signatures = Object.fromEntries(selectableTones.map(tone => [tone, performanceSignature(tone)]));
+  assert.equal(new Set(Object.values(signatures)).size, selectableTones.length);
+  assert.notEqual(signatures.ANGRY, signatures.INTIMIDATING);
+  assert.notEqual(signatures.MOCKING, signatures.SMIRKING);
+  assert.notEqual(signatures.COLD, signatures.ANGRY);
+  assert.notEqual(signatures.COLD, signatures.INTIMIDATING);
+  for (const tone of selectableTones) assert.equal(signatures[tone], performanceSignature(tone));
 });
 
 test('the final sentence or clause is marked final', () => {
