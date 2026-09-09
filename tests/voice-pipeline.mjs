@@ -1,0 +1,41 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { createTtsRequest, voiceCacheIdentity, wavDurationMs, calibrateVisemeTimeline, monotonicAudioElapsed, writePiperText } from '../promo/voice/pipeline.ts';
+import { VOICE_TONES, isVoiceTone, voiceToneSettings } from '../promo/voice/darkPowerVoiceProfile.ts';
+import { createReplayMemory } from '../promo/voice/replay.ts';
+import { createSpeechSessionState, beginSpeechSession, invalidateSpeechSession, isCurrentSpeechSession } from '../promo/speech/session.ts';
+import { createVisemeTimeline, timelineDuration, segmentAt, timelineDeformation } from '../promo/speech/textTimeline.ts';
+import { REST_MOUTH } from '../promo/face/mouth.ts';
+import { advanceSpeechClock, applySpeechBoundaryAnchor } from '../promo/speech/clock.ts';
+
+const text = "  You think you're ready for me?\nThen prove it.  ";
+function wav() {
+  const b = Buffer.alloc(44 + 44100);
+  b.write('RIFF'); b.writeUInt32LE(b.length - 8,4); b.write('WAVEfmt ',8);
+  b.writeUInt32LE(16,16); b.writeUInt16LE(1,20); b.writeUInt16LE(1,22);
+  b.writeUInt32LE(22050,24); b.writeUInt32LE(44100,28);
+  b.writeUInt16LE(2,32); b.writeUInt16LE(16,34); b.write('data',36); b.writeUInt32LE(44100,40);
+  return b;
+}
+test('voice request preserves exact whitespace, punctuation and lexical text',()=>assert.equal(createTtsRequest(text,'AUTO').text,text));
+test('Piper stdin receives the complete exact UTF-8 request',()=>{const input="  Don't change a damn word!\nCafé? Yes.  ";let received;writePiperText({end:(value,encoding)=>{received=Buffer.from(value,encoding);}},createTtsRequest(input,'AUTO').text);assert.deepEqual(received,Buffer.from(input,'utf8'));});
+test('all seven voice tones validate',()=>{ assert.equal(VOICE_TONES.length,7); for(const tone of VOICE_TONES) assert.ok(isVoiceTone(tone)); });
+test('invalid runtime tones reject before synthesis',()=>{ for(const tone of ['BOGUS','',null,undefined,42,{},'toString']) { assert.equal(isVoiceTone(tone),false); assert.throws(()=>createTtsRequest(text,tone),/Invalid voice tone/); } });
+test('each tone maps deterministically to supported controls',()=>{ for(const tone of VOICE_TONES) { assert.deepEqual(voiceToneSettings(tone),voiceToneSettings(tone)); assert.deepEqual(Object.keys(voiceToneSettings(tone)).sort(),['lengthScale','sentenceSilence']); } });
+test('cache identity includes tone and exact text',()=>{ assert.equal(voiceCacheIdentity(text,'AUTO'),voiceCacheIdentity(text,'AUTO')); assert.notEqual(voiceCacheIdentity(text,'AUTO'),voiceCacheIdentity(text,'COLD')); assert.notEqual(voiceCacheIdentity(text,'AUTO'),voiceCacheIdentity(text.trim(),'AUTO')); });
+test('420 characters accepted',()=>assert.equal(createTtsRequest('a'.repeat(420),'COLD').text.length,420));
+test('421 characters rejected',()=>assert.throws(()=>createTtsRequest('a'.repeat(421),'AUTO'),/exceeds/));
+test('real PCM WAV structure yields measured positive duration',()=>assert.equal(wavDurationMs(wav()),1000));
+test('malformed and truncated WAVs are safely rejected',()=>{ for(const b of [Buffer.alloc(0),Buffer.alloc(44),wav().subarray(0,43),wav().subarray(0,100)]) assert.equal(wavDurationMs(b),0); const corrupt=wav();corrupt.writeUInt32LE(0xffffffff,16);assert.equal(wavDurationMs(corrupt),0); });
+test('calibrated timeline spans measured duration',()=>assert.equal(timelineDuration(calibrateVisemeTimeline(createVisemeTimeline(text),3380)),3380));
+test('calibration preserves seven-state contract and ends in REST',()=>{const t=calibrateVisemeTimeline(createVisemeTimeline(text),3380);assert.ok(t.every(s=>['REST','MBP','FV','AE','O','L','WQ'].includes(s.viseme)));assert.deepEqual(timelineDeformation(segmentAt(t,3380)),REST_MOUTH);});
+test('audio elapsed never goes backwards and freezes when audio pauses',()=>{let last=0;for(const t of [0,.1,.5,.5,.3,1]){const next=monotonicAudioElapsed(last,t,2000);assert.ok(next>=last);last=next;}assert.equal(last,1000);assert.equal(monotonicAudioElapsed(last,1,2000),1000);});
+test('audio elapsed clamps to duration and rejects nonfinite samples',()=>{assert.equal(monotonicAudioElapsed(0,99,2000),2000);assert.equal(monotonicAudioElapsed(9000,1,2000),2000);assert.equal(monotonicAudioElapsed(100,NaN,2000),100);});
+test('replay memory survives preview active sessions',()=>{const m=createReplayMemory();const s=createSpeechSessionState();m.remember('My real promo.','COLD');beginSpeechSession(s,'My real promo.');beginSpeechSession(s,'Maybe we prove who really belongs here.');assert.equal(m.read().text,'My real promo.');});
+test('replay preserves delivered tone after preview and STOP',()=>{const m=createReplayMemory();const s=createSpeechSessionState();m.remember('First promo','COLD');beginSpeechSession(s,'Preview');invalidateSpeechSession(s);assert.deepEqual(m.read(),{text:'First promo',tone:'COLD'});});
+test('new delivery invalidates late synthesis identity',()=>{const s=createSpeechSessionState();const a=beginSpeechSession(s,'A');const b=beginSpeechSession(s,'B');assert.equal(isCurrentSpeechSession(s,a),false);assert.equal(isCurrentSpeechSession(s,b),true);});
+test('STOP invalidates generation and playback session',()=>{const s=createSpeechSessionState();const a=beginSpeechSession(s,'A');invalidateSpeechSession(s);assert.equal(isCurrentSpeechSession(s,a),false);});
+const clock=()=>({startedAt:0,offsetMs:0,targetOffsetMs:0,lastSampleAt:0,lastElapsedMs:0,floorElapsedMs:0});
+test('fallback anchors avoid the 10s to 13s clock regression',()=>{const c=clock();for(let ms=0;ms<=10000;ms+=20){if(ms%500===0)applySpeechBoundaryAnchor(c,ms+100,ms,20000);advanceSpeechClock(c,ms);}assert.ok(c.lastElapsedMs>=10000&&c.lastElapsedMs<=10200);});
+test('repeated and late fallback boundaries stay monotonic without growing drift',()=>{const c=clock();let prev=0;for(let ms=0;ms<=10000;ms+=20){if(ms%500===0){applySpeechBoundaryAnchor(c,ms,ms,20000);applySpeechBoundaryAnchor(c,Math.max(0,ms-500),ms,20000);}const next=advanceSpeechClock(c,ms);assert.ok(next>=prev&&next<=ms+100);prev=next;}});
+test('punctuation retains REST intervals after audio calibration',()=>{const t=calibrateVisemeTimeline(createVisemeTimeline(text),4000);assert.ok(t.filter(s=>s.kind==='pause').length>=2);assert.ok(t.filter(s=>s.kind==='pause').every(s=>s.viseme==='REST'));});

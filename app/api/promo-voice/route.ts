@@ -5,15 +5,15 @@ import { spawn } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { NextResponse } from 'next/server';
-import { createTtsRequest, MAX_PROMO_TEXT, wavDurationMs } from '../../../promo/voice/pipeline.ts';
-import { DARK_POWER_VOICE_PROFILE, type VoiceTone } from '../../../promo/voice/darkPowerVoiceProfile.ts';
+import { createTtsRequest, MAX_PROMO_TEXT, wavDurationMs, voiceCacheIdentity, writePiperText } from '../../../promo/voice/pipeline.ts';
+import { DARK_POWER_VOICE_PROFILE, isVoiceTone, type VoiceTone } from '../../../promo/voice/darkPowerVoiceProfile.ts';
 
 export const runtime = 'nodejs';
 
 const cache = new Map<string, { wav: Uint8Array; durationMs: number }>();
 
 function modelPath() {
-  return process.env.PROMO_PIPER_MODEL ?? path.join(process.env.LOCALAPPDATA ?? '', 'PromoQueens', 'piper', 'en_US-amy-medium', 'en_US-amy-medium.onnx');
+  return process.env.PROMO_PIPER_MODEL ?? path.join(process.env.LOCALAPPDATA ?? '', 'PromoQueens', 'piper', DARK_POWER_VOICE_PROFILE.model, `${DARK_POWER_VOICE_PROFILE.model}.onnx`);
 }
 
 function pythonCommand() {
@@ -21,17 +21,20 @@ function pythonCommand() {
 }
 
 function cacheKey(text: string, tone: VoiceTone) {
-  return createHash('sha256').update(`${DARK_POWER_VOICE_PROFILE.version}\0${DARK_POWER_VOICE_PROFILE.model}\0${tone}\0${text}`).digest('hex');
+  return createHash('sha256').update(voiceCacheIdentity(text, tone)).digest('hex');
 }
 
 function runPiper(text: string, tone: VoiceTone, output: string, signal: AbortSignal) {
+  signal.throwIfAborted();
   const settings = createTtsRequest(text, tone).settings;
   return new Promise<void>((resolve, reject) => {
     const child = spawn(pythonCommand(), ['-m', 'piper', '-m', modelPath(), '-f', output, '--length-scale', String(settings.lengthScale), '--sentence-silence', String(settings.sentenceSilence), '--volume', '1'], { windowsHide: true });
     let stderr = '';
-    child.stderr.on('data', chunk => { stderr += String(chunk); });
+    child.stderr.on('data', chunk => { stderr = (stderr + String(chunk)).slice(-2000); });
+    child.stdin.on('error', error => { if (!signal.aborted) reject(error); });
     const abort = () => child.kill();
     signal.addEventListener('abort', abort, { once: true });
+    if (signal.aborted) abort();
     child.on('error', error => { signal.removeEventListener('abort', abort); reject(error); });
     child.on('close', code => {
       signal.removeEventListener('abort', abort);
@@ -39,7 +42,7 @@ function runPiper(text: string, tone: VoiceTone, output: string, signal: AbortSi
       if (code === 0) return resolve();
       reject(new Error(stderr.trim() || `Piper exited with code ${code ?? 'unknown'}`));
     });
-    child.stdin.end(text, 'utf8');
+    writePiperText(child.stdin, text);
   });
 }
 
@@ -50,22 +53,26 @@ export async function POST(request: Request) {
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
+  if (!body || typeof body !== 'object' || Array.isArray(body)) return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   const text = typeof body.text === 'string' ? body.text : '';
-  const tone = typeof body.tone === 'string' ? body.tone as VoiceTone : 'AUTO';
+  const tone = body.tone;
+  if (!isVoiceTone(tone)) return NextResponse.json({ error: 'Invalid voice tone' }, { status: 400 });
   if (!text.trim() || text.length > MAX_PROMO_TEXT) return NextResponse.json({ error: `Text must be 1-${MAX_PROMO_TEXT} characters` }, { status: 400 });
   try {
+    request.signal.throwIfAborted();
     const requestData = createTtsRequest(text, tone);
     const model = modelPath();
     if (!existsSync(model) || !existsSync(`${model}.json`)) return NextResponse.json({ error: 'Local Piper model is not installed', engine: 'BROWSER FALLBACK', model }, { status: 503 });
     const key = cacheKey(requestData.text, requestData.tone);
     const cached = cache.get(key);
-    if (cached) return new Response(cached.wav, { headers: { 'Content-Type': 'audio/wav', 'Cache-Control': 'no-store', 'X-Promo-TTS-Engine': 'LOCAL NEURAL', 'X-Promo-TTS-Model': DARK_POWER_VOICE_PROFILE.model, 'X-Promo-TTS-Duration-Ms': String(cached.durationMs), 'X-Promo-TTS-Text-Length': String(text.length) } });
+    if (cached) return new Response(new Uint8Array(cached.wav), { headers: { 'Content-Type': 'audio/wav', 'Cache-Control': 'no-store', 'X-Promo-TTS-Engine': 'LOCAL NEURAL', 'X-Promo-TTS-Model': DARK_POWER_VOICE_PROFILE.model, 'X-Promo-TTS-Duration-Ms': String(cached.durationMs), 'X-Promo-TTS-Text-Length': String(text.length) } });
     const directory = await mkdtemp(path.join(tmpdir(), 'promo-queens-piper-'));
     const output = path.join(directory, 'speech.wav');
     try {
       await runPiper(requestData.text, requestData.tone, output, request.signal);
       const wav = new Uint8Array(await readFile(output));
       const durationMs = wavDurationMs(wav);
+      request.signal.throwIfAborted();
       if (!wav.length || !durationMs) throw new Error('Piper returned empty or invalid audio');
       cache.set(key, { wav, durationMs });
       while (cache.size > 8) cache.delete(cache.keys().next().value as string);
@@ -76,6 +83,6 @@ export async function POST(request: Request) {
   } catch (error) {
     if (request.signal.aborted) return NextResponse.json({ error: 'Synthesis cancelled' }, { status: 499 });
     console.error('[promo-voice] local neural synthesis failed', error);
-    return NextResponse.json({ error: error instanceof Error ? error.message : 'Local neural synthesis failed', engine: 'BROWSER FALLBACK' }, { status: 503 });
+    return NextResponse.json({ error: 'Local neural synthesis failed', engine: 'BROWSER FALLBACK' }, { status: 503 });
   }
 }

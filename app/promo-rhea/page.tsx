@@ -40,6 +40,7 @@ export default function PromoRhea() {
             <button onClick={() => { setControls(current => ({ ...current, mouthPreview: null })); speech.replay(); }}>REPLAY</button>
           </div>
           <output className={styles.status}>{speech.status}</output>
+          <p className={styles.note}>VOICE ENGINE: {speech.voiceEngine}{review && speech.generatedDurationMs !== null ? ` · AUDIO: ${Math.round(speech.generatedDurationMs)} ms` : ''}</p>
           <p className={styles.note}>Local synthetic speech · deterministic mouth timeline · last delivered promo replays exactly</p>
         </section>
       </aside>

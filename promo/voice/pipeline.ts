@@ -1,8 +1,17 @@
 import type { TimelineSegment } from '../speech/textTimeline.ts';
 import { timelineDuration } from '../speech/textTimeline.ts';
-import { DARK_POWER_VOICE_PROFILE, type VoiceTone, voiceToneSettings } from './darkPowerVoiceProfile.ts';
+import { DARK_POWER_VOICE_PROFILE, isVoiceTone, type VoiceTone, voiceToneSettings } from './darkPowerVoiceProfile.ts';
 
 export const MAX_PROMO_TEXT = 420;
+
+export function writePiperText(stdin: { end(text: string, encoding: 'utf8'): unknown }, text: string) {
+  stdin.end(text, 'utf8');
+}
+
+export function voiceCacheIdentity(text: string, tone: VoiceTone): string {
+  const request = createTtsRequest(text, tone);
+  return JSON.stringify([request.profileVersion, request.model, request.tone, request.text]);
+}
 
 export interface TtsRequest {
   text: string;
@@ -13,6 +22,8 @@ export interface TtsRequest {
 }
 
 export function createTtsRequest(text: string, tone: VoiceTone): TtsRequest {
+  if (!isVoiceTone(tone)) throw new Error('Invalid voice tone');
+  if (typeof text !== 'string') throw new Error('Invalid promo text');
   if (!text.trim()) throw new Error('Promo text is empty');
   if (text.length > MAX_PROMO_TEXT) throw new Error(`Promo text exceeds ${MAX_PROMO_TEXT} characters`);
   return { text, tone, profileVersion: DARK_POWER_VOICE_PROFILE.version, model: DARK_POWER_VOICE_PROFILE.model, settings: voiceToneSettings(tone) };
@@ -31,8 +42,10 @@ export function calibrateVisemeTimeline(timeline: TimelineSegment[], generatedDu
 }
 
 export function monotonicAudioElapsed(previousMs: number, currentTimeSeconds: number, durationMs: number): number {
-  const actual = Math.max(0, Math.min(durationMs, currentTimeSeconds * 1000));
-  return Math.max(previousMs, actual);
+  if (!Number.isFinite(durationMs) || durationMs <= 0) return 0;
+  const previous = Number.isFinite(previousMs) ? previousMs : 0;
+  const actual = Number.isFinite(currentTimeSeconds) ? currentTimeSeconds * 1000 : previous;
+  return Math.min(durationMs, Math.max(0, previous, actual));
 }
 
 export function wavDurationMs(wav: Uint8Array): number {
@@ -46,6 +59,7 @@ export function wavDurationMs(wav: Uint8Array): number {
   while (offset + 8 <= wav.length) {
     const chunk = String.fromCharCode(...wav.slice(offset, offset + 4));
     const size = view.getUint32(offset + 4, true);
+    if (offset + 8 + size > wav.length) return 0;
     if (chunk === 'fmt ' && size >= 16) {
       channels = view.getUint16(offset + 10, true);
       sampleRate = view.getUint32(offset + 12, true);

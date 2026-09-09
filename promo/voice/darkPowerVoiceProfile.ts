@@ -1,40 +1,44 @@
-export type VoiceTone = 'AUTO' | 'CONFIDENT' | 'COLD' | 'MOCKING' | 'ANGRY' | 'INTIMIDATING' | 'SMIRKING';
+export const VOICE_TONES = ['AUTO', 'CONFIDENT', 'COLD', 'MOCKING', 'ANGRY', 'INTIMIDATING', 'SMIRKING'] as const;
+export type VoiceTone = typeof VOICE_TONES[number];
+export function isVoiceTone(value: unknown): value is VoiceTone {
+  return typeof value === 'string' && VOICE_TONES.some(tone => tone === value);
+}
 
 export interface VoiceToneSettings {
   lengthScale: number;
   sentenceSilence: number;
-  emphasis: number;
 }
 
 /**
- * Derived from broad delivery measurements only. The Piper speaker is a
- * separate generic preset and never receives reference audio or embeddings.
+ * Stock female preset selected by the user's listening comparison.
+ * Pace/pause controls express the requested restrained villainess delivery;
+ * Piper does not provide an Irish accent or emotion-intensity control.
  */
 export const DARK_POWER_VOICE_PROFILE = {
-  version: 'dark-power-v1',
+  version: 'dark-power-v2-kristin',
   engine: 'Piper 1.8.0',
-  model: 'en_US-amy-medium',
+  model: 'en_US-kristin-medium',
   identity: 'generic non-cloned female synthetic preset',
   referenceSummary: {
     filesFound: 3,
-    usableFiles: 1,
-    usableDurationSeconds: 44.587,
-    medianPauseSeconds: 0.2,
-    rmsVariationDbP10ToP90: 20.04,
-    pitchMedianHz: null,
-    limitation: 'Two clips were dominated by noise or had insufficient voiced material; pitch and lexical speaking rate were not reliable.'
+    source: 'new-voice-rhea-ripley/new voice rhea ripley/raw only',
+    filesAnalyzed: 3,
+    decodedDurationSeconds: 90.645,
+    oldReferenceSourcesUsed: false,
+    limitation: 'Mixture energy and duration measured; speech-only pitch, usable speech duration and phrase contours are unverified. No old measurements reused.'
   },
   tones: {
-    AUTO: { lengthScale: 1.0, sentenceSilence: 0.28, emphasis: 1.0 },
-    CONFIDENT: { lengthScale: 0.94, sentenceSilence: 0.22, emphasis: 1.08 },
-    COLD: { lengthScale: 1.06, sentenceSilence: 0.34, emphasis: 0.92 },
-    MOCKING: { lengthScale: 0.98, sentenceSilence: 0.3, emphasis: 1.04 },
-    ANGRY: { lengthScale: 0.86, sentenceSilence: 0.16, emphasis: 1.16 },
-    INTIMIDATING: { lengthScale: 1.08, sentenceSilence: 0.38, emphasis: 1.12 },
-    SMIRKING: { lengthScale: 0.96, sentenceSilence: 0.25, emphasis: 1.03 },
+    AUTO: { lengthScale: 1.08, sentenceSilence: 0.25 },
+    CONFIDENT: { lengthScale: 1.04, sentenceSilence: 0.22 },
+    COLD: { lengthScale: 1.15, sentenceSilence: 0.35 },
+    MOCKING: { lengthScale: 1.01, sentenceSilence: 0.20 },
+    ANGRY: { lengthScale: 0.97, sentenceSilence: 0.16 },
+    INTIMIDATING: { lengthScale: 1.17, sentenceSilence: 0.38 },
+    SMIRKING: { lengthScale: 1.03, sentenceSilence: 0.24 },
   } satisfies Record<VoiceTone, VoiceToneSettings>,
 } as const;
 
 export function voiceToneSettings(tone: VoiceTone): VoiceToneSettings {
+  if (!isVoiceTone(tone)) throw new Error('Invalid voice tone');
   return DARK_POWER_VOICE_PROFILE.tones[tone];
 }

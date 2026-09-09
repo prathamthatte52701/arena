@@ -16,23 +16,21 @@ import numpy as np
 
 
 def decode_audio(path: Path) -> tuple[np.ndarray, int]:
-    container = av.open(str(path))
-    stream = next((candidate for candidate in container.streams if candidate.type == "audio"), None)
-    if stream is None:
-        raise ValueError("no audio stream")
     chunks: list[np.ndarray] = []
-    sample_rate = int(stream.rate or 16000)
-    for frame in container.decode(stream):
-        array = frame.to_ndarray()
-        if array.ndim == 2:
-            array = array.mean(axis=0)
-        chunks.append(array.astype(np.float32, copy=False))
+    sample_rate = 16000
+    with av.open(str(path)) as container:
+        stream = next((candidate for candidate in container.streams if candidate.type == "audio"), None)
+        if stream is None:
+            raise ValueError("no audio stream")
+        resampler = av.AudioResampler(format="fltp", layout="mono", rate=sample_rate)
+        for frame in container.decode(stream):
+            for mono in resampler.resample(frame):
+                chunks.append(mono.to_ndarray().reshape(-1))
+        for mono in resampler.resample(None):
+            chunks.append(mono.to_ndarray().reshape(-1))
     if not chunks:
         raise ValueError("audio stream contained no decodable frames")
     audio = np.concatenate(chunks)
-    peak = float(np.max(np.abs(audio))) or 1.0
-    if peak > 1.5:
-        audio /= peak
     return audio, sample_rate
 
 
@@ -84,18 +82,23 @@ def analyse(path: Path) -> dict[str, object]:
         "file": path.name,
         "durationSeconds": round(len(audio) / sample_rate, 3),
         "sampleRate": sample_rate,
-        "voicedFraction": round(float(np.mean(voiced)), 3),
+        "energyActiveFraction": round(float(np.mean(voiced)), 3),
+        "voicedFraction": None,
+        "usableSpeechDurationSeconds": None,
+        "confidence": "low for speech attribution; high for decoded duration and mixture RMS",
         "rmsDbMedian": round(float(np.median(db)), 2),
         "rmsDbP10ToP90": round(float(np.percentile(db, 90) - np.percentile(db, 10)), 2),
-        "pauseCount": len(pause_runs),
-        "pauseSecondsMedian": round(float(np.median(pause_runs)), 3) if pause_runs else None,
-        "pauseSecondsP90": round(float(np.percentile(pause_runs, 90)), 3) if pause_runs else None,
-        "pitchHzMedian": round(pitch_median, 2) if pitch_median else None,
-        "pitchHzMovementP10ToP90": round(pitch_range, 2) if pitch_range else None,
+        "lowEnergyIntervalCount": len(pause_runs),
+        "lowEnergySecondsMedian": round(float(np.median(pause_runs)), 3) if pause_runs else None,
+        "lowEnergySecondsP90": round(float(np.percentile(pause_runs, 90)), 3) if pause_runs else None,
+        "roughMixturePitchHzMedian": round(pitch_median, 2) if pitch_median else None,
+        "roughMixturePitchRangeHz": round(pitch_range, 2) if pitch_range else None,
+        "speechPitchHzMedian": None,
+        "phraseEndingContour": None,
         "limitations": [
             "No transcription or lexical speaking-rate estimate was inferred.",
-            "Crowd/music/noise are excluded only with an RMS voicing gate; metrics are broad delivery observations.",
-            "Pitch uses a conservative autocorrelation estimate and is not a speaker identity feature.",
+            "Energy gating cannot distinguish speech from crowd/music. Low-energy intervals are not verified speech pauses.",
+            "Autocorrelation is a mixture diagnostic only; pitch and phrase contours are not attributed to the reference speaker.",
         ],
     }
 
@@ -113,24 +116,14 @@ def main() -> None:
             records.append(analyse(clip))
         except Exception as error:  # noqa: BLE001 - preserve per-clip limitations
             failures.append({"file": clip.name, "reason": str(error)})
-    usable_records = [record for record in records if float(record["voicedFraction"]) >= 0.05]
-    durations = [record["durationSeconds"] for record in usable_records]
-    pitch_values = [record["pitchHzMedian"] for record in usable_records if record["pitchHzMedian"]]
-    pause_values = [record["pauseSecondsMedian"] for record in usable_records if record["pauseSecondsMedian"]]
     profile = {
         "purpose": "broad non-identity performance style analysis for a distinct generic synthetic voice",
         "referenceFilesAnalyzed": len(records),
         "referenceFilesFound": len(clips),
         "clips": records,
         "failures": failures,
-        "aggregate": {
-            "usableDurationSeconds": round(float(sum(durations)), 3) if durations else 0,
-            "usableClipCount": len(usable_records),
-            "medianDurationSeconds": round(float(np.median(durations)), 3) if durations else None,
-            "medianPitchHz": round(float(np.median(pitch_values)), 2) if pitch_values else None,
-            "medianPauseSeconds": round(float(np.median(pause_values)), 3) if pause_values else None,
-            "medianRmsVariationDb": round(float(np.median([r["rmsDbP10ToP90"] for r in usable_records])), 2) if usable_records else None,
-        },
+        "sourceDirectory": str(args.input_dir.resolve()),
+        "aggregate": {"decodedDurationSeconds": round(sum(record["durationSeconds"] for record in records), 3), "speechStyleAggregation": "withheld pending listening; no numeric averaging across delivery styles"},
         "privacy": {
             "speakerIdentityUsed": False,
             "speakerEmbeddingCreated": False,

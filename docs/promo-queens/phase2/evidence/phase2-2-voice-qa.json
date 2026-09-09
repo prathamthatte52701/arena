@@ -1,0 +1,41 @@
+{
+  "date": "2026-09-09",
+  "headBefore": "7b65398c0b2dced4e49929a26dc138d845119517",
+  "commitResolution": "git log -1 --format=%H -- docs/promo-queens/phase2/evidence/phase2-2-voice-qa.json",
+  "verdict": "QUALIFIED: technical gates pass; final auditory naturalness and phoneme-level accuracy are not independently certified",
+  "scope": "Phase 2.2 voice only; no image, renderer, reference asset or performance-director changes",
+  "referenceSource": "new-voice-rhea-ripley/new voice rhea ripley/raw",
+  "references": {"filesFound": 3, "filesAnalyzed": 3, "decodedSeconds": [22.528,37.717,30.4], "oldSourcesUsed": false, "speakerOnlyUsableDuration": null, "limitation": "Mixed soundtrack analysis cannot establish isolated speaker pitch, naturalness or phrase contour."},
+  "voice": {"model": "en_US-kristin-medium", "profile": "dark-power-v2-kristin", "runtime": "Piper 1.8.0", "identity": "stock generic female, not cloned", "selectionEvidence": "User listened to synthesized candidates and said Kristin is close; requested heavier delivery.", "limitations": "Pace and pauses only. No Irish accent control. Fuller/deeper preference is user feedback, not an objective auditory certification of final tuning."},
+  "candidateComparison": [
+    {"voice":"Amy","result":"Earlier user rejected as light/thin"},
+    {"voice":"Ryan","result":"User rejected male voice; not selected"},
+    {"voice":"en_GB-alba-medium","synthesized":true,"durationMs":2560},
+    {"voice":"en_US-ljspeech-high","synthesized":true,"durationMs":2584},
+    {"voice":"en_US-kristin-medium","synthesized":true,"durationMs":2642,"result":"User preferred; selected"}
+  ],
+  "scripts": {
+    "short": "You think you're ready for me? Then prove it.",
+    "long": "Maybe people believe promises, but I believe in showing up. Every time I enter this arena, I bring everything I have. You think you're ready for me? Then prove it. Fight for every victory, find your voice, and make every moment count. I will be here, ready for the challenge, when the lights come on again."
+  },
+  "realBrowserRuns": [
+    {"tone":"AUTO","shortMs":2618,"longMs":20151,"completion":"COMPLETE / REST"},
+    {"tone":"COLD","shortMs":3136,"longMs":22114,"completion":"COMPLETE / REST"},
+    {"tone":"ANGRY","shortMs":2470,"longMs":19144,"completion":"COMPLETE / REST"},
+    {"tone":"INTIMIDATING","shortMs":3074,"longMs":22601,"completion":"COMPLETE / REST"}
+  ],
+  "timelineEvidence": {
+    "shortCold": ["You WQ 2ms","think AE 221ms","ready L 971ms","me AE 1462ms","REST 1631ms","Then L 2139ms","prove FV 2387ms","it L 2630ms","REST 2875ms","COMPLETE REST"],
+    "longFinalWord": "again observed in all four tone traces before COMPLETE / REST",
+    "clock": "actual audio.currentTime, monotonic and duration-bounded; wall-time-only advancement rejected by hook fixture",
+    "limitation": "Sampled browser debug proves timeline progression, not forced phoneme alignment or independent audible final-word transcription. No new visual asset acceptance is claimed."
+  },
+  "stop": {"realGeneration":"GENERATING -> STOPPED, remained STOPPED after 5 seconds", "realPlayback":"SPEAKING -> STOPPED immediately", "controlled":"abort signal, audio pause/reset/detach, REST, stale response never creates audio all pass"},
+  "replay": {"result":"PASS", "realEvidence":"Delivered short COLD, changed textbox and selected ANGRY, previewed sample, REPLAY showed original sentence and original COLD cached duration 3136ms", "controlled":"Text and tone both preserved across preview and STOP"},
+  "fallback": {"result":"PASS", "method":"Restarted owned local server with missing PROMO_PIPER_MODEL; real API 503 and explicit BROWSER FALLBACK", "startWallMs":20481.3, "boundaryCharIndices":[0,4,10,17,23,27,31,36,42], "visualFloorsMs":[0,193,579,964,1467,1736,2600,2869,3331], "endWallMs":25009, "status":"COMPLETE", "controlledStop":"PASS", "expectedDiagnostic":"One explicit fallback warning for deliberate missing model"},
+  "exactText": {"requestAndUtf8Stdin":"PASS, unchanged whitespace/punctuation/words", "audibleTranscription":"Not independently certified"},
+  "wav": {"shortBytes":115516,"longBytes":888700,"validPcmAndMeasuredDuration":true},
+  "validation400": ["malformed JSON","null payload","BOGUS tone","null tone","empty tone","numeric text","421 characters"],
+  "gates": {"npmTest":"59/59 PASS","typecheck":"PASS","lint":"PASS","build":"PASS (non-failing vinext route-classification notice)","browserControlledRaceChecks":"14/14 PASS","neuralBrowserConsoleErrors":0},
+  "mediaPolicy": "Reference MP4s, generated WAVs and model weights remain local and ignored. Unrelated visual ZIP left untouched."
+}

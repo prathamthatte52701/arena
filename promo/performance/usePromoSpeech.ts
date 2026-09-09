@@ -4,9 +4,11 @@ import { REST_MOUTH, type MouthTarget, type Viseme } from '../face/mouth.ts';
 import { createVisemeTimeline, segmentAt, timelineDeformation, timelineDuration, type TimelineSegment } from '../speech/textTimeline.ts';
 import { DEFAULT_SPEECH_RATE } from '../speech/timing.ts';
 import { beginSpeechSession, createSpeechSessionState, invalidateSpeechSession, isCurrentSpeechSession } from '../speech/session.ts';
-import { advanceSpeechClock, type SpeechClockState } from '../speech/clock.ts';
+import { advanceSpeechClock, applySpeechBoundaryAnchor, type SpeechClockState } from '../speech/clock.ts';
 import { createPerformanceTimeline, finalPerformance, performanceAt, type PerformanceFrame } from './timeline.ts';
 import { calibrateVisemeTimeline, createTtsRequest, monotonicAudioElapsed } from '../voice/pipeline.ts';
+import { createReplayMemory } from '../voice/replay.ts';
+import { measuredAudioDuration } from '../voice/audioMetadata.ts';
 import type { Expression, Gaze, Tone } from './types.ts';
 
 export const SAMPLE_PROMO = "You really think you're ready for me? Then prove it.";
@@ -53,6 +55,7 @@ function preferredVoice(): SpeechSynthesisVoice | undefined {
 function releaseAudio(audio: HTMLAudioElement | null, objectUrl: string | null) {
   if (!audio) return;
   audio.onplay = null;
+  audio.onplaying = null;
   audio.onpause = null;
   audio.onended = null;
   audio.onerror = null;
@@ -77,7 +80,7 @@ export function usePromoSpeech() {
   const runtime = useRef<Runtime | null>(null);
   const abortController = useRef<AbortController | null>(null);
   const debugLastUpdate = useRef(0);
-  const lastDeliveredTone = useRef<Tone>('AUTO');
+  const delivered = useRef(createReplayMemory());
   const finalHold = useRef<{ until: number; performance: PerformanceFrame } | null>(null);
   const sampleCache = useRef<{ nowMs: number; sample: { deformation: MouthTarget['deformation']; performance: PerformanceFrame | null; elapsedMs: number; segment: TimelineSegment | null } | null } | null>(null);
 
@@ -125,6 +128,7 @@ export function usePromoSpeech() {
   }, []);
 
   const startBrowserFallback = useCallback((source: string, selectedTone: Tone) => {
+    if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) { setStatus('ERROR'); return; }
     const id = beginSpeechSession(sessions.current, source);
     const timeline = createVisemeTimeline(source, DEFAULT_SPEECH_RATE);
     const performanceTimeline = createPerformanceTimeline(source, selectedTone);
@@ -156,10 +160,7 @@ export function usePromoSpeech() {
       if (!wordStart) return;
       const now = window.performance.now();
       const limit = timelineDuration(runtime.current.timeline);
-      const elapsed = Math.max(0, wordStart.startMs);
-      runtime.current.targetOffsetMs = Math.min(limit, elapsed);
-      runtime.current.floorElapsedMs = Math.max(runtime.current.floorElapsedMs, elapsed);
-      runtime.current.lastSampleAt = now;
+      applySpeechBoundaryAnchor(runtime.current, wordStart.startMs, now, limit);
       console.debug('[promo-voice] fallback-boundary', JSON.stringify({ sessionId: id, charIndex: event.charIndex, wallMs: now, visualFloorMs: runtime.current.floorElapsedMs }));
     };
     speech.onpause = () => { if (isCurrentSpeechSession(sessions.current, id) && runtime.current) { runtime.current.paused = true; runtime.current.pausedAt = window.performance.now(); setStatus('PAUSED'); } };
@@ -177,9 +178,8 @@ export function usePromoSpeech() {
     let requestData;
     try { requestData = createTtsRequest(source, selectedTone); } catch { setStatus('ERROR'); return; }
     if (remember) {
-      sessions.current.lastDeliveredText = source;
+      delivered.current.remember(source, selectedTone);
       setLastDeliveredText(source);
-      lastDeliveredTone.current = selectedTone;
     }
     const id = beginSpeechSession(sessions.current, source);
     const timeline = createVisemeTimeline(source, DEFAULT_SPEECH_RATE);
@@ -206,7 +206,7 @@ export function usePromoSpeech() {
       active.audio = audio;
       active.objectUrl = objectUrl;
       active.engine = 'LOCAL NEURAL';
-      audio.onplay = () => {
+      audio.onplaying = () => {
         if (!isCurrentSpeechSession(sessions.current, id) || !runtime.current) return;
         runtime.current.started = true;
         runtime.current.paused = false;
@@ -217,14 +217,11 @@ export function usePromoSpeech() {
       audio.onpause = () => { if (isCurrentSpeechSession(sessions.current, id) && runtime.current && !audio.ended) { runtime.current.paused = true; setStatus('PAUSED'); } };
       audio.onended = () => finishSpeech(id);
       audio.onerror = () => { if (isCurrentSpeechSession(sessions.current, id)) { console.error('[promo-voice] generated audio playback failed'); cancelCurrent(null, false); setVoiceEngine('BROWSER FALLBACK'); startBrowserFallback(source, selectedTone); } };
-      await new Promise<void>((resolve, reject) => {
-        const onMetadata = () => { const duration = Number.isFinite(audio.duration) ? audio.duration * 1000 : 0; if (runtime.current && isCurrentSpeechSession(sessions.current, id)) { runtime.current.generatedDurationMs = duration || Number(response.headers.get('X-Promo-TTS-Duration-Ms')) || 0; runtime.current.timeline = calibrateVisemeTimeline(runtime.current.timeline, runtime.current.generatedDurationMs); setGeneratedDurationMs(runtime.current.generatedDurationMs); } resolve(); };
-        const onError = () => reject(new Error('Generated audio metadata failed'));
-        audio.addEventListener('loadedmetadata', onMetadata, { once: true });
-        audio.addEventListener('error', onError, { once: true });
-        audio.load();
-      });
+      const duration = await measuredAudioDuration(audio, controller.signal);
       if (!isCurrentSpeechSession(sessions.current, id) || controller.signal.aborted || !runtime.current) return;
+      runtime.current.generatedDurationMs = duration;
+      runtime.current.timeline = calibrateVisemeTimeline(runtime.current.timeline, duration);
+      setGeneratedDurationMs(duration);
       await audio.play();
     } catch (error) {
       if (!isCurrentSpeechSession(sessions.current, id) || controller.signal.aborted) return;
@@ -236,7 +233,7 @@ export function usePromoSpeech() {
   }, [cancelCurrent, startBrowserFallback, finishSpeech]);
 
   const deliver = useCallback(() => { void speak(text, true, tone); }, [speak, text, tone]);
-  const replay = useCallback(() => { const last = sessions.current.lastDeliveredText; if (last) void speak(last, true, lastDeliveredTone.current); }, [speak]);
+  const replay = useCallback(() => { const last = delivered.current.read(); if (last) void speak(last.text, false, last.tone); }, [speak]);
   const stop = useCallback(() => cancelCurrent('STOPPED'), [cancelCurrent]);
   const speakPreview = useCallback((source: string) => { void speak(source, false, tone); }, [speak, tone]);
 
@@ -260,7 +257,7 @@ export function usePromoSpeech() {
 
   const sampleMouth = useCallback((nowMs: number): MouthTarget => {
     const sample = sampleSpeech(nowMs);
-    if (!sample) return { deformation: REST_MOUTH, immediate: true };
+    if (!sample || runtime.current?.paused) return { deformation: REST_MOUTH, immediate: true };
     const active = runtime.current;
     return { deformation: sample.deformation, immediate: !active || active.paused || !sample.segment || (sample.segment.kind === 'pause' && sample.elapsedMs - sample.segment.startMs >= 100) };
   }, [sampleSpeech]);

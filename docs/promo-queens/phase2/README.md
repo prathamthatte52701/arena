@@ -1,5 +1,17 @@
 # Promo Queens — Phase 2
 
+## Phase 2.2 voice repair (2026-09-09)
+
+Current primary voice is local Piper 1.8.0 `en_US-kristin-medium`, a distinct generic female voice, not a Rhea clone. User listening feedback preferred Kristin over the earlier light Amy result; Ryan was rejected as male. Alba, LJSpeech and Kristin comparison samples were actually synthesized. Final tuning changes only supported sentence silence and length scale. It cannot create an Irish accent or guarantee emotional delivery. No pitch/formant processing or fake emphasis control is used.
+
+Install locally with `python -m pip install piper-tts==1.8.0`. Download the Kristin ONNX and matching `.onnx.json` from the [official Piper voice repository](https://huggingface.co/rhasspy/piper-voices/tree/main/en/en_US/kristin/medium). Default Windows location is `%LOCALAPPDATA%/PromoQueens/piper/en_US-kristin-medium/en_US-kristin-medium.onnx`. `PROMO_PIPER_MODEL` overrides the ONNX path; `PROMO_TTS_PYTHON` overrides the Python executable. Both model files must exist. Model weights, local references and generated WAVs are not committed.
+
+Only `new-voice-rhea-ripley/new voice rhea ripley/raw/reference-01.mp4` through `reference-03.mp4` were analyzed for this rebuild. Mixed soundtrack measurements are not reliable speaker-only pitch or usable-speech measurements. No old reference folder was used.
+
+Exact textarea text passes unchanged through JSON and UTF-8 Piper stdin. Invalid runtime tones return HTTP 400. REPLAY stores text plus tone independently of preview. STOP aborts generation, invalidates stale sessions, and detaches/resets playback. Neural lip-sync uses measured WAV duration and `audio.currentTime`; within-word timing remains an approximation. Missing local models explicitly select BROWSER FALLBACK, restoring the Phase 2.1 monotonic word-boundary anchor path.
+
+Validation: `npm test`, `npm run typecheck`, `npm run lint`, `npm run build`; real API smoke with `node scripts/voice_smoke.mjs`; controlled browser race fixture via `npx vite --config tests/mouth-vite.config.ts`, then `/tests/voice-runtime.html`. See `evidence/phase2-2-voice-qa.json` for actual browser results and limitations. Earlier sections below are historical Phase 2/3 records, not the current primary engine specification.
+
 ## Rhea typed speech + deterministic lip-sync
 
 BASE COMMIT: `5c37c29f68e7a95e64f22ca1952e39f3a5678912`

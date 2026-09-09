@@ -40,3 +40,5 @@ next-env.d.ts
 
 # Local performance-only voice references (never commit recordings)
 voice-references/
+new voice rhea ripley/
+new-voice-rhea-ripley/
