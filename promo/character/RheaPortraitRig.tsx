@@ -1,7 +1,11 @@
 'use client';
 /* oxlint-disable jsx-a11y/prefer-tag-over-role -- The canvas itself is the live image; img cannot render animated texture coordinates. */
-import { useEffect, useRef, useState } from 'react';
-import type { FaceControls, Framing } from '../performance/types';
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import Image from 'next/image';
+import { createBodyPoseController } from '../body/controller';
+import { rheaBodyProfile } from '../body/rheaBodyProfile';
+import type { BodyPoseName, Framing } from '../body/types';
+import type { FaceControls } from '../performance/types';
 import type { PerformanceTarget } from '../performance/types';
 import { createFaceController } from '../face/controller';
 import { createPortraitRenderer } from './portraitRenderer';
@@ -9,12 +13,14 @@ import { rheaProfile } from './rheaProfile';
 import type { MouthTarget } from '../face/mouth.ts';
 import styles from './rig.module.css';
 
-export function RheaPortraitRig({ controls, framing, sampleMouth, samplePerformance }: { controls: FaceControls; framing: Framing; sampleMouth: (nowMs: number) => MouthTarget; samplePerformance: (nowMs: number) => PerformanceTarget | null }) {
+export function RheaPortraitRig({ controls, framing, bodyPose, sampleMouth, samplePerformance }: { controls: FaceControls; framing: Framing; bodyPose: BodyPoseName; sampleMouth: (nowMs: number) => MouthTarget; samplePerformance: (nowMs: number) => PerformanceTarget | null }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const controlsRef = useRef(controls);
   const sampleMouthRef = useRef(sampleMouth);
   const samplePerformanceRef = useRef(samplePerformance);
   const [status, setStatus] = useState('Loading portrait');
+  const bodyController = useMemo(() => createBodyPoseController(), []);
+  const bodyFrame = bodyController.sample(bodyPose, framing);
   useEffect(() => { controlsRef.current = controls; }, [controls]);
   useEffect(() => { sampleMouthRef.current = sampleMouth; }, [sampleMouth]);
   useEffect(() => { samplePerformanceRef.current = samplePerformance; }, [samplePerformance]);
@@ -59,10 +65,28 @@ export function RheaPortraitRig({ controls, framing, sampleMouth, samplePerforma
       renderer?.dispose();
     };
   }, []);
-  return <div className={`${styles.viewport} ${framing === 'CLOSE' ? styles.close : ''}`}>
-    <canvas ref={canvasRef} className={styles.portrait} width={rheaProfile.width} height={rheaProfile.height}
-      role="img" aria-label={`Rhea portrait, ${controls.expression.toLowerCase()}, looking toward ${controls.gaze.toLowerCase()}`}
-      data-testid="rhea-portrait" data-status={status} />
+  const framingClass = framing === 'CLOSE' ? styles.close : framing === 'FULL' ? styles.full : styles.medium;
+  const bodyStyle = {
+    '--body-height': `${bodyFrame.framingHeightPercent}%`,
+    '--body-top': `${bodyFrame.framingTopPercent}%`,
+    '--body-x': `${bodyFrame.bodyXPercent}%`,
+    '--body-y': `${bodyFrame.bodyYPercent}%`,
+    '--body-scale': bodyFrame.bodyScale,
+    '--torso-yaw': `${bodyFrame.torsoYawDeg}deg`,
+    '--torso-lean': `${bodyFrame.torsoLeanDeg}deg`,
+    '--head-x': `${bodyFrame.headXPercent}%`,
+    '--head-y': `${bodyFrame.headYPercent}%`,
+    '--head-scale': bodyFrame.headScale,
+    '--head-rotation': `${bodyFrame.headRotationDeg}deg`,
+  } as CSSProperties;
+
+  return <div className={`${styles.viewport} ${framingClass}`} data-framing={framing} data-body-pose={bodyFrame.name}>
+    <div className={styles.bodySurface} style={bodyStyle}>
+      <Image className={styles.bodyPlate} src={rheaBodyProfile.runtimeAsset} alt="" aria-hidden="true" draggable={false} fill sizes="(max-width: 900px) 100vw, 70vw" priority />
+      <canvas ref={canvasRef} className={styles.portrait} width={rheaProfile.width} height={rheaProfile.height}
+        role="img" aria-label={`Rhea portrait, ${controls.expression.toLowerCase()}, looking toward ${controls.gaze.toLowerCase()}`}
+        data-testid="rhea-portrait" data-status={status} />
+    </div>
     {status !== 'Live portrait' && <output className={styles.notice}>{status}</output>}
     <div className={styles.vignette} />
   </div>;

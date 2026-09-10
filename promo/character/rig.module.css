@@ -1,6 +1,14 @@
-.viewport { position:absolute; inset:0; overflow:hidden; background:#252427; }
-.portrait { position:absolute; width:auto; max-width:none; height:125%; left:50%; top:0; transform:translateX(-50%); transition:height .65s ease,top .65s ease; mask-image:linear-gradient(90deg,transparent,#000 9%,#000 91%,transparent); }
+.viewport { position:absolute; inset:0; overflow:hidden; background:#252427; perspective:1400px; }
+.bodySurface { position:absolute; inset:0; transform-style:preserve-3d; }
+.bodyPlate { display:none; width:100%; height:100%; object-fit:contain; }
+.portrait { position:absolute; width:auto; max-width:none; height:125%; left:50%; top:0; transform:translateX(-50%); transition:height .65s ease,top .65s ease,transform .5s ease; mask-image:linear-gradient(90deg,transparent,#000 9%,#000 91%,transparent); }
 .close .portrait { height:200%; top:-17%; }
+.medium .bodySurface,
+.full .bodySurface { position:absolute; inset:auto auto auto 50%; top:var(--body-top); height:var(--body-height); aspect-ratio:1122 / 1402; transform:translateX(calc(-50% + var(--body-x))) translateY(var(--body-y)) rotateZ(var(--torso-lean)) rotateY(var(--torso-yaw)) scale(var(--body-scale)); transform-origin:50% 54%; transition:height .65s ease,top .65s ease,transform .55s ease; }
+.medium .bodyPlate,
+.full .bodyPlate { display:block; }
+.medium .portrait,
+.full .portrait { width:100%; height:auto; left:0; top:0; transform:translate(var(--head-x),var(--head-y)) rotate(var(--head-rotation)) scale(calc(.304 * var(--head-scale))); transform-origin:50% 0; mask-image:radial-gradient(ellipse 26% 31% at 50% 25%,#000 0 78%,#000d 84%,transparent 93%); transition:transform .45s ease; }
 .vignette { position:absolute; inset:0; pointer-events:none; background:linear-gradient(0deg,#08090de8,transparent 24%,transparent 87%,#08090d55); box-shadow:inset 0 0 60px #08090d33; }
 .notice { position:absolute; z-index:2; inset:40% 15% auto; text-align:center; padding:20px; background:#15121d; }
-@media(prefers-reduced-motion:reduce) { .portrait { transition:none; } }
+@media(prefers-reduced-motion:reduce) { .portrait,.bodySurface { transition:none; } }

@@ -1,35 +1,41 @@
 import type { Dispatch, SetStateAction } from 'react';
-import type { FaceControls, Framing } from '../performance/types';
+import { BODY_POSE_NAMES, type BodyPoseName, type Framing } from '../body/types';
+import type { FaceControls } from '../performance/types';
 import { EXPRESSIONS } from '../face/expressions';
 import { GAZES } from '../face/gaze';
 import { MOUTH_DEFORMATIONS, type Viseme } from '../face/mouth';
 import type { SpeechDebug } from '../performance/usePromoSpeech';
 import styles from './review.module.css';
 
-export function RheaFaceReview({ controls, setControls, framing, setFraming, onStopSpeech, onSamplePhrase, debugEnabled, setDebugEnabled, debug }: {
+export function RheaFaceReview({ controls, setControls, framing, setFraming, bodyPose, setBodyPose, onStopSpeech, onSamplePhrase, debugEnabled, setDebugEnabled, debug }: {
   controls: FaceControls;
   setControls: Dispatch<SetStateAction<FaceControls>>;
   framing: Framing;
   setFraming: Dispatch<SetStateAction<Framing>>;
+  bodyPose: BodyPoseName;
+  setBodyPose: Dispatch<SetStateAction<BodyPoseName>>;
   onStopSpeech: () => void;
   onSamplePhrase: () => void;
   debugEnabled: boolean;
   setDebugEnabled: Dispatch<SetStateAction<boolean>>;
   debug: SpeechDebug;
 }) {
-  return <section className={styles.review} aria-label="Rhea face review">
-    <p className={styles.heading}>FACE REVIEW <span>01 / LISTENING PERFORMANCE</span></p>
+  return <section className={styles.review} aria-label="Rhea face and body review">
+    <p className={styles.heading}>FACE + BODY REVIEW <span>01 / LISTENING PERFORMANCE</span></p>
     <fieldset><legend>EXPRESSION</legend><div className={styles.buttons}>{EXPRESSIONS.map(expression =>
       <button key={expression} aria-pressed={controls.expression === expression}
         onClick={() => setControls(current => ({ ...current, expression }))}>{expression}</button>)}</div></fieldset>
     <fieldset><legend>GAZE</legend><div className={styles.buttons}>{GAZES.map(gaze =>
       <button key={gaze} aria-pressed={controls.gaze === gaze}
         onClick={() => setControls(current => ({ ...current, gaze }))}>{gaze}</button>)}</div></fieldset>
+    <fieldset><legend>BODY POSE</legend><div className={styles.buttons}>{BODY_POSE_NAMES.map(pose =>
+      <button key={pose} aria-pressed={bodyPose === pose} onClick={() => setBodyPose(pose)}>{pose}</button>)}</div></fieldset>
     <div className={styles.buttons}>
       <button onClick={() => setControls(current => ({ ...current, blinkPreview: null, blinkRequest: current.blinkRequest + 1 }))}>BLINK NOW</button>
       <button aria-pressed={controls.idle} onClick={() => setControls(current => ({ ...current, idle: !current.idle }))}>IDLE {controls.idle ? 'ON' : 'OFF'}</button>
       <button aria-pressed={framing === 'CLOSE'} onClick={() => setFraming('CLOSE')}>FACE CLOSE-UP</button>
       <button aria-pressed={framing === 'MEDIUM'} onClick={() => setFraming('MEDIUM')}>MEDIUM</button>
+      <button aria-pressed={framing === 'FULL'} onClick={() => setFraming('FULL')}>FULL</button>
     </div>
     <label className={styles.scrub}>Blink inspection <span>{Math.round((controls.blinkPreview ?? 0) * 100)}%</span>
       <input aria-label="Blink inspection" type="range" min="0" max="100" step="1" value={(controls.blinkPreview ?? 0) * 100}
@@ -43,6 +49,6 @@ export function RheaFaceReview({ controls, setControls, framing, setFraming, onS
     </div></fieldset>
     <label className={styles.debugToggle}><input type="checkbox" checked={debugEnabled} onChange={event => setDebugEnabled(event.target.checked)} /> TIMELINE DEBUG</label>
     {debugEnabled && <p className={styles.debug} data-testid="timeline-debug">WORD {debug.word}<br />VISEME {debug.viseme}<br />ELAPSED {debug.elapsedMs}MS · POS {debug.timelinePosition.toFixed(2)}<br />SENTENCE {debug.sentence}<br />BEAT {debug.beatIndex ?? '—'} · {debug.expression} · {debug.gaze}<br />INTENSITY {debug.intensity.toFixed(2)} · HEAD {debug.headBias.x.toFixed(2)},{debug.headBias.y.toFixed(2)}<br />FINAL HOLD {debug.finalHold ? 'YES' : 'NO'}<br />SESSION {debug.sessionId ?? '—'}</p>}
-    <p className={styles.readout}>{controls.expression} · {controls.gaze} · {framing}<br />Original portrait · bounded region motion · deterministic lip-sync</p>
+    <p className={styles.readout}>{controls.expression} · {controls.gaze} · {bodyPose} · {framing}<br />Canonical live face · accepted static body plate · deterministic lip-sync</p>
   </section>;
 }
