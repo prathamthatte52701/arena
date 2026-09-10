@@ -5,7 +5,7 @@
 <script type="module">
 import {createPortraitRenderer} from '/promo/character/portraitRenderer.ts';
 import {createFaceController} from '/promo/face/controller.ts';
-import {MOUTH_DEFORMATIONS,REST_MOUTH} from '/promo/face/mouth.ts';
+import {blendMouth,MOUTH_DEFORMATIONS,REST_MOUTH} from '/promo/face/mouth.ts';
 import {createVisemeTimeline,segmentAt,timelineDeformation} from '/promo/speech/textTimeline.ts';
 import {rheaV2Assets} from '/promo/character/rheaV2Assets.ts';
 const canvas=document.querySelector('canvas');
@@ -17,15 +17,35 @@ const frame=controller.update(0,controls);
 function draw(mouth){renderer.draw({...frame,mouth});}
 function pixels(){const gl=canvas.getContext('webgl'); const data=new Uint8Array(180*160*4); gl.readPixels(462,1402-713,180,160,gl.RGBA,gl.UNSIGNED_BYTE,data);return data;}
 function delta(a,b){let sum=0,changed=0;for(let i=0;i<a.length;i+=4){const d=(Math.abs(a[i]-b[i])+Math.abs(a[i+1]-b[i+1])+Math.abs(a[i+2]-b[i+2]))/3;sum+=d;if(d>8)changed++;}return {mean:sum/(a.length/4),changed};}
+function cornerTear(data,rest){
+ const width=180,height=160,strips=[[0,35],[144,179]];
+ return strips.map(([start,end])=>{
+  let maxRun=0,darkChanged=0;
+  for(let y=0;y<height;y++){
+   let run=0;
+   for(let x=start;x<=end;x++){
+    const i=(y*width+x)*4;
+    const luminance=(data[i]+data[i+1]+data[i+2])/3;
+    const change=(Math.abs(data[i]-rest[i])+Math.abs(data[i+1]-rest[i+1])+Math.abs(data[i+2]-rest[i+2]))/3;
+    if(luminance<55&&change>12){run++;darkChanged++;maxRun=Math.max(maxRun,run);}else run=0;
+   }
+  }
+  return {maxRun,darkChanged};
+ });
+}
 for(const [name,mouth] of Object.entries(MOUTH_DEFORMATIONS)){const b=document.createElement('button');b.textContent=name;b.onclick=()=>{draw(mouth);document.querySelector('#result').textContent=name;};document.querySelector('#controls').append(b);}
 document.querySelector('#test').onclick=()=>{
  const images={};for(const [name,mouth] of Object.entries(MOUTH_DEFORMATIONS)){draw(mouth);images[name]=pixels();}
+ const transitionImages={};
+ for(const [name,from] of [['AE_TO_MBP',MOUTH_DEFORMATIONS.AE],['L_TO_MBP',MOUTH_DEFORMATIONS.L]]){draw(blendMouth(from,MOUTH_DEFORMATIONS.MBP,.05));transitionImages[name]=pixels();}
  const results=[];
  const check=(name,pass,detail)=>results.push({name,pass,detail});
  for(const [a,b] of [['REST','AE'],['REST','O'],['AE','O'],['REST','MBP'],['REST','FV'],['REST','L'],['REST','WQ']]){const d=delta(images[a],images[b]);check(a+' vs '+b,d.changed>100&&d.mean>.3,d);}
  // Closed MBP must not acquire the near-black interior band present in AE.
  function blackBand(data){let n=0;for(let y=94;y<104;y++)for(let x=75;x<105;x++){let i=(y*180+x)*4;if(data[i]<12&&data[i+1]<12&&data[i+2]<12)n++;}return n;}
  check('MBP closed band',blackBand(images.MBP)<blackBand(images.AE),{mbp:blackBand(images.MBP),ae:blackBand(images.AE)});
+ const cornerTears=Object.fromEntries(Object.entries({...images,...transitionImages}).map(([name,image])=>[name,cornerTear(image,images.REST)]));
+ check('V2 mouth visemes do not create horizontal corner tears',Object.entries(cornerTears).every(([name,corners])=>name==='REST'||corners.every(corner=>corner.maxRun<=14)),cornerTears);
  controller.update(1,controls,{deformation:MOUTH_DEFORMATIONS.AE});
  renderer.draw(controller.update(1.1,controls,{deformation:REST_MOUTH,immediate:true}));
  check('STOP rendered REST',delta(images.REST,pixels()).changed===0,delta(images.REST,pixels()));

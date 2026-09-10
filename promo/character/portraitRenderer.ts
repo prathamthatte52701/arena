@@ -68,13 +68,21 @@ void main() {
   p.y += expression.x*(1.+expression.y*.55)*region(p,vec2(622.,630.),vec2(52.,38.));
   // Split the original seam into independent upper/lower lip edges.
   vec2 center = vec2(552.,633.);
-  float local = region(p, center, vec2(134.,58.));
-  float widthScale = 1. + mouth.y*.35 - mouth.w*.37;
+  // Horizontal width/rounding must stop before the cheek. The former 134x58
+  // influence ellipse still sampled the source seam beyond the real corners.
+  float local = region(p, center, vec2(96.,38.));
+  float widthScale = clamp(1. + mouth.y*.35 - mouth.w*.37,.62,1.12);
   p.x = center.x + (p.x-center.x)/mix(1.,widthScale,local);
-  float x = (p.x-center.x)/88.;
+  // The cavity belongs inside the lipstick silhouette; the wider lip ROI below
+  // may still compress/round the lips without turning cheek pixels into seam.
+  float x = (p.x-center.x)/70.;
   float arch = max(0., 1.-x*x);
+  // Fade every vertical seam remap before the real lip corners. Without this
+  // horizontal envelope, even a sub-pixel blended opening samples the dark
+  // source seam all the way to abs(x) == 1 and produces a cheek-facing spike.
+  float corner = smoothstep(.12,.52,arch);
   float seam = 633. - 3.*x*x;
-  float opening = mouth.x*54.*pow(arch,.65);
+  float opening = mouth.x*54.*pow(arch,1.15);
   float top = seam-opening*.32;
   float bottom = seam+opening*.68;
   float y = p.y;
@@ -82,14 +90,19 @@ void main() {
   if (abs(x)<1. && opening>.01 && y>=top && y<=bottom) {
     // Expand source seam pixels into the cavity, preserving texture variation.
     float depth = (y-top)/max(opening,.001);
-    p.y = seam + (depth-.5)*1.2;
-    interior = smoothstep(0.,1.2,y-top)*smoothstep(0.,1.2,bottom-y);
+    float cavityY = seam + (depth-.5)*1.2;
+    float verticalFeather = min(4.,max(.6,opening*.24));
+    float cavity = smoothstep(0.,verticalFeather,y-top)*smoothstep(0.,verticalFeather,bottom-y)*corner;
+    p.y = mix(y,cavityY,cavity);
+    interior = cavity;
   } else if (y<top && y>560.) {
-    p.y = mix(560.,seam,(y-560.)/(top-560.));
+    float upperY = mix(560.,seam,(y-560.)/(top-560.));
+    p.y = mix(y,upperY,corner);
   } else if (y>bottom && y<740.) {
-    p.y = mix(seam,740.,(y-bottom)/(740.-bottom));
+    float lowerY = mix(seam,740.,(y-bottom)/(740.-bottom));
+    p.y = mix(y,lowerY,corner);
   }
-  float lip = region(p,center,vec2(98.,34.));
+  float lip = region(p,center,vec2(98.,34.))*smoothstep(.1,.4,arch);
   p.y = seam+(p.y-seam)*(1.+mouth.z*.65*lip);
   p.y += mouthDetail.x*12.*region(p,vec2(552.,658.),vec2(83.,28.));
   p.y -= mouthDetail.y*4.*region(p,vec2(552.,710.),vec2(120.,52.));
