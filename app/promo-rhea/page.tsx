@@ -5,6 +5,8 @@ import { RheaPortraitRig } from '../../promo/character/RheaPortraitRig';
 import { RheaFaceReview } from '../../promo/dev/RheaFaceReview';
 import { SAMPLE_LIP_SYNC_PHRASE, usePromoSpeech } from '../../promo/performance/usePromoSpeech';
 import type { BodyPoseName, Framing } from '../../promo/body/types';
+import type { CameraPerformanceSignal, CameraStateName } from '../../promo/camera/types';
+import type { GestureName } from '../../promo/gestures/types';
 import type { FaceControls, Tone } from '../../promo/performance/types';
 import styles from './promo.module.css';
 
@@ -12,8 +14,20 @@ export default function PromoRhea() {
   const [controls, setControls] = useState<FaceControls>({ expression: 'NEUTRAL', gaze: 'INTERVIEWER', idle: true, blinkRequest: 0, blinkPreview: null, mouthPreview: null });
   const [framing, setFraming] = useState<Framing>('MEDIUM');
   const [bodyPose, setBodyPose] = useState<BodyPoseName>('NEUTRAL_STAND');
+  const [gesturePreview, setGesturePreview] = useState<GestureName | null>(null);
+  const [gestureProgress, setGestureProgress] = useState(0.5);
+  const [cameraPreview, setCameraPreview] = useState<CameraStateName | null>(null);
+  const [cameraProgress, setCameraProgress] = useState(0.5);
   const [review, setReview] = useState(false);
   const speech = usePromoSpeech();
+  const completedPerformance: CameraPerformanceSignal | null = speech.debug.finalHold && speech.debug.beatIndex !== null ? {
+    beatIndex: speech.debug.beatIndex,
+    expression: speech.debug.expression,
+    gaze: speech.debug.gaze,
+    intensity: speech.debug.intensity,
+    headBias: speech.debug.headBias,
+    finalHold: true,
+  } : null;
 
   return <main className={styles.shell}>
     <header className={styles.header}>
@@ -22,12 +36,12 @@ export default function PromoRhea() {
     </header>
     <section className={styles.stage}>
       <div className={styles.set}>
-        <RheaPortraitRig controls={controls} framing={framing} bodyPose={bodyPose} sampleMouth={speech.sampleMouth} samplePerformance={speech.samplePerformance} />
+        <RheaPortraitRig controls={controls} framing={framing} bodyPose={bodyPose} gesturePreview={gesturePreview} gestureProgress={gestureProgress} cameraPreview={cameraPreview} cameraProgress={cameraProgress} cameraFinalPerformance={completedPerformance} sampleMouth={speech.sampleMouth} samplePerformance={speech.samplePerformance} />
         <div className={styles.topline}><span>BACKSTAGE / 01</span><span className={styles.live}>● LIVE</span></div>
         <div className={styles.nameplate}><p>THE INTERVIEW</p><h1>RHEA</h1><span>{controls.expression} / {controls.gaze}</span></div>
       </div>
       <aside className={styles.side}>
-        {review ? <RheaFaceReview controls={controls} setControls={setControls} framing={framing} setFraming={setFraming} bodyPose={bodyPose} setBodyPose={setBodyPose} onStopSpeech={speech.stop} onSamplePhrase={() => { setControls(current => ({ ...current, mouthPreview: null })); speech.speakPreview(SAMPLE_LIP_SYNC_PHRASE); }} debugEnabled={speech.debugEnabled} setDebugEnabled={speech.setDebugEnabled} debug={speech.debug} /> :
+        {review ? <RheaFaceReview controls={controls} setControls={setControls} framing={framing} setFraming={setFraming} bodyPose={bodyPose} setBodyPose={setBodyPose} gesturePreview={gesturePreview} setGesturePreview={setGesturePreview} gestureProgress={gestureProgress} setGestureProgress={setGestureProgress} cameraPreview={cameraPreview} setCameraPreview={setCameraPreview} cameraProgress={cameraProgress} setCameraProgress={setCameraProgress} onStopSpeech={speech.stop} onSamplePhrase={() => { setControls(current => ({ ...current, mouthPreview: null })); speech.speakPreview(SAMPLE_LIP_SYNC_PHRASE); }} debugEnabled={speech.debugEnabled} setDebugEnabled={speech.setDebugEnabled} debug={speech.debug} /> :
           <div className={styles.prompt}><p className={styles.kicker}>RHEA / BACKSTAGE INTERVIEW</p><h2>Say it to her face.</h2><p className={styles.question}>“What&apos;s next for you?”</p><p className={styles.description}>The room goes quiet. She waits for your next words.</p></div>}
         <section className={styles.panel} aria-label="Promo dialogue">
           <label htmlFor="promo-text">YOUR PROMO</label>

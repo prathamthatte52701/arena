@@ -1,19 +1,30 @@
 import type { Dispatch, SetStateAction } from 'react';
 import { BODY_POSE_NAMES, type BodyPoseName, type Framing } from '../body/types';
+import { CAMERA_STATE_NAMES, type CameraStateName } from '../camera/types';
 import type { FaceControls } from '../performance/types';
 import { EXPRESSIONS } from '../face/expressions';
 import { GAZES } from '../face/gaze';
 import { MOUTH_DEFORMATIONS, type Viseme } from '../face/mouth';
+import { RHEA_GESTURES } from '../gestures/rheaGestures';
+import { GESTURE_NAMES, type GestureName } from '../gestures/types';
 import type { SpeechDebug } from '../performance/usePromoSpeech';
 import styles from './review.module.css';
 
-export function RheaFaceReview({ controls, setControls, framing, setFraming, bodyPose, setBodyPose, onStopSpeech, onSamplePhrase, debugEnabled, setDebugEnabled, debug }: {
+export function RheaFaceReview({ controls, setControls, framing, setFraming, bodyPose, setBodyPose, gesturePreview, setGesturePreview, gestureProgress, setGestureProgress, cameraPreview, setCameraPreview, cameraProgress, setCameraProgress, onStopSpeech, onSamplePhrase, debugEnabled, setDebugEnabled, debug }: {
   controls: FaceControls;
   setControls: Dispatch<SetStateAction<FaceControls>>;
   framing: Framing;
   setFraming: Dispatch<SetStateAction<Framing>>;
   bodyPose: BodyPoseName;
   setBodyPose: Dispatch<SetStateAction<BodyPoseName>>;
+  gesturePreview: GestureName | null;
+  setGesturePreview: Dispatch<SetStateAction<GestureName | null>>;
+  gestureProgress: number;
+  setGestureProgress: Dispatch<SetStateAction<number>>;
+  cameraPreview: CameraStateName | null;
+  setCameraPreview: Dispatch<SetStateAction<CameraStateName | null>>;
+  cameraProgress: number;
+  setCameraProgress: Dispatch<SetStateAction<number>>;
   onStopSpeech: () => void;
   onSamplePhrase: () => void;
   debugEnabled: boolean;
@@ -30,6 +41,29 @@ export function RheaFaceReview({ controls, setControls, framing, setFraming, bod
         onClick={() => setControls(current => ({ ...current, gaze }))}>{gaze}</button>)}</div></fieldset>
     <fieldset><legend>BODY POSE</legend><div className={styles.buttons}>{BODY_POSE_NAMES.map(pose =>
       <button key={pose} aria-pressed={bodyPose === pose} onClick={() => setBodyPose(pose)}>{pose}</button>)}</div></fieldset>
+    <fieldset><legend>GESTURE</legend><div className={styles.buttons}>{GESTURE_NAMES.map(gesture => {
+      const definition = RHEA_GESTURES[gesture];
+      return <button key={gesture} className={definition.supported ? undefined : styles.unsupported} title={definition.reason ?? undefined} aria-pressed={gesturePreview === gesture}
+        onClick={() => { onStopSpeech(); setGesturePreview(gesture); }}>{gesture}{definition.supported ? '' : ' · UNSUPPORTED'}</button>;
+    })}</div></fieldset>
+    <label className={styles.scrub}>Gesture inspection <span>{Math.round(gestureProgress * 100)}%</span>
+      <input aria-label="Gesture inspection" type="range" min="0" max="100" step="1" value={gestureProgress * 100}
+        onChange={event => setGestureProgress(Number(event.target.value) / 100)} />
+    </label>
+    <button className={styles.release} onClick={() => setGesturePreview(null)}>RESUME PERFORMANCE GESTURES</button>
+    <fieldset><legend>CAMERA</legend><div className={styles.buttons}>{CAMERA_STATE_NAMES.map(camera =>
+      <button key={camera} aria-pressed={cameraPreview === camera} onClick={() => {
+        onStopSpeech();
+        setCameraPreview(camera);
+        if (camera === 'STATIC_FULL') setFraming('FULL');
+        else if (camera === 'STATIC_MEDIUM') setFraming('MEDIUM');
+        else if (camera === 'CLOSE_PROMO') setFraming('CLOSE');
+      }}>{camera}</button>)}</div></fieldset>
+    <label className={styles.scrub}>Camera inspection <span>{Math.round(cameraProgress * 100)}%</span>
+      <input aria-label="Camera inspection" type="range" min="0" max="100" step="1" value={cameraProgress * 100}
+        onChange={event => setCameraProgress(Number(event.target.value) / 100)} />
+    </label>
+    <button className={styles.release} onClick={() => setCameraPreview(null)}>RESUME PERFORMANCE CAMERA</button>
     <div className={styles.buttons}>
       <button onClick={() => setControls(current => ({ ...current, blinkPreview: null, blinkRequest: current.blinkRequest + 1 }))}>BLINK NOW</button>
       <button aria-pressed={controls.idle} onClick={() => setControls(current => ({ ...current, idle: !current.idle }))}>IDLE {controls.idle ? 'ON' : 'OFF'}</button>
@@ -49,6 +83,6 @@ export function RheaFaceReview({ controls, setControls, framing, setFraming, bod
     </div></fieldset>
     <label className={styles.debugToggle}><input type="checkbox" checked={debugEnabled} onChange={event => setDebugEnabled(event.target.checked)} /> TIMELINE DEBUG</label>
     {debugEnabled && <p className={styles.debug} data-testid="timeline-debug">WORD {debug.word}<br />VISEME {debug.viseme}<br />ELAPSED {debug.elapsedMs}MS · POS {debug.timelinePosition.toFixed(2)}<br />SENTENCE {debug.sentence}<br />BEAT {debug.beatIndex ?? '—'} · {debug.expression} · {debug.gaze}<br />INTENSITY {debug.intensity.toFixed(2)} · HEAD {debug.headBias.x.toFixed(2)},{debug.headBias.y.toFixed(2)}<br />FINAL HOLD {debug.finalHold ? 'YES' : 'NO'}<br />SESSION {debug.sessionId ?? '—'}</p>}
-    <p className={styles.readout}>{controls.expression} · {controls.gaze} · {bodyPose} · {framing}<br />Canonical live face · accepted static body plate · deterministic lip-sync</p>
+    <p className={styles.readout}>{controls.expression} · {controls.gaze} · {bodyPose} · {gesturePreview ?? 'LIVE GESTURES'} · {cameraPreview ?? 'LIVE CAMERA'} · {framing}<br />Canonical live face · accepted static body plate · bounded deterministic gesture and camera layers</p>
   </section>;
 }
