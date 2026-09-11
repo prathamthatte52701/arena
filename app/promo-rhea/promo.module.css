@@ -5,22 +5,37 @@
 .shell button { border:1px solid #5c5866; background:#181722; color:#fff; padding:11px 14px; border-radius:6px; cursor:pointer; }
 .shell button:hover { border-color:#d6a0b1; }
 .stage { max-width:1300px; margin:auto; display:grid; grid-template-columns:minmax(0,1.25fr) minmax(370px,.9fr); gap:24px; align-items:start; }
-.set { position:relative; height:min(820px,calc(100vh - 115px)); min-height:620px; overflow:hidden; border:1px solid #463141; border-radius:14px; background:#252427; }
-.sceneBackdrop { position:absolute; z-index:1; inset:0; pointer-events:none; transition:background .35s ease,box-shadow .35s ease; }
-.set[data-scene-background='CONTROLLED_STUDIO'] .sceneBackdrop { background:linear-gradient(115deg,transparent 52%,#b991a20d 100%); box-shadow:inset 0 0 70px #09080c33; }
-.set[data-scene-background='INTIMATE_BACKSTAGE'] .sceneBackdrop { background:linear-gradient(105deg,#31142524 0%,transparent 38%,#d68c5f12 100%),radial-gradient(circle at 84% 22%,#d98f6b1a,transparent 24%); box-shadow:inset 35px 0 75px #1208133d; }
-.set[data-scene-background='ARENA_LIGHTS'] .sceneBackdrop { background:linear-gradient(165deg,#7495c51c 0%,transparent 33%,#781a2b1f 100%),radial-gradient(ellipse at 50% -8%,#eef4ff24,transparent 32%); box-shadow:inset 0 -55px 95px #05060bd9; }
-.topline { position:absolute; z-index:2; inset:24px 25px auto; display:flex; justify-content:space-between; font-size:11px; letter-spacing:.16em; color:#d9c4b8; pointer-events:none; }
+.set { position:relative; isolation:isolate; height:min(820px,calc(100vh - 115px)); min-height:620px; overflow:hidden; border:1px solid #463141; border-radius:14px; background:#17171b; transition:border-color .3s ease,background .3s ease; }
+.set > div:not(.sceneBackdrop):not(.topline):not(.nameplate) { z-index:1; background:transparent; }
+.sceneBackdrop { position:absolute; z-index:2; inset:0; overflow:hidden; pointer-events:none; transition:background .35s ease,box-shadow .35s ease; }
+.sceneBackdrop::before,.sceneBackdrop::after { content:""; position:absolute; inset:0; pointer-events:none; }
+.environmentLabel { display:none; position:absolute; right:4.5%; top:15%; padding:9px 12px; border:1px solid #eee8; color:#f4edf2bd; font:800 22px/1 system-ui,sans-serif; letter-spacing:.14em; }
+.set[data-scene-background='CONTROLLED_STUDIO'] .sceneBackdrop { background:linear-gradient(90deg,#11131c9e 0 13%,transparent 22% 76%,#17182675 88%),linear-gradient(130deg,transparent 45%,#c29aad17); box-shadow:inset 0 0 86px #0708104d; }
+.set[data-scene-background='CONTROLLED_STUDIO'] .sceneBackdrop::before { inset:0 auto 0 5%; width:8%; border-inline:1px solid #e2cbd342; background:linear-gradient(110deg,#090a0ecc,#40343d6b 46%,#0b0c12b8 48%); }
+.set[data-scene-background='CONTROLLED_STUDIO'] .sceneBackdrop::after { inset:15% 6% auto auto; width:9px; height:46%; border-radius:8px; background:#e2bdc6bf; box-shadow:0 0 24px #dc9eaf8a,-18px 0 75px #99627752; }
+.set[data-scene-background='INTIMATE_BACKSTAGE'] .sceneBackdrop { background:linear-gradient(90deg,#0a080bc7 0 12%,transparent 28% 70%,#30151fa3 100%),linear-gradient(0deg,#2b151e4f,transparent 42%); box-shadow:inset 0 0 60px #0805086b; }
+.set[data-scene-background='INTIMATE_BACKSTAGE'] .sceneBackdrop::before { inset:8% 4% auto auto; width:16%; height:32%; border:2px solid #7b6065; background:repeating-linear-gradient(135deg,#171417df 0 11px,#4e3337c7 11px 14px); box-shadow:0 0 0 7px #111015c9,0 0 32px #d4784b7a; }
+.set[data-scene-background='INTIMATE_BACKSTAGE'] .sceneBackdrop::after { inset:auto 0 7% 0; height:5%; background:repeating-linear-gradient(135deg,#d28a46 0 18px,#171318 18px 36px); opacity:.78; box-shadow:0 -16px 38px #08060994; mask-image:linear-gradient(90deg,#000 0 18%,transparent 29% 72%,#000 84%); }
+.set[data-scene-background='ARENA_LIGHTS'] .sceneBackdrop { background:radial-gradient(ellipse at 50% -5%,#dce8ff30,transparent 35%),linear-gradient(110deg,#1d407678 0 10%,transparent 25% 75%,#681a2f69 92%); box-shadow:inset 0 -55px 90px #02030975; }
+.set[data-scene-background='ARENA_LIGHTS'] .sceneBackdrop::before { inset:56% -3% auto; height:25%; border-top:5px solid #eef0f6dc; border-bottom:5px solid #eef0f6c9; background:linear-gradient(180deg,transparent 44%,#eef0f6dc 45% 49%,transparent 50%); box-shadow:0 2px 0 #7c2334,0 22px 50px #02030a7d; mask-image:linear-gradient(90deg,#000 0 17%,transparent 28% 72%,#000 83%); }
+.set[data-scene-background='ARENA_LIGHTS'] .sceneBackdrop::after { inset:0; background:radial-gradient(circle at 8% 17%,#f4f7ff 0 3px,transparent 4px),radial-gradient(circle at 91% 21%,#ffe6df 0 3px,transparent 4px),repeating-radial-gradient(circle at 50% 110%,transparent 0 36px,#9fb5dc21 37px 38px,transparent 39px 72px); mask-image:linear-gradient(90deg,#000 0 24%,transparent 38% 62%,#000 76%); }
+.set[data-scene-background='PRESS_MEDIA_WALL'] .sceneBackdrop { background:linear-gradient(90deg,#222630b8 0 17%,transparent 30% 70%,#27232db8 86%),linear-gradient(180deg,#0e111733,transparent 60%); box-shadow:inset 0 0 70px #07080d75; }
+.set[data-scene-background='PRESS_MEDIA_WALL'] .sceneBackdrop::before { content:"PQ  PROMO QUEENS\A PROMO QUEENS  PQ\A PQ  PROMO QUEENS\A PROMO QUEENS  PQ\A PQ  PROMO QUEENS"; white-space:pre; inset:8% 2% auto; color:#fff9; font:750 14px/7.2 system-ui,sans-serif; letter-spacing:.1em; text-align:justify; text-shadow:0 1px 10px #0b0c12; mask-image:linear-gradient(90deg,#000 0 23%,transparent 34% 66%,#000 77%); }
+.set[data-scene-background='PRESS_MEDIA_WALL'] .sceneBackdrop::after { inset:auto 0 0; height:10%; background:linear-gradient(180deg,#555963d9,#181a21 34%,#090a0e); border-top:2px solid #c8bec587; box-shadow:0 -12px 30px #090a0e73; mask-image:linear-gradient(90deg,#000 0 17%,transparent 28% 72%,#000 83%); }
+.set[data-scene-background='PRESS_MEDIA_WALL'] .environmentLabel { display:block; }
+.set .topline { position:absolute; z-index:3; inset:24px 25px auto; display:flex; justify-content:space-between; font-size:11px; letter-spacing:.16em; color:#d9c4b8; pointer-events:none; }
 .live { color:#dec1ad; }
-.nameplate { position:absolute; z-index:2; bottom:28px; left:30px; pointer-events:none; }
+.set .nameplate { position:absolute; z-index:3; bottom:28px; left:30px; pointer-events:none; }
 .nameplate p { font-size:11px; letter-spacing:.22em; color:#d4a181; margin:0 0 7px; }
 .nameplate h1 { font-size:58px; letter-spacing:-.05em; font-weight:800; margin:0 0 8px; }
 .nameplate span { font-size:10px; letter-spacing:.16em; color:#bda9b5; }
 .side { display:grid; gap:18px; width:100%; justify-self:end; }
 .side[data-safe-text-area='LOWER_RIGHT'] .prompt { padding-top:58px; }
 .side[data-safe-text-area='RINGSIDE_RIGHT'] .prompt { padding-top:24px; }
+.side[data-safe-text-area='PRESS_RIGHT'] .prompt { padding-top:42px; }
 .shell[data-scene='BACKSTAGE'] .set { border-color:#563343; }
 .shell[data-scene='RING_ARENA'] .set { border-color:#3f4662; }
+.shell[data-scene='PRESS_CONFERENCE'] .set { border-color:#5d5260; }
 .prompt { padding:34px 24px 15px; }
 .kicker { color:#c89873; letter-spacing:.16em; font-size:12px; }
 .prompt h2 { font-size:clamp(32px,3.2vw,48px); line-height:1.06; margin:20px 0 28px; letter-spacing:-.04em; }

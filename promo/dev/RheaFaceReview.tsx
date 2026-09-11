@@ -1,12 +1,12 @@
 import type { Dispatch, SetStateAction } from 'react';
-import { BODY_POSE_NAMES, type BodyPoseName, type Framing } from '../body/types';
-import { CAMERA_STATE_NAMES, type CameraStateName } from '../camera/types';
+import type { BodyPoseName, Framing } from '../body/types';
+import type { CameraStateName } from '../camera/types';
 import type { FaceControls } from '../performance/types';
 import { EXPRESSIONS } from '../face/expressions';
 import { GAZES } from '../face/gaze';
 import { MOUTH_DEFORMATIONS, type Viseme } from '../face/mouth';
 import { RHEA_GESTURES } from '../gestures/rheaGestures';
-import { GESTURE_NAMES, type GestureName } from '../gestures/types';
+import type { GestureName } from '../gestures/types';
 import type { SpeechDebug } from '../performance/usePromoSpeech';
 import { SCENE_NAMES, type RheaSceneDefinition, type SceneName } from '../scenes/types';
 import styles from './review.module.css';
@@ -39,16 +39,16 @@ export function RheaFaceReview({ scene, sceneConfig, onSceneChange, controls, se
     <p className={styles.heading}>FACE + BODY REVIEW <span>01 / LISTENING PERFORMANCE</span></p>
     <fieldset><legend>SCENE</legend><div className={styles.buttons}>{SCENE_NAMES.map(name =>
       <button key={name} aria-pressed={scene === name} onClick={() => onSceneChange(name)}>{name === 'RING_ARENA' ? 'RING / ARENA' : name}</button>)}</div></fieldset>
-    <p className={styles.sceneSpec}>DEFAULT {sceneConfig.defaultFraming} · {sceneConfig.defaultPose} · {sceneConfig.defaultGesture}<br />CAMERAS {sceneConfig.allowedCameraStates.join(' · ')}<br />SAFE TEXT {sceneConfig.safeTextArea.placement} / {sceneConfig.safeTextArea.maxWidthPercent}%</p>
+    <p className={styles.sceneSpec}>DEFAULT {sceneConfig.defaultFraming} · {sceneConfig.defaultPose} · {sceneConfig.defaultGesture} · {sceneConfig.defaultCamera}<br />CAMERAS {sceneConfig.allowedCameraStates.join(' · ')}<br />SAFE TEXT {sceneConfig.safeTextArea.placement} / {sceneConfig.safeTextArea.maxWidthPercent}%</p>
     <fieldset><legend>EXPRESSION</legend><div className={styles.buttons}>{EXPRESSIONS.map(expression =>
       <button key={expression} aria-pressed={controls.expression === expression}
         onClick={() => setControls(current => ({ ...current, expression }))}>{expression}</button>)}</div></fieldset>
     <fieldset><legend>GAZE</legend><div className={styles.buttons}>{GAZES.map(gaze =>
       <button key={gaze} aria-pressed={controls.gaze === gaze}
         onClick={() => setControls(current => ({ ...current, gaze }))}>{gaze}</button>)}</div></fieldset>
-    <fieldset><legend>BODY POSE</legend><div className={styles.buttons}>{BODY_POSE_NAMES.map(pose =>
+    <fieldset><legend>BODY POSE</legend><div className={styles.buttons}>{sceneConfig.allowedPoses.map(pose =>
       <button key={pose} aria-pressed={bodyPose === pose} onClick={() => setBodyPose(pose)}>{pose}</button>)}</div></fieldset>
-    <fieldset><legend>GESTURE</legend><div className={styles.buttons}>{GESTURE_NAMES.map(gesture => {
+    <fieldset><legend>GESTURE</legend><div className={styles.buttons}>{sceneConfig.allowedGestures.map(gesture => {
       const definition = RHEA_GESTURES[gesture];
       return <button key={gesture} className={definition.supported ? undefined : styles.unsupported} title={definition.reason ?? undefined} aria-pressed={gesturePreview === gesture}
         onClick={() => { onStopSpeech(); setGesturePreview(gesture); }}>{gesture}{definition.supported ? '' : ' · UNSUPPORTED'}</button>;
@@ -58,7 +58,7 @@ export function RheaFaceReview({ scene, sceneConfig, onSceneChange, controls, se
         onChange={event => setGestureProgress(Number(event.target.value) / 100)} />
     </label>
     <button className={styles.release} onClick={() => setGesturePreview(null)}>RESUME PERFORMANCE GESTURES</button>
-    <fieldset><legend>CAMERA</legend><div className={styles.buttons}>{CAMERA_STATE_NAMES.map(camera =>
+    <fieldset><legend>CAMERA</legend><div className={styles.buttons}>{sceneConfig.allowedCameraStates.map(camera =>
       <button key={camera} aria-pressed={cameraPreview === camera} onClick={() => {
         onStopSpeech();
         setCameraPreview(camera);
@@ -74,9 +74,7 @@ export function RheaFaceReview({ scene, sceneConfig, onSceneChange, controls, se
     <div className={styles.buttons}>
       <button onClick={() => setControls(current => ({ ...current, blinkPreview: null, blinkRequest: current.blinkRequest + 1 }))}>BLINK NOW</button>
       <button aria-pressed={controls.idle} onClick={() => setControls(current => ({ ...current, idle: !current.idle }))}>IDLE {controls.idle ? 'ON' : 'OFF'}</button>
-      <button aria-pressed={framing === 'CLOSE'} onClick={() => setFraming('CLOSE')}>FACE CLOSE-UP</button>
-      <button aria-pressed={framing === 'MEDIUM'} onClick={() => setFraming('MEDIUM')}>MEDIUM</button>
-      <button aria-pressed={framing === 'FULL'} onClick={() => setFraming('FULL')}>FULL</button>
+      {sceneConfig.allowedFramings.map(option => <button key={option} aria-pressed={framing === option} onClick={() => setFraming(option)}>{option === 'CLOSE' ? 'FACE CLOSE-UP' : option}</button>)}
     </div>
     <label className={styles.scrub}>Blink inspection <span>{Math.round((controls.blinkPreview ?? 0) * 100)}%</span>
       <input aria-label="Blink inspection" type="range" min="0" max="100" step="1" value={(controls.blinkPreview ?? 0) * 100}

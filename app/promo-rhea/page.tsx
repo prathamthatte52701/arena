@@ -41,7 +41,9 @@ export default function PromoRhea() {
     setFraming(next.defaultFraming);
     setBodyPose(next.defaultPose);
     setGesturePreview(null);
+    setGestureProgress(0.5);
     setCameraPreview(null);
+    setCameraProgress(0.5);
   };
   const sceneStyle = {
     '--scene-safe-width': `${sceneFrame.safeTextArea.maxWidthPercent}%`,
@@ -56,7 +58,7 @@ export default function PromoRhea() {
     <section className={styles.stage}>
       <div className={styles.set} data-scene-background={sceneFrame.background}>
         <RheaPortraitRig controls={controls} framing={framing} bodyPose={bodyPose} gesturePreview={gesturePreview} gestureProgress={gestureProgress} cameraPreview={cameraPreview} cameraProgress={cameraProgress} cameraFinalPerformance={completedPerformance} sampleMouth={speech.sampleMouth} samplePerformance={speech.samplePerformance} />
-        <div className={styles.sceneBackdrop} aria-hidden="true" />
+        <div className={styles.sceneBackdrop} aria-hidden="true"><span className={styles.environmentLabel}>PQ</span></div>
         <div className={styles.topline}><span>{sceneFrame.eyebrow}</span><span className={styles.live}>● LIVE</span></div>
         <div className={styles.nameplate}><p>{sceneFrame.label}</p><h1>RHEA</h1><span>{controls.expression} / {controls.gaze}</span></div>
       </div>
