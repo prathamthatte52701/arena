@@ -7,6 +7,7 @@
 .review button { font-size:12px; padding:10px 12px; }
 .review button[aria-pressed=true] { background:#75354c; border-color:#cd889c; color:white; }
 .review .unsupported { opacity:.6; border-style:dashed; }
+.sceneSpec { font:10px/1.7 monospace; color:#a99aa8; margin:-10px 0 22px; padding:9px 10px; background:#100e16; border-left:2px solid #8d536b; }
 .scrub { display:block; font-size:13px; margin-top:22px; color:#cabbc9; }
 .scrub span { float:right; }
 .scrub input { display:block; width:100%; margin:12px 0; accent-color:#d696a8; }

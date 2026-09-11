@@ -6,13 +6,21 @@
 .shell button:hover { border-color:#d6a0b1; }
 .stage { max-width:1300px; margin:auto; display:grid; grid-template-columns:minmax(0,1.25fr) minmax(370px,.9fr); gap:24px; align-items:start; }
 .set { position:relative; height:min(820px,calc(100vh - 115px)); min-height:620px; overflow:hidden; border:1px solid #463141; border-radius:14px; background:#252427; }
-.topline { position:absolute; inset:24px 25px auto; display:flex; justify-content:space-between; font-size:11px; letter-spacing:.16em; color:#d9c4b8; pointer-events:none; }
+.sceneBackdrop { position:absolute; z-index:1; inset:0; pointer-events:none; transition:background .35s ease,box-shadow .35s ease; }
+.set[data-scene-background='CONTROLLED_STUDIO'] .sceneBackdrop { background:linear-gradient(115deg,transparent 52%,#b991a20d 100%); box-shadow:inset 0 0 70px #09080c33; }
+.set[data-scene-background='INTIMATE_BACKSTAGE'] .sceneBackdrop { background:linear-gradient(105deg,#31142524 0%,transparent 38%,#d68c5f12 100%),radial-gradient(circle at 84% 22%,#d98f6b1a,transparent 24%); box-shadow:inset 35px 0 75px #1208133d; }
+.set[data-scene-background='ARENA_LIGHTS'] .sceneBackdrop { background:linear-gradient(165deg,#7495c51c 0%,transparent 33%,#781a2b1f 100%),radial-gradient(ellipse at 50% -8%,#eef4ff24,transparent 32%); box-shadow:inset 0 -55px 95px #05060bd9; }
+.topline { position:absolute; z-index:2; inset:24px 25px auto; display:flex; justify-content:space-between; font-size:11px; letter-spacing:.16em; color:#d9c4b8; pointer-events:none; }
 .live { color:#dec1ad; }
-.nameplate { position:absolute; bottom:28px; left:30px; pointer-events:none; }
+.nameplate { position:absolute; z-index:2; bottom:28px; left:30px; pointer-events:none; }
 .nameplate p { font-size:11px; letter-spacing:.22em; color:#d4a181; margin:0 0 7px; }
 .nameplate h1 { font-size:58px; letter-spacing:-.05em; font-weight:800; margin:0 0 8px; }
 .nameplate span { font-size:10px; letter-spacing:.16em; color:#bda9b5; }
-.side { display:grid; gap:18px; }
+.side { display:grid; gap:18px; width:100%; justify-self:end; }
+.side[data-safe-text-area='LOWER_RIGHT'] .prompt { padding-top:58px; }
+.side[data-safe-text-area='RINGSIDE_RIGHT'] .prompt { padding-top:24px; }
+.shell[data-scene='BACKSTAGE'] .set { border-color:#563343; }
+.shell[data-scene='RING_ARENA'] .set { border-color:#3f4662; }
 .prompt { padding:34px 24px 15px; }
 .kicker { color:#c89873; letter-spacing:.16em; font-size:12px; }
 .prompt h2 { font-size:clamp(32px,3.2vw,48px); line-height:1.06; margin:20px 0 28px; letter-spacing:-.04em; }

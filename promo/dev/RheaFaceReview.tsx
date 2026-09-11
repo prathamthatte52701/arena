@@ -8,9 +8,13 @@ import { MOUTH_DEFORMATIONS, type Viseme } from '../face/mouth';
 import { RHEA_GESTURES } from '../gestures/rheaGestures';
 import { GESTURE_NAMES, type GestureName } from '../gestures/types';
 import type { SpeechDebug } from '../performance/usePromoSpeech';
+import { SCENE_NAMES, type RheaSceneDefinition, type SceneName } from '../scenes/types';
 import styles from './review.module.css';
 
-export function RheaFaceReview({ controls, setControls, framing, setFraming, bodyPose, setBodyPose, gesturePreview, setGesturePreview, gestureProgress, setGestureProgress, cameraPreview, setCameraPreview, cameraProgress, setCameraProgress, onStopSpeech, onSamplePhrase, debugEnabled, setDebugEnabled, debug }: {
+export function RheaFaceReview({ scene, sceneConfig, onSceneChange, controls, setControls, framing, setFraming, bodyPose, setBodyPose, gesturePreview, setGesturePreview, gestureProgress, setGestureProgress, cameraPreview, setCameraPreview, cameraProgress, setCameraProgress, onStopSpeech, onSamplePhrase, debugEnabled, setDebugEnabled, debug }: {
+  scene: SceneName;
+  sceneConfig: RheaSceneDefinition;
+  onSceneChange: (scene: SceneName) => void;
   controls: FaceControls;
   setControls: Dispatch<SetStateAction<FaceControls>>;
   framing: Framing;
@@ -33,6 +37,9 @@ export function RheaFaceReview({ controls, setControls, framing, setFraming, bod
 }) {
   return <section className={styles.review} aria-label="Rhea face and body review">
     <p className={styles.heading}>FACE + BODY REVIEW <span>01 / LISTENING PERFORMANCE</span></p>
+    <fieldset><legend>SCENE</legend><div className={styles.buttons}>{SCENE_NAMES.map(name =>
+      <button key={name} aria-pressed={scene === name} onClick={() => onSceneChange(name)}>{name === 'RING_ARENA' ? 'RING / ARENA' : name}</button>)}</div></fieldset>
+    <p className={styles.sceneSpec}>DEFAULT {sceneConfig.defaultFraming} · {sceneConfig.defaultPose} · {sceneConfig.defaultGesture}<br />CAMERAS {sceneConfig.allowedCameraStates.join(' · ')}<br />SAFE TEXT {sceneConfig.safeTextArea.placement} / {sceneConfig.safeTextArea.maxWidthPercent}%</p>
     <fieldset><legend>EXPRESSION</legend><div className={styles.buttons}>{EXPRESSIONS.map(expression =>
       <button key={expression} aria-pressed={controls.expression === expression}
         onClick={() => setControls(current => ({ ...current, expression }))}>{expression}</button>)}</div></fieldset>
@@ -83,6 +90,6 @@ export function RheaFaceReview({ controls, setControls, framing, setFraming, bod
     </div></fieldset>
     <label className={styles.debugToggle}><input type="checkbox" checked={debugEnabled} onChange={event => setDebugEnabled(event.target.checked)} /> TIMELINE DEBUG</label>
     {debugEnabled && <p className={styles.debug} data-testid="timeline-debug">WORD {debug.word}<br />VISEME {debug.viseme}<br />ELAPSED {debug.elapsedMs}MS · POS {debug.timelinePosition.toFixed(2)}<br />SENTENCE {debug.sentence}<br />BEAT {debug.beatIndex ?? '—'} · {debug.expression} · {debug.gaze}<br />INTENSITY {debug.intensity.toFixed(2)} · HEAD {debug.headBias.x.toFixed(2)},{debug.headBias.y.toFixed(2)}<br />FINAL HOLD {debug.finalHold ? 'YES' : 'NO'}<br />SESSION {debug.sessionId ?? '—'}</p>}
-    <p className={styles.readout}>{controls.expression} · {controls.gaze} · {bodyPose} · {gesturePreview ?? 'LIVE GESTURES'} · {cameraPreview ?? 'LIVE CAMERA'} · {framing}<br />Canonical live face · accepted static body plate · bounded deterministic gesture and camera layers</p>
+    <p className={styles.readout}>{sceneConfig.label} · {controls.expression} · {controls.gaze} · {bodyPose} · {gesturePreview ?? 'LIVE GESTURES'} · {cameraPreview ?? 'LIVE CAMERA'} · {framing}<br />Canonical live face · accepted static body plate · bounded deterministic gesture and camera layers</p>
   </section>;
 }
