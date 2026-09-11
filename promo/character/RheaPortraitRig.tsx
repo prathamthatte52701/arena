@@ -15,9 +15,10 @@ import { createFaceController } from '../face/controller';
 import { createPortraitRenderer } from './portraitRenderer';
 import { rheaProfile } from './rheaProfile';
 import type { MouthTarget } from '../face/mouth.ts';
+import { orchestrateCameraRequest, orchestrateGestureRequest, orchestratePerformance, type SceneRuntimePlan } from '../scenes/orchestration.ts';
 import styles from './rig.module.css';
 
-export function RheaPortraitRig({ controls, framing, bodyPose, gesturePreview, gestureProgress, cameraPreview, cameraProgress, cameraFinalPerformance, sampleMouth, samplePerformance }: { controls: FaceControls; framing: Framing; bodyPose: BodyPoseName; gesturePreview: GestureName | null; gestureProgress: number; cameraPreview: CameraStateName | null; cameraProgress: number; cameraFinalPerformance: CameraPerformanceSignal | null; sampleMouth: (nowMs: number) => MouthTarget; samplePerformance: (nowMs: number) => PerformanceTarget | null }) {
+export function RheaPortraitRig({ controls, framing, bodyPose, gesturePreview, gestureProgress, cameraPreview, cameraProgress, cameraFinalPerformance, scenePlan, sampleMouth, samplePerformance }: { controls: FaceControls; framing: Framing; bodyPose: BodyPoseName; gesturePreview: GestureName | null; gestureProgress: number; cameraPreview: CameraStateName | null; cameraProgress: number; cameraFinalPerformance: CameraPerformanceSignal | null; scenePlan: SceneRuntimePlan | null; sampleMouth: (nowMs: number) => MouthTarget; samplePerformance: (nowMs: number) => PerformanceTarget | null }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const cameraSurfaceRef = useRef<HTMLDivElement>(null);
   const gestureSurfaceRef = useRef<HTMLDivElement>(null);
@@ -29,6 +30,7 @@ export function RheaPortraitRig({ controls, framing, bodyPose, gesturePreview, g
   const cameraPreviewRef = useRef(cameraPreview);
   const cameraProgressRef = useRef(cameraProgress);
   const cameraFinalPerformanceRef = useRef(cameraFinalPerformance);
+  const scenePlanRef = useRef(scenePlan);
   const [status, setStatus] = useState('Loading portrait');
   const bodyController = useMemo(() => createBodyPoseController(), []);
   const bodyFrame = bodyController.sample(bodyPose, framing);
@@ -40,6 +42,7 @@ export function RheaPortraitRig({ controls, framing, bodyPose, gesturePreview, g
   useEffect(() => { cameraPreviewRef.current = cameraPreview; }, [cameraPreview]);
   useEffect(() => { cameraProgressRef.current = cameraProgress; }, [cameraProgress]);
   useEffect(() => { cameraFinalPerformanceRef.current = cameraFinalPerformance; }, [cameraFinalPerformance]);
+  useEffect(() => { scenePlanRef.current = scenePlan; }, [scenePlan]);
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -62,13 +65,16 @@ export function RheaPortraitRig({ controls, framing, bodyPose, gesturePreview, g
           if (disposed) return;
           const settings = controlsRef.current;
           if (!document.hidden) {
-            const performance = samplePerformanceRef.current(timestamp);
+            const plan = scenePlanRef.current;
+            const performance = orchestratePerformance(plan, samplePerformanceRef.current(timestamp));
             const preview = gesturePreviewRef.current;
-            const gesture = preview ? sampleGestureProgress(preview, gestureProgressRef.current) : gestureController.update(timestamp, gestureForPerformance(performance));
+            const gestureRequest = orchestrateGestureRequest(plan, gestureForPerformance(performance));
+            const gesture = preview ? sampleGestureProgress(preview, gestureProgressRef.current) : gestureController.update(timestamp, gestureRequest);
             applyGestureFrame(gestureSurfaceRef.current, gesture);
             const cameraPreview = cameraPreviewRef.current;
             const cameraPerformance = performance ?? cameraFinalPerformanceRef.current;
-            const camera = cameraPreview ? sampleCameraProgress(cameraPreview, cameraProgressRef.current) : cameraController.update(timestamp, cameraForPerformance(cameraPerformance));
+            const cameraRequest = orchestrateCameraRequest(plan, cameraForPerformance(cameraPerformance));
+            const camera = cameraPreview ? sampleCameraProgress(cameraPreview, cameraProgressRef.current) : cameraController.update(timestamp, cameraRequest);
             applyCameraFrame(cameraSurfaceRef.current, camera);
             renderer?.draw(controller.update(timestamp / 1000, { ...settings, idle: settings.idle && !reducedMotion.matches, performance }, sampleMouthRef.current(timestamp)));
           }
@@ -105,7 +111,7 @@ export function RheaPortraitRig({ controls, framing, bodyPose, gesturePreview, g
     '--head-rotation': `${bodyFrame.headRotationDeg}deg`,
   } as CSSProperties;
 
-  return <div className={`${styles.viewport} ${framingClass}`} data-framing={framing} data-body-pose={bodyFrame.name}>
+  return <div className={`${styles.viewport} ${framingClass}`} data-framing={framing} data-body-pose={bodyFrame.name} data-scene-runtime={scenePlan?.scene ?? 'NONE'} data-scene-runtime-mode={scenePlan?.mode ?? 'REST'}>
     <div ref={cameraSurfaceRef} className={styles.cameraSurface} data-camera="STATIC_MEDIUM" data-camera-phase="REST">
       <div className={styles.bodySurface} style={bodyStyle}>
         <div ref={gestureSurfaceRef} className={styles.gestureSurface} data-gesture="IDLE" data-gesture-phase="REST">

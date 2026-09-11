@@ -65,14 +65,23 @@ test('scene shells preserve locked character and performance systems', () => {
   }
 });
 
-test('scene switching stops safely without mutating speech text tone or mouth state', async () => {
+test('active scene switching remaps presentation without mutating or restarting speech', async () => {
   const page = await readFile(new URL('../app/promo-rhea/page.tsx', import.meta.url), 'utf8');
   const switchBody = page.match(/const selectScene = \(name: SceneName\) => \{([\s\S]*?)\n  \};/)?.[1] ?? '';
-  assert.match(switchBody, /speech\.stop\(\)/);
-  assert.match(switchBody, /setScene\(next\.name\)/);
-  assert.match(switchBody, /setGesturePreview\(null\)/);
-  assert.match(switchBody, /setCameraPreview\(null\)/);
-  assert.doesNotMatch(switchBody, /setText|setTone|setControls|mouthPreview|deliver|replay/);
+  assert.match(switchBody, /if \(speaking\)/);
+  assert.match(switchBody, /remapSceneRuntimePlan/);
+  assert.match(switchBody, /applyScenePlan\(remapped\)/);
+  assert.match(switchBody, /return/);
+  assert.doesNotMatch(switchBody, /setText\(|setTone\(|mouthPreview|speech\.deliver|speech\.replay/);
+});
+
+test('REPLAY restores the visible text and tone from scene replay memory', async () => {
+  const page = await readFile(new URL('../app/promo-rhea/page.tsx', import.meta.url), 'utf8');
+  const replayBody = page.match(/const replayPromo = \(\) => \{([\s\S]*?)\n  \};/)?.[1] ?? '';
+  assert.match(replayBody, /speech\.setText\(memory\.text\)/);
+  assert.match(replayBody, /speech\.setTone\(memory\.tone\)/);
+  assert.match(replayBody, /speech\.replay\(\)/);
+  assert.doesNotMatch(replayBody, /speech\.deliver\(/);
 });
 
 test('scene source contains no randomness duplicated engines asset 18 or asset replacement', async () => {
