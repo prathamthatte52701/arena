@@ -1,17 +1,17 @@
-.viewport { position:absolute; inset:0; overflow:hidden; background:#252427; perspective:1400px; }
+.viewport { position:absolute; inset:0; overflow:hidden; background:#252427; }
 .cameraSurface { position:absolute; inset:0; transform:translate(var(--camera-x,0),var(--camera-y,0)) rotate(var(--camera-rotation,0deg)) scale(var(--camera-scale,1)); transform-origin:50% 48%; will-change:transform; }
-.bodySurface { position:absolute; inset:0; transform-style:preserve-3d; }
-.gestureSurface { position:absolute; inset:0; transform:translate(var(--gesture-body-x,0),var(--gesture-body-y,0)) rotateZ(var(--gesture-torso-lean,0deg)) rotateY(var(--gesture-torso-yaw,0deg)) scale(var(--gesture-body-scale,1)); transform-origin:50% 54%; will-change:transform; }
+.bodySurface { position:absolute; inset:0; }
+.gestureSurface { position:absolute; inset:0; transform:translate(var(--gesture-body-x,0),var(--gesture-body-y,0)) rotateZ(var(--gesture-torso-lean,0deg)) scale(var(--gesture-body-scale,1)); transform-origin:50% 54%; will-change:transform; }
 .bodyPlate { display:none; width:100%; height:100%; object-fit:contain; }
 .portrait { position:absolute; width:auto; max-width:none; height:125%; left:50%; top:0; transform:translateX(-50%); transition:height .65s ease,top .65s ease,transform .5s ease; mask-image:linear-gradient(90deg,transparent,#000 9%,#000 91%,transparent); }
 .close .portrait { height:200%; top:-17%; }
 .close .gestureSurface { transform:none; }
 .medium .bodySurface,
-.full .bodySurface { position:absolute; inset:auto auto auto 50%; top:var(--body-top); height:var(--body-height); aspect-ratio:1122 / 1402; transform:translateX(calc(-50% + var(--body-x))) translateY(var(--body-y)) rotateZ(var(--torso-lean)) rotateY(var(--torso-yaw)) scale(var(--body-scale)); transform-origin:50% 54%; transition:height .65s ease,top .65s ease,transform .55s ease; }
+.full .bodySurface { position:absolute; inset:auto auto auto 50%; top:var(--body-top); height:var(--body-height); aspect-ratio:1122 / 1402; transform:translateX(calc(-50% + var(--body-x))) translateY(var(--body-y)) rotateZ(var(--torso-lean)) scale(var(--body-scale)); transform-origin:50% 54%; transition:height .65s ease,top .65s ease,transform .55s ease; }
 .medium .bodyPlate,
 .full .bodyPlate { display:block; }
 .medium .portrait,
-.full .portrait { width:100%; height:auto; left:0; top:0; transform:translate(calc(var(--head-x) + var(--gesture-head-x,0%)),calc(var(--head-y) + var(--gesture-head-y,0%))) rotate(calc(var(--head-rotation) + var(--gesture-head-rotation,0deg))) scale(calc(.304 * var(--head-scale))) scale(var(--gesture-head-scale,1)); transform-origin:50% 0; mask-image:radial-gradient(ellipse 26% 31% at 50% 25%,#000 0 78%,#000d 84%,transparent 93%); transition:transform .1s linear; }
+.full .portrait { width:100%; height:auto; left:0; top:0; transform:translate(calc(var(--head-x) + var(--gesture-head-x,0%)),calc(var(--head-y) + var(--gesture-head-y,0%))) rotate(calc(var(--head-rotation) + var(--gesture-head-rotation,0deg))) scale(calc(.304 * var(--head-scale))) scale(var(--gesture-head-scale,1)); transform-origin:50% 0; mask-image:radial-gradient(ellipse 18% 24% at 50% 31%,#000 0 72%,#000c 82%,transparent 100%); transition:transform .1s linear; }
 .vignette { position:absolute; inset:0; pointer-events:none; background:linear-gradient(0deg,#08090de8,transparent 24%,transparent 87%,#08090d55); box-shadow:inset 0 0 60px #08090d33; }
 .notice { position:absolute; z-index:2; inset:40% 15% auto; text-align:center; padding:20px; background:#15121d; }
 @media(prefers-reduced-motion:reduce) { .portrait,.bodySurface { transition:none; } .gestureSurface,.cameraSurface { transform:none; } }
