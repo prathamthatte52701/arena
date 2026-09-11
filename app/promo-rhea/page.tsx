@@ -66,6 +66,12 @@ export default function PromoRhea() {
   };
 
   const deliverPromo = () => {
+    if (!speech.text.trim()) {
+      activePresentation.current = null;
+      applyScenePlan(createSceneRuntimePlan({ scene, text: speech.text, tone: speech.tone, mode: 'REST' }));
+      speech.deliver();
+      return;
+    }
     const memory = { scene, text: speech.text, tone: speech.tone };
     const plan = createSceneRuntimePlan({ ...memory, mode: 'SPEAKING' });
     activePresentation.current = memory;
