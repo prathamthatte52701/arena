@@ -100,7 +100,7 @@ test('same gesture with a new beat trigger preserves the displayed transform', (
 });
 
 test('different supported gestures interpolate directly from the displayed frame', () => {
-  for (const [fromName, toName] of [['CHEST_EMPHASIS', 'LEAN_FORWARD'], ['HEAD_TILT_EMPHASIS', 'ARMS_RELAXED']]) {
+  for (const [fromName, toName] of [['ARMS_RELAXED', 'CHEST_EMPHASIS'], ['CHEST_EMPHASIS', 'LEAN_FORWARD'], ['HEAD_TILT_EMPHASIS', 'ARMS_RELAXED']]) {
     const controller = createGestureController();
     const first = { name: fromName, triggerId: `${fromName}:beat-0` };
     const next = { name: toName, triggerId: `${toName}:beat-1` };

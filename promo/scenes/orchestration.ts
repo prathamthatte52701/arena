@@ -97,23 +97,29 @@ function safeRest(scene: RheaSceneDefinition): RuntimeChoice {
   };
 }
 
-export function createSceneRuntimePlan(request: SceneRuntimeRequest): SceneRuntimePlan {
-  const scene = resolveRheaScene(request.scene);
-  const tone: Tone = isVoiceTone(request.tone) ? request.tone : 'AUTO';
-  const mode: SceneRuntimeMode = request.mode === 'REST' ? 'REST' : 'SPEAKING';
+export function createSceneRuntimePlan(request: unknown): SceneRuntimePlan {
+  const source = typeof request === 'object' && request !== null && !Array.isArray(request)
+    ? request as Record<string, unknown>
+    : {};
+  const input = (key: string) => Object.hasOwn(source, key) ? source[key] : undefined;
+  const requestedScene = input('scene');
+  const requestedTone = input('tone');
+  const scene = resolveRheaScene(requestedScene);
+  const tone: Tone = isVoiceTone(requestedTone) ? requestedTone : 'AUTO';
+  const mode: SceneRuntimeMode = input('mode') === 'REST' ? 'REST' : 'SPEAKING';
   const policy = mode === 'REST' ? safeRest(scene) : POLICIES[scene.name][tone];
   return Object.freeze({
     scene: scene.name,
-    requestedScene: typeof request.scene === 'string' ? request.scene : null,
-    usedFallback: request.scene !== scene.name,
-    text: typeof request.text === 'string' ? request.text : '',
+    requestedScene: typeof requestedScene === 'string' ? requestedScene : null,
+    usedFallback: requestedScene !== scene.name,
+    text: typeof input('text') === 'string' ? input('text') as string : '',
     tone,
     mode,
-    framing: legal(request.framing, scene.allowedFramings, policy.framing),
-    pose: legal(request.pose, scene.allowedPoses, policy.pose),
-    gesture: legal(request.gesture, scene.allowedGestures, policy.gesture),
-    camera: legal(request.camera, scene.allowedCameraStates, policy.camera),
-    gaze: typeof request.gaze === 'string' && GAZES.some(gaze => gaze === request.gaze) ? request.gaze as Gaze : policy.gaze,
+    framing: legal(input('framing'), scene.allowedFramings, policy.framing),
+    pose: legal(input('pose'), scene.allowedPoses, policy.pose),
+    gesture: legal(input('gesture'), scene.allowedGestures, policy.gesture),
+    camera: legal(input('camera'), scene.allowedCameraStates, policy.camera),
+    gaze: typeof input('gaze') === 'string' && GAZES.some(gaze => gaze === input('gaze')) ? input('gaze') as Gaze : policy.gaze,
   });
 }
 

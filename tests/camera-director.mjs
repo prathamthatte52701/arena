@@ -82,30 +82,31 @@ test('REPLAY restarts the same camera timeline deterministically', () => {
 
 test('same-state beat changes do not restart or jump the camera timeline', () => {
   const controller = createCameraController();
-  const firstBeat = { name: 'INTERVIEWER_ANGLE', triggerId: 'session-1:beat-0' };
-  const nextBeat = { name: 'INTERVIEWER_ANGLE', triggerId: 'session-1:beat-1' };
+  const firstBeat = { name: 'SLOW_PUSH_IN', triggerId: 'session-1:beat-0' };
+  const nextBeat = { name: 'SLOW_PUSH_IN', triggerId: 'session-1:beat-1' };
   controller.update(0, firstBeat);
-  const beforeBeat = controller.update(2200, firstBeat);
-  const onBeat = controller.update(2200, nextBeat);
-  const afterBeat = controller.update(2300, nextBeat);
+  const beforeBeat = controller.update(900, firstBeat);
+  const onBeat = controller.update(900, nextBeat);
+  const afterBeat = controller.update(1000, nextBeat);
   assert.deepEqual(onBeat, beforeBeat);
   assert.ok(Math.abs(afterBeat.xPercent - onBeat.xPercent) < 0.25);
   assert.ok(Math.abs(afterBeat.scale - onBeat.scale) < 0.012);
 });
 
 test('camera state changes interpolate from the current frame without snapping', () => {
-  const controller = createCameraController();
-  const angle = { name: 'INTERVIEWER_ANGLE', triggerId: 'session-1:beat-0' };
-  const close = { name: 'CLOSE_PROMO', triggerId: 'session-1:beat-1' };
-  controller.update(0, angle);
-  const beforeChange = controller.update(900, angle);
-  const onChange = controller.update(900, close);
-  const afterChange = controller.update(1000, close);
-  assert.equal(onChange.name, 'CLOSE_PROMO');
-  assert.equal(onChange.xPercent, beforeChange.xPercent);
-  assert.equal(onChange.scale, beforeChange.scale);
-  assert.ok(Math.abs(afterChange.xPercent - onChange.xPercent) < 0.25);
-  assert.ok(Math.abs(afterChange.scale - onChange.scale) < 0.012);
+  for (const [fromName, toName, at] of [['STATIC_MEDIUM', 'SLOW_PUSH_IN', 300], ['SLOW_PUSH_IN', 'CAMERA_STARE', 900]]) {
+    const controller = createCameraController();
+    const first = { name: fromName, triggerId: `session-1:${fromName}` };
+    const next = { name: toName, triggerId: `session-1:${toName}` };
+    controller.update(0, first);
+    const beforeChange = controller.update(at, first);
+    const onChange = controller.update(at, next);
+    const afterChange = controller.update(at + 100, next);
+    assert.equal(onChange.name, toName);
+    for (const key of numericKeys) assert.equal(onChange[key], beforeChange[key], `${fromName} -> ${toName}.${key} boundary`);
+    assert.ok(Math.abs(afterChange.xPercent - onChange.xPercent) < 0.25);
+    assert.ok(Math.abs(afterChange.scale - onChange.scale) < 0.012);
+  }
 });
 
 test('custom camera neutral is authoritative for sampling STOP and reset', () => {
