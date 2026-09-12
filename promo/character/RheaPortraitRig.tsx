@@ -3,11 +3,14 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import Image from 'next/image';
 import { createBodyPoseController } from '../body/controller';
+import { RHEA_BODY_POSES } from '../body/poses';
 import { rheaBodyProfile } from '../body/rheaBodyProfile';
 import type { BodyPoseName, Framing } from '../body/types';
 import { cameraForPerformance, createCameraController, sampleCameraProgress } from '../camera/controller';
+import { CAMERA_BOUNDS, NEUTRAL_CAMERA_TRANSFORM, RHEA_CAMERA_STATES } from '../camera/rheaCamera';
 import type { CameraFrame, CameraPerformanceSignal, CameraStateName } from '../camera/types';
 import { createGestureController, gestureForPerformance, sampleGestureProgress } from '../gestures/controller';
+import { GESTURE_BOUNDS, NEUTRAL_GESTURE_TRANSFORM, RHEA_GESTURES } from '../gestures/rheaGestures';
 import type { GestureFrame, GestureName } from '../gestures/types';
 import type { FaceControls } from '../performance/types';
 import type { PerformanceTarget } from '../performance/types';
@@ -17,6 +20,10 @@ import { rheaProfile } from './rheaProfile';
 import type { MouthTarget } from '../face/mouth.ts';
 import { orchestrateCameraRequest, orchestrateGestureRequest, orchestratePerformance, type SceneRuntimePlan } from '../scenes/orchestration.ts';
 import styles from './rig.module.css';
+
+const bodyControllerConfig = { profile: rheaBodyProfile, poses: RHEA_BODY_POSES };
+const gestureControllerConfig = { definitions: RHEA_GESTURES, bounds: GESTURE_BOUNDS, neutral: NEUTRAL_GESTURE_TRANSFORM };
+const cameraControllerConfig = { definitions: RHEA_CAMERA_STATES, bounds: CAMERA_BOUNDS, neutral: NEUTRAL_CAMERA_TRANSFORM };
 
 export function RheaPortraitRig({ controls, framing, bodyPose, gesturePreview, gestureProgress, cameraPreview, cameraProgress, cameraFinalPerformance, scenePlan, sampleMouth, samplePerformance }: { controls: FaceControls; framing: Framing; bodyPose: BodyPoseName; gesturePreview: GestureName | null; gestureProgress: number; cameraPreview: CameraStateName | null; cameraProgress: number; cameraFinalPerformance: CameraPerformanceSignal | null; scenePlan: SceneRuntimePlan | null; sampleMouth: (nowMs: number) => MouthTarget; samplePerformance: (nowMs: number) => PerformanceTarget | null }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -32,7 +39,7 @@ export function RheaPortraitRig({ controls, framing, bodyPose, gesturePreview, g
   const cameraFinalPerformanceRef = useRef(cameraFinalPerformance);
   const scenePlanRef = useRef(scenePlan);
   const [status, setStatus] = useState('Loading portrait');
-  const bodyController = useMemo(() => createBodyPoseController(), []);
+  const bodyController = useMemo(() => createBodyPoseController(bodyControllerConfig), []);
   const bodyFrame = bodyController.sample(bodyPose, framing);
   useEffect(() => { controlsRef.current = controls; }, [controls]);
   useEffect(() => { sampleMouthRef.current = sampleMouth; }, [sampleMouth]);
@@ -50,8 +57,8 @@ export function RheaPortraitRig({ controls, framing, bodyPose, gesturePreview, g
     let raf = 0;
     let renderer: ReturnType<typeof createPortraitRenderer> | undefined;
     const controller = createFaceController();
-    const gestureController = createGestureController();
-    const cameraController = createCameraController();
+    const gestureController = createGestureController(gestureControllerConfig);
+    const cameraController = createCameraController(cameraControllerConfig);
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     const image = new window.Image();
     const onLost = (event: Event) => { event.preventDefault(); window.cancelAnimationFrame(raf); setStatus('Portrait paused — reload to restore'); };
@@ -69,12 +76,12 @@ export function RheaPortraitRig({ controls, framing, bodyPose, gesturePreview, g
             const performance = orchestratePerformance(plan, samplePerformanceRef.current(timestamp));
             const preview = gesturePreviewRef.current;
             const gestureRequest = orchestrateGestureRequest(plan, gestureForPerformance(performance));
-            const gesture = preview ? sampleGestureProgress(preview, gestureProgressRef.current) : gestureController.update(timestamp, gestureRequest);
+            const gesture = preview ? sampleGestureProgress(gestureControllerConfig, preview, gestureProgressRef.current) : gestureController.update(timestamp, gestureRequest);
             applyGestureFrame(gestureSurfaceRef.current, gesture);
             const cameraPreview = cameraPreviewRef.current;
             const cameraPerformance = performance ?? cameraFinalPerformanceRef.current;
             const cameraRequest = orchestrateCameraRequest(plan, cameraForPerformance(cameraPerformance));
-            const camera = cameraPreview ? sampleCameraProgress(cameraPreview, cameraProgressRef.current) : cameraController.update(timestamp, cameraRequest);
+            const camera = cameraPreview ? sampleCameraProgress(cameraControllerConfig, cameraPreview, cameraProgressRef.current) : cameraController.update(timestamp, cameraRequest);
             applyCameraFrame(cameraSurfaceRef.current, camera);
             renderer?.draw(controller.update(timestamp / 1000, { ...settings, idle: settings.idle && !reducedMotion.matches, performance }, sampleMouthRef.current(timestamp)));
           }

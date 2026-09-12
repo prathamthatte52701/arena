@@ -1,5 +1,5 @@
 import { rheaV2Assets } from '../character/rheaV2Assets.ts';
-import type { Framing } from './types.ts';
+import type { BodyProfile, Framing } from './types.ts';
 
 export const rheaBodyProfile = {
   // One accepted canonical runtime plate. Other accepted images guide tuning;
@@ -32,4 +32,4 @@ export const rheaBodyProfile = {
     headScale: [0.98, 1.02],
     headRotationDeg: 1.5,
   },
-} as const;
+} as const satisfies BodyProfile;

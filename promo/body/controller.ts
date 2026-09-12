@@ -1,32 +1,44 @@
 import { RHEA_BODY_POSES } from './poses.ts';
 import { rheaBodyProfile } from './rheaBodyProfile.ts';
 import type {
+  BodyControllerConfig,
   BodyPose,
   BodyRigFrame,
   Framing,
 } from './types.ts';
 
+const DEFAULT_BODY_CONFIG: BodyControllerConfig = {
+  profile: rheaBodyProfile,
+  poses: RHEA_BODY_POSES,
+};
+
+function isBodyConfig(value: unknown): value is BodyControllerConfig {
+  return typeof value === 'object' && value !== null && 'profile' in value && 'poses' in value;
+}
+
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
 }
 
-export function resolveBodyPose(value: string | null | undefined): BodyPose {
-  const name = value && value in RHEA_BODY_POSES
-    ? (value as keyof typeof RHEA_BODY_POSES)
+export function resolveBodyPose(configOrValue: unknown, requestedValue?: unknown): BodyPose {
+  const config = isBodyConfig(configOrValue) ? configOrValue : DEFAULT_BODY_CONFIG;
+  const value = isBodyConfig(configOrValue) ? requestedValue : configOrValue;
+  const name = typeof value === 'string' && Object.hasOwn(config.poses, value)
+    ? (value as keyof typeof config.poses)
     : 'NEUTRAL_STAND';
 
-  return { ...RHEA_BODY_POSES[name] };
+  return { ...config.poses[name] };
 }
 
-export function createBodyPoseController() {
+export function createBodyPoseController(config: BodyControllerConfig = DEFAULT_BODY_CONFIG) {
   return {
     sample(
-      value: string | null | undefined,
+      value: unknown,
       framing: Framing,
     ): BodyRigFrame {
-      const pose = resolveBodyPose(value);
-      const bounds = rheaBodyProfile.bounds;
-      const frame = rheaBodyProfile.framing[framing];
+      const pose = resolveBodyPose(config, value);
+      const bounds = config.profile.bounds;
+      const frame = config.profile.framing[framing];
 
       return {
         ...pose,

@@ -28,3 +28,25 @@ export interface BodyRigFrame extends BodyPose {
   framingHeightPercent: number;
   framingTopPercent: number;
 }
+
+export interface BodyProfile {
+  runtimeAsset: string;
+  references: Readonly<Record<string, string>>;
+  framing: Readonly<Record<Framing, { heightPercent: number; topPercent: number }>>;
+  bounds: {
+    torsoYawDeg: number;
+    torsoLeanDeg: number;
+    bodyScale: readonly [number, number];
+    bodyXPercent: number;
+    bodyYPercent: number;
+    headXPercent: number;
+    headYPercent: number;
+    headScale: readonly [number, number];
+    headRotationDeg: number;
+  };
+}
+
+export interface BodyControllerConfig {
+  poses: Readonly<Record<BodyPoseName, BodyPose>>;
+  profile: BodyProfile;
+}

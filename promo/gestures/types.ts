@@ -48,4 +48,22 @@ export interface GestureRequest {
   triggerId: string;
 }
 
+export interface GestureBounds {
+  bodyXPercent: number;
+  bodyYPercent: number;
+  bodyScale: readonly [number, number];
+  torsoYawDeg: number;
+  torsoLeanDeg: number;
+  headXPercent: number;
+  headYPercent: number;
+  headScale: readonly [number, number];
+  headRotationDeg: number;
+}
+
+export interface GestureControllerConfig {
+  definitions: Readonly<Record<GestureName, GestureDefinition>>;
+  neutral: GestureTransform;
+  bounds: GestureBounds;
+}
+
 export type GesturePerformanceSignal = Pick<PerformanceTarget, 'beatIndex' | 'expression' | 'gaze' | 'intensity' | 'headBias' | 'finalHold'>;

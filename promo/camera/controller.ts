@@ -1,5 +1,6 @@
 import { CAMERA_BOUNDS, NEUTRAL_CAMERA_TRANSFORM, RHEA_CAMERA_STATES } from './rheaCamera.ts';
 import type {
+  CameraControllerConfig,
   CameraDefinition,
   CameraFrame,
   CameraPerformanceSignal,
@@ -9,25 +10,36 @@ import type {
   CameraTransform,
 } from './types.ts';
 
+const DEFAULT_CAMERA_CONFIG: CameraControllerConfig = {
+  definitions: RHEA_CAMERA_STATES,
+  bounds: CAMERA_BOUNDS,
+  neutral: NEUTRAL_CAMERA_TRANSFORM,
+};
+
+function isCameraConfig(value: unknown): value is CameraControllerConfig {
+  return typeof value === 'object' && value !== null && Object.hasOwn(value, 'definitions') && Object.hasOwn(value, 'bounds') && Object.hasOwn(value, 'neutral');
+}
+
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 const smoothstep = (value: number) => {
   const bounded = clamp(value, 0, 1);
   return bounded * bounded * (3 - 2 * bounded);
 };
 
-function safeTransform(value: CameraTransform): CameraTransform {
+function safeTransform(config: CameraControllerConfig, value: CameraTransform): CameraTransform {
+  const bounds = config.bounds;
   return {
-    xPercent: clamp(value.xPercent, -CAMERA_BOUNDS.xPercent, CAMERA_BOUNDS.xPercent),
-    yPercent: clamp(value.yPercent, -CAMERA_BOUNDS.yPercent, CAMERA_BOUNDS.yPercent),
-    scale: clamp(value.scale, CAMERA_BOUNDS.scale[0], CAMERA_BOUNDS.scale[1]),
-    rotationDeg: clamp(value.rotationDeg, -CAMERA_BOUNDS.rotationDeg, CAMERA_BOUNDS.rotationDeg),
+    xPercent: clamp(value.xPercent, -bounds.xPercent, bounds.xPercent),
+    yPercent: clamp(value.yPercent, -bounds.yPercent, bounds.yPercent),
+    scale: clamp(value.scale, bounds.scale[0], bounds.scale[1]),
+    rotationDeg: clamp(value.rotationDeg, -bounds.rotationDeg, bounds.rotationDeg),
   };
 }
 
-function blend(target: CameraTransform, amount: number): CameraTransform {
+function blend(config: CameraControllerConfig, target: CameraTransform, amount: number): CameraTransform {
   const weight = smoothstep(amount);
-  if (weight === 0) return { ...NEUTRAL_CAMERA_TRANSFORM };
-  return safeTransform({
+  if (weight === 0) return { ...config.neutral };
+  return safeTransform(config, {
     xPercent: target.xPercent * weight,
     yPercent: target.yPercent * weight,
     scale: 1 + (target.scale - 1) * weight,
@@ -35,9 +47,9 @@ function blend(target: CameraTransform, amount: number): CameraTransform {
   });
 }
 
-function interpolate(from: CameraTransform, to: CameraTransform, amount: number): CameraTransform {
+function interpolate(config: CameraControllerConfig, from: CameraTransform, to: CameraTransform, amount: number): CameraTransform {
   const weight = smoothstep(amount);
-  return safeTransform({
+  return safeTransform(config, {
     xPercent: from.xPercent + (to.xPercent - from.xPercent) * weight,
     yPercent: from.yPercent + (to.yPercent - from.yPercent) * weight,
     scale: from.scale + (to.scale - from.scale) * weight,
@@ -45,34 +57,42 @@ function interpolate(from: CameraTransform, to: CameraTransform, amount: number)
   });
 }
 
-function frame(name: CameraStateName, phase: CameraPhase, phaseProgress: number, transform: CameraTransform): CameraFrame {
-  return { name, phase, phaseProgress: clamp(phaseProgress, 0, 1), ...safeTransform(transform) };
+function frame(config: CameraControllerConfig, name: CameraStateName, phase: CameraPhase, phaseProgress: number, transform: CameraTransform): CameraFrame {
+  return { name, phase, phaseProgress: clamp(phaseProgress, 0, 1), ...safeTransform(config, transform) };
 }
 
-export function resolveCameraState(value: string | null | undefined): CameraDefinition {
-  const name = value && value in RHEA_CAMERA_STATES ? value as CameraStateName : 'STATIC_MEDIUM';
-  return RHEA_CAMERA_STATES[name];
+export function resolveCameraState(configOrValue: unknown, maybeValue?: unknown): CameraDefinition {
+  const config = isCameraConfig(configOrValue) ? configOrValue : DEFAULT_CAMERA_CONFIG;
+  const value = isCameraConfig(configOrValue) ? maybeValue : configOrValue;
+  const name = typeof value === 'string' && Object.hasOwn(config.definitions, value) ? value as CameraStateName : 'STATIC_MEDIUM';
+  return config.definitions[name];
 }
 
-export function sampleCameraState(value: string | null | undefined, elapsedMs: number): CameraFrame {
-  const camera = resolveCameraState(value);
+export function sampleCameraState(configOrValue: unknown, valueOrElapsed: unknown, maybeElapsedMs?: number): CameraFrame {
+  const config = isCameraConfig(configOrValue) ? configOrValue : DEFAULT_CAMERA_CONFIG;
+  const value = isCameraConfig(configOrValue) ? valueOrElapsed : configOrValue;
+  const elapsedMs = isCameraConfig(configOrValue) ? (maybeElapsedMs ?? 0) : Number(valueOrElapsed);
+  const camera = resolveCameraState(config, value);
   const elapsed = Math.max(0, Number.isFinite(elapsedMs) ? elapsedMs : 0);
   const enterEnd = camera.enterMs;
   const holdEnd = enterEnd + camera.holdMs;
   const exitEnd = holdEnd + camera.exitMs;
-  if (elapsed < enterEnd) return frame(camera.name, 'ENTER', camera.enterMs ? elapsed / camera.enterMs : 1, blend(camera.peak, camera.enterMs ? elapsed / camera.enterMs : 1));
-  if (elapsed < holdEnd) return frame(camera.name, 'HOLD', camera.holdMs ? (elapsed - enterEnd) / camera.holdMs : 1, camera.peak);
+  if (elapsed < enterEnd) return frame(config, camera.name, 'ENTER', camera.enterMs ? elapsed / camera.enterMs : 1, blend(config, camera.peak, camera.enterMs ? elapsed / camera.enterMs : 1));
+  if (elapsed < holdEnd) return frame(config, camera.name, 'HOLD', camera.holdMs ? (elapsed - enterEnd) / camera.holdMs : 1, camera.peak);
   if (elapsed < exitEnd) {
     const progress = camera.exitMs ? (elapsed - holdEnd) / camera.exitMs : 1;
-    return frame(camera.name, 'EXIT', progress, blend(camera.peak, 1 - progress));
+    return frame(config, camera.name, 'EXIT', progress, blend(config, camera.peak, 1 - progress));
   }
-  return frame(camera.name, 'REST', 1, NEUTRAL_CAMERA_TRANSFORM);
+  return frame(config, camera.name, 'REST', 1, config.neutral);
 }
 
-export function sampleCameraProgress(value: string | null | undefined, progress: number): CameraFrame {
-  const camera = resolveCameraState(value);
+export function sampleCameraProgress(configOrValue: unknown, valueOrProgress: unknown, maybeProgress?: number): CameraFrame {
+  const config = isCameraConfig(configOrValue) ? configOrValue : DEFAULT_CAMERA_CONFIG;
+  const value = isCameraConfig(configOrValue) ? valueOrProgress : configOrValue;
+  const progress = isCameraConfig(configOrValue) ? (maybeProgress ?? 0) : Number(valueOrProgress);
+  const camera = resolveCameraState(config, value);
   const duration = camera.enterMs + camera.holdMs + camera.exitMs;
-  return sampleCameraState(camera.name, clamp(Number.isFinite(progress) ? progress : 0, 0, 1) * duration);
+  return sampleCameraState(config, camera.name, clamp(Number.isFinite(progress) ? progress : 0, 0, 1) * duration);
 }
 
 export function cameraForPerformance(signal: CameraPerformanceSignal | null): CameraRequest | null {
@@ -88,12 +108,12 @@ export function cameraForPerformance(signal: CameraPerformanceSignal | null): Ca
   return { name, triggerId };
 }
 
-export function createCameraController() {
+export function createCameraController(config: CameraControllerConfig = DEFAULT_CAMERA_CONFIG) {
   let activeName: CameraStateName = 'STATIC_MEDIUM';
   let activeTrigger: string | null = null;
   let startedAt = 0;
   let lastNow = 0;
-  let lastFrame = frame('STATIC_MEDIUM', 'REST', 1, NEUTRAL_CAMERA_TRANSFORM);
+  let lastFrame = frame(config, 'STATIC_MEDIUM', 'REST', 1, config.neutral);
   let settling: { startedAt: number; from: CameraFrame } | null = null;
   let transitionFrom: CameraFrame | null = null;
 
@@ -115,17 +135,17 @@ export function createCameraController() {
     const now = safeNow(nowMs);
     if (!request) {
       stop(now);
-      if (!settling) return lastFrame = frame('STATIC_MEDIUM', 'REST', 1, NEUTRAL_CAMERA_TRANSFORM);
+      if (!settling) return lastFrame = frame(config, 'STATIC_MEDIUM', 'REST', 1, config.neutral);
       const progress = clamp((now - settling.startedAt) / 520, 0, 1);
-      lastFrame = frame(settling.from.name, progress < 1 ? 'EXIT' : 'REST', progress, blend(settling.from, 1 - progress));
+      lastFrame = frame(config, settling.from.name, progress < 1 ? 'EXIT' : 'REST', progress, blend(config, settling.from, 1 - progress));
       if (progress >= 1) { settling = null; activeName = 'STATIC_MEDIUM'; }
       return lastFrame;
     }
-    const resolved = resolveCameraState(request.name);
+    const resolved = resolveCameraState(config, request.name);
     if (request.triggerId !== activeTrigger || resolved.name !== activeName) {
       if (activeTrigger !== null && resolved.name === activeName && lastFrame.phase !== 'REST') {
         activeTrigger = request.triggerId;
-        return lastFrame = sampleCameraState(activeName, now - startedAt);
+        return lastFrame = sampleCameraState(config, activeName, now - startedAt);
       }
       transitionFrom = lastFrame.phase === 'REST' ? null : lastFrame;
       activeName = resolved.name;
@@ -133,12 +153,12 @@ export function createCameraController() {
       startedAt = now;
       settling = null;
     }
-    const sampled = sampleCameraState(activeName, now - startedAt);
+    const sampled = sampleCameraState(config, activeName, now - startedAt);
     if (!transitionFrom) return lastFrame = sampled;
     const transitionMs = resolved.enterMs || 520;
     const transitionProgress = clamp((now - startedAt) / transitionMs, 0, 1);
-    const transform = interpolate(transitionFrom, sampled, transitionProgress);
-    lastFrame = frame(activeName, transitionProgress < 1 ? 'ENTER' : sampled.phase, transitionProgress < 1 ? transitionProgress : sampled.phaseProgress, transform);
+    const transform = interpolate(config, transitionFrom, sampled, transitionProgress);
+    lastFrame = frame(config, activeName, transitionProgress < 1 ? 'ENTER' : sampled.phase, transitionProgress < 1 ? transitionProgress : sampled.phaseProgress, transform);
     if (transitionProgress >= 1) transitionFrom = null;
     return lastFrame;
   };
@@ -149,7 +169,7 @@ export function createCameraController() {
     startedAt = lastNow;
     settling = null;
     transitionFrom = null;
-    lastFrame = frame('STATIC_MEDIUM', 'REST', 1, NEUTRAL_CAMERA_TRANSFORM);
+    lastFrame = frame(config, 'STATIC_MEDIUM', 'REST', 1, config.neutral);
     return lastFrame;
   };
 

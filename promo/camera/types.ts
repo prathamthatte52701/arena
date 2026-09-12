@@ -40,4 +40,17 @@ export interface CameraRequest {
   triggerId: string;
 }
 
+export interface CameraBounds {
+  xPercent: number;
+  yPercent: number;
+  scale: readonly [number, number];
+  rotationDeg: number;
+}
+
+export interface CameraControllerConfig {
+  definitions: Readonly<Record<CameraStateName, CameraDefinition>>;
+  neutral: CameraTransform;
+  bounds: CameraBounds;
+}
+
 export type CameraPerformanceSignal = Pick<PerformanceTarget, 'beatIndex' | 'expression' | 'gaze' | 'intensity' | 'headBias' | 'finalHold'>;

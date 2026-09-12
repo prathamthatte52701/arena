@@ -30,7 +30,7 @@ const definition = (
 
 const STATIC_PLATE_LIMIT = 'The accepted static body plate has no independent arm geometry; substituting an arm pose would create false or broken anatomy.';
 
-export const RHEA_GESTURES: Readonly<Record<GestureName, GestureDefinition>> = {
+export const RHEA_GESTURES: Readonly<Record<GestureName, GestureDefinition>> = Object.freeze({
   IDLE: definition('IDLE', { bodyYPercent: 0.06, bodyScale: 1.001 }, [420, 520, 460]),
   ARMS_RELAXED: definition('ARMS_RELAXED', { bodyYPercent: 0.08, torsoLeanDeg: 0.12, headYPercent: -0.02 }, [360, 760, 420]),
   ARMS_CROSSED: definition('ARMS_CROSSED', {}, [0, 0, 0], false, STATIC_PLATE_LIMIT),
@@ -58,7 +58,7 @@ export const RHEA_GESTURES: Readonly<Record<GestureName, GestureDefinition>> = {
     headYPercent: -0.03,
     headRotationDeg: 1.05,
   }, [320, 520, 440]),
-};
+});
 
 export const GESTURE_BOUNDS = Object.freeze({
   bodyXPercent: 0.8,
