@@ -1,7 +1,9 @@
 import type { BodyPoseName, Framing } from '../body/types.ts';
 import type { CameraRequest, CameraStateName } from '../camera/types.ts';
 import type { GestureName, GestureRequest } from '../gestures/types.ts';
+import { GAZES } from '../face/gaze.ts';
 import type { Gaze, PerformanceTarget, Tone } from '../performance/types.ts';
+import { isVoiceTone } from '../voice/darkPowerVoiceProfile.ts';
 import { resolveRheaScene } from './controller.ts';
 import type { RheaSceneDefinition, SceneName } from './types.ts';
 
@@ -22,15 +24,15 @@ export interface SceneRuntimePlan {
 }
 
 export interface SceneRuntimeRequest {
-  scene: string | null | undefined;
+  scene: unknown;
   text: string;
-  tone: Tone;
-  mode?: SceneRuntimeMode;
-  framing?: string | null;
-  pose?: string | null;
-  gesture?: string | null;
-  camera?: string | null;
-  gaze?: Gaze | null;
+  tone: unknown;
+  mode?: unknown;
+  framing?: unknown;
+  pose?: unknown;
+  gesture?: unknown;
+  camera?: unknown;
+  gaze?: unknown;
 }
 
 type RuntimeChoice = Pick<SceneRuntimePlan, 'framing' | 'pose' | 'gesture' | 'camera' | 'gaze'>;
@@ -81,8 +83,8 @@ const REST_GAZE: Readonly<Record<SceneName, Gaze>> = Object.freeze({
   PRESS_CONFERENCE: 'CAMERA',
 });
 
-function legal<T extends string>(requested: string | null | undefined, allowed: readonly T[], fallback: T): T {
-  return requested && allowed.includes(requested as T) ? requested as T : fallback;
+function legal<T extends string>(requested: unknown, allowed: readonly T[], fallback: T): T {
+  return typeof requested === 'string' && allowed.includes(requested as T) ? requested as T : fallback;
 }
 
 function safeRest(scene: RheaSceneDefinition): RuntimeChoice {
@@ -97,23 +99,25 @@ function safeRest(scene: RheaSceneDefinition): RuntimeChoice {
 
 export function createSceneRuntimePlan(request: SceneRuntimeRequest): SceneRuntimePlan {
   const scene = resolveRheaScene(request.scene);
-  const policy = request.mode === 'REST' ? safeRest(scene) : POLICIES[scene.name][request.tone];
+  const tone: Tone = isVoiceTone(request.tone) ? request.tone : 'AUTO';
+  const mode: SceneRuntimeMode = request.mode === 'REST' ? 'REST' : 'SPEAKING';
+  const policy = mode === 'REST' ? safeRest(scene) : POLICIES[scene.name][tone];
   return Object.freeze({
     scene: scene.name,
-    requestedScene: request.scene ?? null,
+    requestedScene: typeof request.scene === 'string' ? request.scene : null,
     usedFallback: request.scene !== scene.name,
     text: request.text,
-    tone: request.tone,
-    mode: request.mode ?? 'SPEAKING',
+    tone,
+    mode,
     framing: legal(request.framing, scene.allowedFramings, policy.framing),
     pose: legal(request.pose, scene.allowedPoses, policy.pose),
     gesture: legal(request.gesture, scene.allowedGestures, policy.gesture),
     camera: legal(request.camera, scene.allowedCameraStates, policy.camera),
-    gaze: request.gaze ?? policy.gaze,
+    gaze: typeof request.gaze === 'string' && GAZES.some(gaze => gaze === request.gaze) ? request.gaze as Gaze : policy.gaze,
   });
 }
 
-export function remapSceneRuntimePlan(plan: SceneRuntimePlan, scene: string | null | undefined): SceneRuntimePlan {
+export function remapSceneRuntimePlan(plan: SceneRuntimePlan, scene: unknown): SceneRuntimePlan {
   return createSceneRuntimePlan({ scene, text: plan.text, tone: plan.tone, mode: plan.mode });
 }
 

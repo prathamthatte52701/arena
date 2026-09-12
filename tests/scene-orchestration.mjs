@@ -41,6 +41,40 @@ test('same scene text and tone always create the same runtime plan', () => {
   }
 });
 
+test('invalid runtime tones normalize deterministically to AUTO', () => {
+  for (const tone of ['BOGUS', '', null, undefined, 42, {}, 'toString']) {
+    const first = createSceneRuntimePlan({ scene: 'INTERVIEW', text, tone });
+    const second = createSceneRuntimePlan({ scene: 'INTERVIEW', text, tone });
+    assert.equal(first.tone, 'AUTO');
+    assert.deepEqual(first, second);
+    assertLegal(first);
+  }
+});
+
+test('all seven valid runtime tones remain unchanged', () => {
+  for (const tone of tones) assert.equal(createSceneRuntimePlan({ scene: 'INTERVIEW', text, tone }).tone, tone);
+});
+
+test('invalid runtime scene presentation gaze and mode inputs fall back safely', () => {
+  for (const scene of ['toString', 'constructor', '__proto__', '', null, undefined, 42, {}, []]) {
+    const plan = createSceneRuntimePlan({
+      scene,
+      text,
+      tone: 'AUTO',
+      mode: {},
+      framing: {},
+      pose: 42,
+      gesture: [],
+      camera: '__proto__',
+      gaze: 'BOGUS',
+    });
+    assert.equal(plan.scene, 'INTERVIEW');
+    assert.equal(plan.mode, 'SPEAKING');
+    assert.equal(plan.gaze, 'INTERVIEWER');
+    assertLegal(plan);
+  }
+});
+
 test('required P5.2 scene and tone matrix selects only legal presentation states', () => {
   for (const [scene, tone] of matrix) {
     const plan = createSceneRuntimePlan({ scene, text, tone });
