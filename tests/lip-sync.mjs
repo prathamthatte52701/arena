@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { MOUTH_DEFORMATIONS, REST_MOUTH, deformationForViseme, isSafeMouthDeformation } from '../promo/face/mouth.ts';
 import { createVisemeTimeline, segmentAt, timelineDeformation, timelineDuration } from '../promo/speech/textTimeline.ts';
-import { phoneticGroups, visemeForGroup } from '../promo/speech/visemes.ts';
+import { normalizeLipSyncToken, phoneticGroups, visemeForGroup } from '../promo/speech/visemes.ts';
 import { MAX_TIMELINE_MS } from '../promo/speech/timing.ts';
 import { beginSpeechSession, createSpeechSessionState, invalidateSpeechSession, isCurrentSpeechSession, replayText } from '../promo/speech/session.ts';
 import { advanceSpeechClock, applySpeechBoundaryAnchor } from '../promo/speech/clock.ts';
@@ -80,6 +80,28 @@ test('phonetic groups map plosives, FV, vowels and combinations to the seven sta
   assert.deepEqual(phoneticGroups('Maybe'), ['M', 'A', 'Y', 'B', 'E']);
   assert.deepEqual(phoneticGroups('You'), ['YO', 'U']);
   assert.equal(visemeForGroup('YO'), 'WQ');
+});
+
+test('accented Latin text articulates through a deterministic internal fold', () => {
+  assert.equal(normalizeLipSyncToken('Café'), 'Cafe');
+  assert.equal(normalizeLipSyncToken('Beyoncé'), 'Beyonce');
+  assert.equal(normalizeLipSyncToken('José'), 'Jose');
+  assert.equal(normalizeLipSyncToken('naïve'), 'naive');
+  assert.equal(normalizeLipSyncToken('smörgåsbord'), 'smorgasbord');
+  assert.equal(normalizeLipSyncToken('Łódź'), 'Lodz');
+  for (const source of ['Café', 'Beyoncé', 'José', 'naïve', 'smörgåsbord', 'Łódź']) {
+    const timeline = createVisemeTimeline(source);
+    assert.ok(timeline.some(segment => segment.kind === 'articulation'), `${source} must articulate`);
+  }
+});
+
+test('unsupported non-Latin scripts remain REST-safe while mixed English still articulates', () => {
+  for (const source of ['नमस्ते', '你好', 'مرحبا']) {
+    assert.ok(createVisemeTimeline(source).every(segment => segment.viseme === 'REST'));
+  }
+  const mixed = createVisemeTimeline('Rhea 🔥 owns this arena.');
+  assert.ok(mixed.some(segment => segment.kind === 'articulation'));
+  assert.ok(mixed.some(segment => segment.kind === 'pause'));
 });
 
 test('punctuation creates REST pauses and does not chew continuously', () => {

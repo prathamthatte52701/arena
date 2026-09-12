@@ -25,7 +25,7 @@ export interface SceneRuntimePlan {
 
 export interface SceneRuntimeRequest {
   scene: unknown;
-  text: string;
+  text: unknown;
   tone: unknown;
   mode?: unknown;
   framing?: unknown;
@@ -106,7 +106,7 @@ export function createSceneRuntimePlan(request: SceneRuntimeRequest): SceneRunti
     scene: scene.name,
     requestedScene: typeof request.scene === 'string' ? request.scene : null,
     usedFallback: request.scene !== scene.name,
-    text: request.text,
+    text: typeof request.text === 'string' ? request.text : '',
     tone,
     mode,
     framing: legal(request.framing, scene.allowedFramings, policy.framing),

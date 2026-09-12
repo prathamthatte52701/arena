@@ -12,7 +12,7 @@ export interface TimelineSegment {
   kind: 'articulation' | 'pause';
 }
 
-const TOKEN = /[A-Za-z0-9]+(?:['’-][A-Za-z0-9]+)*|[,;:.!?…]+/g;
+const TOKEN = /[\p{L}\p{N}]+(?:['’-][\p{L}\p{N}]+)*|[,;:.!?…]+/gu;
 const PAUSE_MS: Record<string, number> = { ',': 150, ';': 260, ':': 260, '.': 430, '?': 480, '!': 480, '…': 520 };
 
 function pushSegment(segments: TimelineSegment[], startMs: number, durationMs: number, viseme: Viseme, word: string, charStart: number, charEnd: number, kind: TimelineSegment['kind']) {
@@ -30,7 +30,7 @@ export function createVisemeTimeline(text: string, rate = DEFAULT_SPEECH_RATE): 
   while ((match = TOKEN.exec(source))) {
     const token = match[0];
     const tokenStart = match.index;
-    if (/^[A-Za-z0-9]/.test(token)) {
+    if (/^[\p{L}\p{N}]/u.test(token)) {
       const groups = phoneticGroups(token);
       const unitWeight = 54 / Math.max(rate, 0.5);
       const vowelHold = 1.55;

@@ -122,6 +122,14 @@ test('adversarial supported text is preserved byte-for-byte by scene plans and r
   }
 });
 
+test('non-string runtime text normalizes safely without changing valid strings', () => {
+  for (const value of [null, undefined, 42, {}, [], Object.create({ toString: () => 'trap' })]) {
+    assert.equal(createSceneRuntimePlan({ scene: 'INTERVIEW', text: value, tone: 'AUTO' }).text, '');
+  }
+  const exact = "  Café — I’m ready. 🔥\n";
+  assert.equal(createSceneRuntimePlan({ scene: 'INTERVIEW', text: exact, tone: 'AUTO' }).text, exact);
+});
+
 test('rapid scene cycles STOP and repeated REPLAY remain deterministic and idempotent', () => {
   const initial = createSceneRuntimePlan({ scene: 'INTERVIEW', text, tone: 'INTIMIDATING' });
   const cycled = [...SCENE_NAMES, ...SCENE_NAMES].reduce((plan, scene) => remapSceneRuntimePlan(plan, scene), initial);

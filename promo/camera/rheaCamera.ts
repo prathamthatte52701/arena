@@ -7,12 +7,12 @@ export const NEUTRAL_CAMERA_TRANSFORM: CameraTransform = Object.freeze({
   rotationDeg: 0,
 });
 
-const camera = (name: CameraStateName, peak: Partial<CameraTransform>, timing: [number, number, number]): CameraDefinition => ({
+const camera = (name: CameraStateName, peak: Partial<CameraTransform>, timing: [number, number, number]): CameraDefinition => Object.freeze({
   name,
   enterMs: timing[0],
   holdMs: timing[1],
   exitMs: timing[2],
-  peak: { ...NEUTRAL_CAMERA_TRANSFORM, ...peak },
+  peak: Object.freeze({ ...NEUTRAL_CAMERA_TRANSFORM, ...peak }),
 });
 
 export const RHEA_CAMERA_STATES: Readonly<Record<CameraStateName, CameraDefinition>> = Object.freeze({
@@ -29,6 +29,6 @@ export const RHEA_CAMERA_STATES: Readonly<Record<CameraStateName, CameraDefiniti
 export const CAMERA_BOUNDS = Object.freeze({
   xPercent: 1.25,
   yPercent: 0.55,
-  scale: [1, 1.055] as const,
+  scale: Object.freeze([1, 1.055] as const),
   rotationDeg: 0.4,
 });

@@ -1,6 +1,6 @@
 import type { BodyPose, BodyPoseName } from './types.ts';
 
-const pose = (value: BodyPose): BodyPose => value;
+const pose = (value: BodyPose): BodyPose => Object.freeze(value);
 
 export const RHEA_BODY_POSES: Readonly<Record<BodyPoseName, BodyPose>> = Object.freeze({
   NEUTRAL_STAND: pose({ name: 'NEUTRAL_STAND', torsoYawDeg: 0, torsoLeanDeg: 0, bodyScale: 1, bodyXPercent: 0, bodyYPercent: 0, headXPercent: 0, headYPercent: 0, headScale: 1, headRotationDeg: 0 }),

@@ -3,6 +3,11 @@ import { timelineDuration } from '../speech/textTimeline.ts';
 import { DARK_POWER_VOICE_PROFILE, isVoiceTone, type VoiceTone, voiceToneSettings } from './darkPowerVoiceProfile.ts';
 
 export const MAX_PROMO_TEXT = 420;
+export const PIPER_SYNTHESIS_TIMEOUT_MS = 30_000;
+
+export type VoiceRequestParseResult =
+  | { ok: true; request: TtsRequest }
+  | { ok: false; error: string };
 
 export function writePiperText(stdin: { end(text: string, encoding: 'utf8'): unknown }, text: string) {
   stdin.end(text, 'utf8');
@@ -27,6 +32,16 @@ export function createTtsRequest(text: string, tone: VoiceTone): TtsRequest {
   if (!text.trim()) throw new Error('Promo text is empty');
   if (text.length > MAX_PROMO_TEXT) throw new Error(`Promo text exceeds ${MAX_PROMO_TEXT} characters`);
   return { text, tone, profileVersion: DARK_POWER_VOICE_PROFILE.version, model: DARK_POWER_VOICE_PROFILE.model, settings: voiceToneSettings(tone) };
+}
+
+export function parseVoiceRequestBody(body: unknown): VoiceRequestParseResult {
+  if (!body || typeof body !== 'object' || Array.isArray(body)) return { ok: false, error: 'Invalid JSON body' };
+  const value = body as { text?: unknown; tone?: unknown };
+  if (!isVoiceTone(value.tone)) return { ok: false, error: 'Invalid voice tone' };
+  if (typeof value.text !== 'string' || !value.text.trim() || value.text.length > MAX_PROMO_TEXT) {
+    return { ok: false, error: `Text must be 1-${MAX_PROMO_TEXT} characters` };
+  }
+  return { ok: true, request: createTtsRequest(value.text, value.tone) };
 }
 
 export function calibrateVisemeTimeline(timeline: TimelineSegment[], generatedDurationMs: number): TimelineSegment[] {

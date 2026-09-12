@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createTtsRequest, voiceCacheIdentity, wavDurationMs, calibrateVisemeTimeline, monotonicAudioElapsed, writePiperText } from '../promo/voice/pipeline.ts';
+import { PIPER_SYNTHESIS_TIMEOUT_MS, createTtsRequest, parseVoiceRequestBody, voiceCacheIdentity, wavDurationMs, calibrateVisemeTimeline, monotonicAudioElapsed, writePiperText } from '../promo/voice/pipeline.ts';
+import { readFile } from 'node:fs/promises';
 import { VOICE_TONES, isVoiceTone, voiceToneSettings } from '../promo/voice/darkPowerVoiceProfile.ts';
 import { createReplayMemory } from '../promo/voice/replay.ts';
 import { createSpeechSessionState, beginSpeechSession, invalidateSpeechSession, isCurrentSpeechSession } from '../promo/speech/session.ts';
@@ -25,6 +26,26 @@ test('each tone maps deterministically to supported controls',()=>{ for(const to
 test('cache identity includes tone and exact text',()=>{ assert.equal(voiceCacheIdentity(text,'AUTO'),voiceCacheIdentity(text,'AUTO')); assert.notEqual(voiceCacheIdentity(text,'AUTO'),voiceCacheIdentity(text,'COLD')); assert.notEqual(voiceCacheIdentity(text,'AUTO'),voiceCacheIdentity(text.trim(),'AUTO')); });
 test('420 characters accepted',()=>assert.equal(createTtsRequest('a'.repeat(420),'COLD').text.length,420));
 test('421 characters rejected',()=>assert.throws(()=>createTtsRequest('a'.repeat(421),'AUTO'),/exceeds/));
+test('runtime voice body validation rejects malformed inputs without prototype traps',()=>{
+  for(const body of [null,[],42,'text',{}, {text:null,tone:'AUTO'}, {text:42,tone:'AUTO'}, {text:'',tone:'AUTO'}, {text:'   ',tone:'AUTO'}, {text:'a'.repeat(421),tone:'AUTO'}, {text:'Go.',tone:null}, {text:'Go.',tone:'toString'}, {text:'Go.',tone:'__proto__'}]) {
+    assert.equal(parseVoiceRequestBody(body).ok,false);
+  }
+});
+test('runtime voice body accepts exact UTF-8 text at both supported boundaries',()=>{
+  for(const input of ['A', 'a'.repeat(420), 'I’m ready — Café 🔥']) {
+    const parsed=parseVoiceRequestBody({text:input,tone:'AUTO'});
+    assert.equal(parsed.ok,true);
+    if(parsed.ok) assert.equal(parsed.request.text,input);
+  }
+});
+test('Piper route has a bounded timeout, safe kill path, and no model-path disclosure',async()=>{
+  assert.equal(PIPER_SYNTHESIS_TIMEOUT_MS,30000);
+  const source=await readFile(new URL('../app/api/promo-voice/route.ts',import.meta.url),'utf8');
+  assert.match(source,/setTimeout\(\(\) => \{ timedOut = true; terminate\(\); \}, PIPER_SYNTHESIS_TIMEOUT_MS\)/);
+  assert.match(source,/child\.kill\(\)/);
+  assert.doesNotMatch(source,/spawn\([^\n]+\{[^}]*shell\s*:\s*true/);
+  assert.doesNotMatch(source,/engine:\s*'BROWSER FALLBACK',\s*model\s*\}/);
+});
 test('real PCM WAV structure yields measured positive duration',()=>assert.equal(wavDurationMs(wav()),1000));
 test('malformed and truncated WAVs are safely rejected',()=>{ for(const b of [Buffer.alloc(0),Buffer.alloc(44),wav().subarray(0,43),wav().subarray(0,100)]) assert.equal(wavDurationMs(b),0); const corrupt=wav();corrupt.writeUInt32LE(0xffffffff,16);assert.equal(wavDurationMs(corrupt),0); });
 test('calibrated timeline spans measured duration',()=>assert.equal(timelineDuration(calibrateVisemeTimeline(createVisemeTimeline(text),3380)),3380));

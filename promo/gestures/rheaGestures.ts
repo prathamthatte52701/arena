@@ -18,14 +18,14 @@ const definition = (
   timing: [number, number, number],
   supported = true,
   reason: string | null = null,
-): GestureDefinition => ({
+): GestureDefinition => Object.freeze({
   name,
   supported,
   reason,
   enterMs: timing[0],
   holdMs: timing[1],
   exitMs: timing[2],
-  peak: { ...NEUTRAL_GESTURE_TRANSFORM, ...peak },
+  peak: Object.freeze({ ...NEUTRAL_GESTURE_TRANSFORM, ...peak }),
 });
 
 const STATIC_PLATE_LIMIT = 'The accepted static body plate has no independent arm geometry; substituting an arm pose would create false or broken anatomy.';
@@ -63,11 +63,11 @@ export const RHEA_GESTURES: Readonly<Record<GestureName, GestureDefinition>> = O
 export const GESTURE_BOUNDS = Object.freeze({
   bodyXPercent: 0.8,
   bodyYPercent: 0.5,
-  bodyScale: [0.995, 1.01] as const,
+  bodyScale: Object.freeze([0.995, 1.01] as const),
   torsoYawDeg: 1.25,
   torsoLeanDeg: 1.25,
   headXPercent: 0.3,
   headYPercent: 0.2,
-  headScale: [0.995, 1.005] as const,
+  headScale: Object.freeze([0.995, 1.005] as const),
   headRotationDeg: 1.25,
 });
