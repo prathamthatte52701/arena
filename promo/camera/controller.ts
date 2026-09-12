@@ -39,11 +39,12 @@ function safeTransform(config: CameraControllerConfig, value: CameraTransform): 
 function blend(config: CameraControllerConfig, target: CameraTransform, amount: number): CameraTransform {
   const weight = smoothstep(amount);
   if (weight === 0) return { ...config.neutral };
+  const neutral = config.neutral;
   return safeTransform(config, {
-    xPercent: target.xPercent * weight,
-    yPercent: target.yPercent * weight,
-    scale: 1 + (target.scale - 1) * weight,
-    rotationDeg: target.rotationDeg * weight,
+    xPercent: neutral.xPercent + (target.xPercent - neutral.xPercent) * weight,
+    yPercent: neutral.yPercent + (target.yPercent - neutral.yPercent) * weight,
+    scale: neutral.scale + (target.scale - neutral.scale) * weight,
+    rotationDeg: neutral.rotationDeg + (target.rotationDeg - neutral.rotationDeg) * weight,
   });
 }
 

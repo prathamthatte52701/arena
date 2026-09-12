@@ -51,6 +51,7 @@ test('camera never scales below one and adjacent samples avoid sudden jumps', ()
 
 test('invalid camera input falls back safely to static medium', () => {
   assert.equal(resolveCameraState('HANDHELD_SHAKE').name, 'STATIC_MEDIUM');
+  assert.equal(resolveCameraState(Object.create({ definitions: RHEA_CAMERA_STATES, bounds: CAMERA_BOUNDS, neutral: NEUTRAL_CAMERA_TRANSFORM }), 'SLOW_PUSH_IN').name, 'STATIC_MEDIUM');
   assert.deepEqual(Object.fromEntries(numericKeys.map(key => [key, sampleCameraState('HANDHELD_SHAKE', 500)[key]])), NEUTRAL_CAMERA_TRANSFORM);
 });
 
@@ -105,6 +106,30 @@ test('camera state changes interpolate from the current frame without snapping',
   assert.equal(onChange.scale, beforeChange.scale);
   assert.ok(Math.abs(afterChange.xPercent - onChange.xPercent) < 0.25);
   assert.ok(Math.abs(afterChange.scale - onChange.scale) < 0.012);
+});
+
+test('custom camera neutral is authoritative for sampling STOP and reset', () => {
+  const neutral = { xPercent: 0.4, yPercent: -0.2, scale: 1.015, rotationDeg: 0.1 };
+  const config = {
+    definitions: RHEA_CAMERA_STATES,
+    neutral,
+    bounds: { xPercent: 2, yPercent: 1, scale: [0.98, 1.1], rotationDeg: 1 },
+  };
+  const start = sampleCameraState(config, 'SLOW_PUSH_IN', 0);
+  assert.deepEqual(Object.fromEntries(numericKeys.map(key => [key, start[key]])), neutral);
+  const peak = sampleCameraState(config, 'SLOW_PUSH_IN', RHEA_CAMERA_STATES.SLOW_PUSH_IN.enterMs);
+  assert.deepEqual(Object.fromEntries(numericKeys.map(key => [key, peak[key]])), RHEA_CAMERA_STATES.SLOW_PUSH_IN.peak);
+  const midpoint = sampleCameraState(config, 'SLOW_PUSH_IN', RHEA_CAMERA_STATES.SLOW_PUSH_IN.enterMs / 2);
+  for (const key of numericKeys) assert.ok(midpoint[key] >= Math.min(neutral[key], peak[key]) && midpoint[key] <= Math.max(neutral[key], peak[key]));
+
+  const controller = createCameraController(config);
+  const request = { name: 'SLOW_PUSH_IN', triggerId: 'custom:0' };
+  controller.update(0, request);
+  controller.update(1200, request);
+  controller.stop(1200);
+  const stopped = controller.update(2000, null);
+  assert.deepEqual(Object.fromEntries(numericKeys.map(key => [key, stopped[key]])), neutral);
+  assert.deepEqual(Object.fromEntries(numericKeys.map(key => [key, controller.reset()[key]])), neutral);
 });
 
 test('performance mapping differentiates angry intimidating mocking and final hold', () => {

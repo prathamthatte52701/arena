@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { createBodyPoseController, resolveBodyPose } from '../promo/body/controller.ts';
 import { rheaBodyProfile } from '../promo/body/rheaBodyProfile.ts';
 import { BODY_POSE_NAMES } from '../promo/body/types.ts';
+import { RHEA_BODY_POSES } from '../promo/body/poses.ts';
 
 const framings = ['CLOSE', 'MEDIUM', 'FULL'];
 
@@ -51,6 +52,21 @@ test('body pose sampling is deterministic', () => {
 test('invalid pose input falls back to neutral stand', () => {
   assert.deepEqual(resolveBodyPose('NOT_A_POSE'), resolveBodyPose('NEUTRAL_STAND'));
   assert.deepEqual(resolveBodyPose(null), resolveBodyPose('NEUTRAL_STAND'));
+});
+
+test('invalid runtime framing falls back to MEDIUM without throwing', () => {
+  const controller = createBodyPoseController();
+  const expected = controller.sample('PROMO_FRONT', 'MEDIUM');
+  for (const framing of ['BOGUS', '', null, undefined, 42, {}, 'toString', '__proto__']) {
+    assert.deepEqual(controller.sample('PROMO_FRONT', framing), expected);
+  }
+});
+
+test('body config detection rejects inherited required properties', () => {
+  const inherited = Object.create({ profile: rheaBodyProfile, poses: RHEA_BODY_POSES });
+  assert.equal(resolveBodyPose(inherited).name, 'NEUTRAL_STAND');
+  const configured = createBodyPoseController({ profile: rheaBodyProfile, poses: RHEA_BODY_POSES });
+  assert.equal(configured.sample('POWER_STANCE', 'FULL').name, 'POWER_STANCE');
 });
 
 test('body sampling cannot alter speech text, mouth target, or tone', () => {

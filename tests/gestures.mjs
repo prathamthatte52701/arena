@@ -5,6 +5,8 @@ import { createGestureController, gestureForPerformance, resolveGesture, sampleG
 import { GESTURE_BOUNDS, NEUTRAL_GESTURE_TRANSFORM, RHEA_GESTURES } from '../promo/gestures/rheaGestures.ts';
 import { GESTURE_NAMES } from '../promo/gestures/types.ts';
 import { createBodyPoseController } from '../promo/body/controller.ts';
+import { createSceneRuntimePlan } from '../promo/scenes/orchestration.ts';
+import { SCENE_NAMES } from '../promo/scenes/types.ts';
 
 const supported = GESTURE_NAMES.filter(name => RHEA_GESTURES[name].supported);
 const numericKeys = Object.keys(NEUTRAL_GESTURE_TRANSFORM);
@@ -52,6 +54,7 @@ test('all gesture output is finite and remains inside conservative bounds', () =
 
 test('invalid and unsupported gesture requests fall back to safe neutral output', () => {
   assert.equal(resolveGesture('NOT_A_GESTURE').name, 'IDLE');
+  assert.equal(resolveGesture(Object.create({ definitions: RHEA_GESTURES, bounds: GESTURE_BOUNDS, neutral: NEUTRAL_GESTURE_TRANSFORM }), 'CHEST_EMPHASIS').name, 'IDLE');
   assert.deepEqual(Object.fromEntries(numericKeys.map(key => [key, sampleGesture('ARMS_CROSSED', 500)[key]])), NEUTRAL_GESTURE_TRANSFORM);
 });
 
@@ -78,6 +81,76 @@ test('REPLAY restarts the same gesture cleanly after STOP', () => {
   const replay = { name: 'CHEST_EMPHASIS', triggerId: 'session-2:beat-0' };
   controller.update(900, replay);
   assert.deepEqual(controller.update(1030, replay), firstEntry);
+});
+
+test('same gesture with a new beat trigger preserves the displayed transform', () => {
+  for (const name of ['CHEST_EMPHASIS', 'LEAN_FORWARD', 'HEAD_TILT_EMPHASIS', 'ARMS_RELAXED']) {
+    const controller = createGestureController();
+    const definition = RHEA_GESTURES[name];
+    const first = { name, triggerId: `${name}:beat-0` };
+    const next = { name, triggerId: `${name}:beat-1` };
+    controller.update(0, first);
+    const at = definition.enterMs + definition.holdMs / 2;
+    const before = controller.update(at, first);
+    const boundary = controller.update(at, next);
+    assert.deepEqual(boundary, before, `${name} must not restart at a trigger boundary`);
+    const after = controller.update(at + 40, next);
+    for (const key of numericKeys) assert.ok(Math.abs(after[key] - boundary[key]) < 0.08, `${name}.${key} continuity`);
+  }
+});
+
+test('different supported gestures interpolate directly from the displayed frame', () => {
+  for (const [fromName, toName] of [['CHEST_EMPHASIS', 'LEAN_FORWARD'], ['HEAD_TILT_EMPHASIS', 'ARMS_RELAXED']]) {
+    const controller = createGestureController();
+    const first = { name: fromName, triggerId: `${fromName}:beat-0` };
+    const next = { name: toName, triggerId: `${toName}:beat-1` };
+    controller.update(0, first);
+    const at = RHEA_GESTURES[fromName].enterMs + 120;
+    const before = controller.update(at, first);
+    const boundary = controller.update(at, next);
+    assert.equal(boundary.name, toName);
+    for (const key of numericKeys) assert.equal(boundary[key], before[key], `${fromName} -> ${toName}.${key} boundary`);
+    const after = controller.update(at + 40, next);
+    for (const key of numericKeys) assert.ok(Math.abs(after[key] - boundary[key]) < 0.08, `${fromName} -> ${toName}.${key} continuity`);
+  }
+});
+
+test('custom gesture neutral is authoritative for sampling STOP and reset', () => {
+  const neutral = {
+    bodyXPercent: 0.2, bodyYPercent: -0.1, bodyScale: 1.003,
+    torsoYawDeg: 0.2, torsoLeanDeg: -0.1,
+    headXPercent: 0.05, headYPercent: -0.02, headScale: 1.001, headRotationDeg: 0.1,
+  };
+  const config = {
+    definitions: RHEA_GESTURES,
+    neutral,
+    bounds: { ...GESTURE_BOUNDS, bodyScale: [0.98, 1.03], headScale: [0.98, 1.03] },
+  };
+  const start = sampleGesture(config, 'CHEST_EMPHASIS', 0);
+  assert.deepEqual(Object.fromEntries(numericKeys.map(key => [key, start[key]])), neutral);
+  const peak = sampleGesture(config, 'CHEST_EMPHASIS', RHEA_GESTURES.CHEST_EMPHASIS.enterMs);
+  assert.deepEqual(Object.fromEntries(numericKeys.map(key => [key, peak[key]])), RHEA_GESTURES.CHEST_EMPHASIS.peak);
+  const midpoint = sampleGesture(config, 'CHEST_EMPHASIS', RHEA_GESTURES.CHEST_EMPHASIS.enterMs / 2);
+  for (const key of numericKeys) assert.ok(midpoint[key] >= Math.min(neutral[key], peak[key]) && midpoint[key] <= Math.max(neutral[key], peak[key]));
+
+  const controller = createGestureController(config);
+  const request = { name: 'CHEST_EMPHASIS', triggerId: 'custom:0' };
+  controller.update(0, request);
+  controller.update(300, request);
+  controller.stop(300);
+  const stopped = controller.update(1000, null);
+  assert.deepEqual(Object.fromEntries(numericKeys.map(key => [key, stopped[key]])), neutral);
+  assert.deepEqual(Object.fromEntries(numericKeys.map(key => [key, controller.reset()[key]])), neutral);
+});
+
+test('CLOSE runtime gestures are rendered instead of silently suppressed by CSS', async () => {
+  const styles = await readFile(new URL('../promo/character/rig.module.css', import.meta.url), 'utf8');
+  assert.doesNotMatch(styles, /\.close\s+\.gestureSurface\s*\{[^}]*transform\s*:\s*none/);
+  const tones = ['AUTO', 'CONFIDENT', 'COLD', 'MOCKING', 'ANGRY', 'INTIMIDATING', 'SMIRKING'];
+  for (const scene of SCENE_NAMES) for (const tone of tones) {
+    const plan = createSceneRuntimePlan({ scene, text: 'Exact text.', tone });
+    if (plan.framing === 'CLOSE') assert.equal(RHEA_GESTURES[plan.gesture].supported, true, `${scene}/${tone}`);
+  }
 });
 
 test('performance mapping is deterministic and distinguishes angry intimidating and mocking signals', () => {

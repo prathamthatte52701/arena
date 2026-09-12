@@ -13,7 +13,10 @@ const DEFAULT_BODY_CONFIG: BodyControllerConfig = {
 };
 
 function isBodyConfig(value: unknown): value is BodyControllerConfig {
-  return typeof value === 'object' && value !== null && 'profile' in value && 'poses' in value;
+  return typeof value === 'object'
+    && value !== null
+    && Object.hasOwn(value, 'profile')
+    && Object.hasOwn(value, 'poses');
 }
 
 function clamp(value: number, min: number, max: number) {
@@ -34,11 +37,14 @@ export function createBodyPoseController(config: BodyControllerConfig = DEFAULT_
   return {
     sample(
       value: unknown,
-      framing: Framing,
+      framing: unknown,
     ): BodyRigFrame {
       const pose = resolveBodyPose(config, value);
       const bounds = config.profile.bounds;
-      const frame = config.profile.framing[framing];
+      const resolvedFraming: Framing = typeof framing === 'string' && Object.hasOwn(config.profile.framing, framing)
+        ? framing as Framing
+        : 'MEDIUM';
+      const frame = config.profile.framing[resolvedFraming];
 
       return {
         ...pose,
@@ -55,7 +61,7 @@ export function createBodyPoseController(config: BodyControllerConfig = DEFAULT_
           -bounds.headRotationDeg,
           bounds.headRotationDeg,
         ),
-        framing,
+        framing: resolvedFraming,
         framingHeightPercent: frame.heightPercent,
         framingTopPercent: frame.topPercent,
       };

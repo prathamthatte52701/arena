@@ -17,7 +17,11 @@ const DEFAULT_GESTURE_CONFIG: GestureControllerConfig = {
 };
 
 function isGestureConfig(value: unknown): value is GestureControllerConfig {
-  return typeof value === 'object' && value !== null && 'definitions' in value && 'bounds' in value && 'neutral' in value;
+  return typeof value === 'object'
+    && value !== null
+    && Object.hasOwn(value, 'definitions')
+    && Object.hasOwn(value, 'bounds')
+    && Object.hasOwn(value, 'neutral');
 }
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
@@ -44,16 +48,32 @@ function safeTransform(config: GestureControllerConfig, value: GestureTransform)
 function blendTransform(config: GestureControllerConfig, target: GestureTransform, amount: number): GestureTransform {
   const weight = smoothstep(amount);
   if (weight === 0) return { ...config.neutral };
+  const neutral = config.neutral;
   return safeTransform(config, {
-    bodyXPercent: target.bodyXPercent * weight,
-    bodyYPercent: target.bodyYPercent * weight,
-    bodyScale: 1 + (target.bodyScale - 1) * weight,
-    torsoYawDeg: target.torsoYawDeg * weight,
-    torsoLeanDeg: target.torsoLeanDeg * weight,
-    headXPercent: target.headXPercent * weight,
-    headYPercent: target.headYPercent * weight,
-    headScale: 1 + (target.headScale - 1) * weight,
-    headRotationDeg: target.headRotationDeg * weight,
+    bodyXPercent: neutral.bodyXPercent + (target.bodyXPercent - neutral.bodyXPercent) * weight,
+    bodyYPercent: neutral.bodyYPercent + (target.bodyYPercent - neutral.bodyYPercent) * weight,
+    bodyScale: neutral.bodyScale + (target.bodyScale - neutral.bodyScale) * weight,
+    torsoYawDeg: neutral.torsoYawDeg + (target.torsoYawDeg - neutral.torsoYawDeg) * weight,
+    torsoLeanDeg: neutral.torsoLeanDeg + (target.torsoLeanDeg - neutral.torsoLeanDeg) * weight,
+    headXPercent: neutral.headXPercent + (target.headXPercent - neutral.headXPercent) * weight,
+    headYPercent: neutral.headYPercent + (target.headYPercent - neutral.headYPercent) * weight,
+    headScale: neutral.headScale + (target.headScale - neutral.headScale) * weight,
+    headRotationDeg: neutral.headRotationDeg + (target.headRotationDeg - neutral.headRotationDeg) * weight,
+  });
+}
+
+function interpolateTransform(config: GestureControllerConfig, from: GestureTransform, to: GestureTransform, amount: number): GestureTransform {
+  const weight = smoothstep(amount);
+  return safeTransform(config, {
+    bodyXPercent: from.bodyXPercent + (to.bodyXPercent - from.bodyXPercent) * weight,
+    bodyYPercent: from.bodyYPercent + (to.bodyYPercent - from.bodyYPercent) * weight,
+    bodyScale: from.bodyScale + (to.bodyScale - from.bodyScale) * weight,
+    torsoYawDeg: from.torsoYawDeg + (to.torsoYawDeg - from.torsoYawDeg) * weight,
+    torsoLeanDeg: from.torsoLeanDeg + (to.torsoLeanDeg - from.torsoLeanDeg) * weight,
+    headXPercent: from.headXPercent + (to.headXPercent - from.headXPercent) * weight,
+    headYPercent: from.headYPercent + (to.headYPercent - from.headYPercent) * weight,
+    headScale: from.headScale + (to.headScale - from.headScale) * weight,
+    headRotationDeg: from.headRotationDeg + (to.headRotationDeg - from.headRotationDeg) * weight,
   });
 }
 
@@ -114,6 +134,7 @@ export function createGestureController(config: GestureControllerConfig = DEFAUL
   let lastNow = 0;
   let lastFrame = frame(config, 'IDLE', true, 'REST', 1, config.neutral);
   let exit: { startedAt: number; from: GestureFrame } | null = null;
+  let transitionFrom: GestureFrame | null = null;
 
   const safeNow = (nowMs: number) => {
     const finite = Number.isFinite(nowMs) ? nowMs : lastNow;
@@ -125,6 +146,7 @@ export function createGestureController(config: GestureControllerConfig = DEFAUL
     const now = safeNow(nowMs);
     if (!exit && (activeTrigger !== null || lastFrame.phase !== 'REST')) exit = { startedAt: now, from: lastFrame };
     activeTrigger = null;
+    transitionFrom = null;
     return now;
   };
 
@@ -141,12 +163,24 @@ export function createGestureController(config: GestureControllerConfig = DEFAUL
     const resolved = resolveGesture(config, request.name);
     if (!resolved.supported) return lastFrame = frame(config, resolved.name, false, 'REST', 1, config.neutral);
     if (request.triggerId !== activeTrigger || resolved.name !== activeName) {
+      if (activeTrigger !== null && resolved.name === activeName && lastFrame.phase !== 'REST') {
+        activeTrigger = request.triggerId;
+        return lastFrame = sampleGesture(config, activeName, now - startedAt);
+      }
+      transitionFrom = lastFrame.phase === 'REST' ? null : lastFrame;
       activeName = resolved.name;
       activeTrigger = request.triggerId;
       startedAt = now;
       exit = null;
     }
-    return lastFrame = sampleGesture(config, activeName, now - startedAt);
+    const sampled = sampleGesture(config, activeName, now - startedAt);
+    if (!transitionFrom) return lastFrame = sampled;
+    const transitionMs = resolved.enterMs || 360;
+    const transitionProgress = clamp((now - startedAt) / transitionMs, 0, 1);
+    const transform = interpolateTransform(config, transitionFrom, sampled, transitionProgress);
+    lastFrame = frame(config, activeName, true, transitionProgress < 1 ? 'ENTER' : sampled.phase, transitionProgress < 1 ? transitionProgress : sampled.phaseProgress, transform);
+    if (transitionProgress >= 1) transitionFrom = null;
+    return lastFrame;
   };
 
   const reset = () => {
@@ -154,6 +188,7 @@ export function createGestureController(config: GestureControllerConfig = DEFAUL
     activeTrigger = null;
     startedAt = lastNow;
     exit = null;
+    transitionFrom = null;
     lastFrame = frame(config, 'IDLE', true, 'REST', 1, config.neutral);
     return lastFrame;
   };
