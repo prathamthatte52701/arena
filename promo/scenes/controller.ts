@@ -1,15 +1,16 @@
-import { RHEA_SCENES } from './rheaScenes.ts';
-import { SCENE_NAMES, type RheaSceneDefinition, type SceneFrame, type SceneName } from './types.ts';
+import type { SceneControllerConfig, SceneDefinition, SceneFrame, SceneName } from './types.ts';
 
-export function resolveRheaScene(value: unknown): RheaSceneDefinition {
-  const name = typeof value === 'string' && SCENE_NAMES.some(scene => scene === value) ? value as SceneName : 'INTERVIEW';
-  return RHEA_SCENES[name];
+export function resolveScene(config: SceneControllerConfig, value: unknown): SceneDefinition {
+  const name = typeof value === 'string' && Object.hasOwn(config.definitions, value)
+    ? value as SceneName
+    : config.fallbackScene;
+  return config.definitions[name];
 }
 
-export function createSceneController() {
+export function createSceneController(config: SceneControllerConfig) {
   return {
     sample(value: unknown): SceneFrame {
-      const resolved = resolveRheaScene(value);
+      const resolved = resolveScene(config, value);
       return {
         ...resolved,
         requestedName: typeof value === 'string' ? value : null,

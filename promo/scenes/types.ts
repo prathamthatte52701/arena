@@ -1,6 +1,7 @@
 import type { BodyPoseName, Framing } from '../body/types.ts';
 import type { CameraStateName } from '../camera/types.ts';
 import type { GestureName } from '../gestures/types.ts';
+import type { Gaze, Tone } from '../performance/types.ts';
 
 export const SCENE_NAMES = ['INTERVIEW', 'BACKSTAGE', 'RING_ARENA', 'PRESS_CONFERENCE'] as const;
 
@@ -15,7 +16,7 @@ export interface SceneSafeTextArea {
   insetPercent: number;
 }
 
-export interface RheaSceneDefinition {
+export interface SceneDefinition {
   name: SceneName;
   label: string;
   eyebrow: string;
@@ -34,7 +35,27 @@ export interface RheaSceneDefinition {
   safeTextArea: SceneSafeTextArea;
 }
 
-export interface SceneFrame extends RheaSceneDefinition {
+export type RheaSceneDefinition = SceneDefinition;
+
+export interface SceneFrame extends SceneDefinition {
   requestedName: string | null;
   usedFallback: boolean;
+}
+
+export interface SceneControllerConfig {
+  definitions: Readonly<Record<SceneName, SceneDefinition>>;
+  fallbackScene: SceneName;
+}
+
+export type SceneRuntimeChoice = Readonly<{
+  framing: Framing;
+  pose: BodyPoseName;
+  gesture: GestureName;
+  camera: CameraStateName;
+  gaze: Gaze;
+}>;
+
+export interface SceneRuntimeConfig extends SceneControllerConfig {
+  policies: Readonly<Record<SceneName, Readonly<Record<Tone, SceneRuntimeChoice>>>>;
+  restGaze: Readonly<Record<SceneName, Gaze>>;
 }

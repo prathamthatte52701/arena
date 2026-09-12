@@ -2,6 +2,8 @@
 .header { display:flex; justify-content:space-between; align-items:center; max-width:1300px; margin:0 auto 20px; height:48px; }
 .header a { color:white; text-decoration:none; font-weight:800; letter-spacing:.12em; }
 .header span { font-weight:400; color:#c69a83; margin-left:12px; font-size:13px; }
+.characterSelector { margin-left:auto; margin-right:10px; display:flex; align-items:center; gap:8px; color:#9e91a2; font-size:10px; letter-spacing:.14em; }
+.characterSelector select { border:1px solid #454050; border-radius:6px; background:#111119; color:#f4f0ea; padding:8px 24px 8px 10px; font-size:11px; letter-spacing:.1em; }
 .shell button { border:1px solid #5c5866; background:#181722; color:#fff; padding:11px 14px; border-radius:6px; cursor:pointer; }
 .shell button:hover { border-color:#d6a0b1; }
 .stage { max-width:1300px; margin:auto; display:grid; grid-template-columns:minmax(0,1.25fr) minmax(370px,.9fr); gap:24px; align-items:start; }

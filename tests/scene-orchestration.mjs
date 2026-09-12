@@ -2,13 +2,15 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import {
-  createSceneRuntimePlan,
   orchestrateCameraRequest,
   orchestrateGestureRequest,
-  remapSceneRuntimePlan,
-  restartSceneRuntimePlan,
-  stopSceneRuntimePlan,
 } from '../promo/scenes/orchestration.ts';
+import {
+  createRheaSceneRuntimePlan as createSceneRuntimePlan,
+  remapRheaSceneRuntimePlan as remapSceneRuntimePlan,
+  restartRheaSceneRuntimePlan as restartSceneRuntimePlan,
+  stopRheaSceneRuntimePlan as stopSceneRuntimePlan,
+} from '../promo/scenes/rheaRuntime.ts';
 import { RHEA_SCENES } from '../promo/scenes/rheaScenes.ts';
 import { SCENE_NAMES } from '../promo/scenes/types.ts';
 
@@ -203,7 +205,7 @@ test('orchestration is configuration only and does not duplicate engines or refe
 });
 
 test('empty and whitespace DELIVER stay in scene-safe REST and do not overwrite replay memory', async () => {
-  const page = await readFile(new URL('../app/promo-rhea/page.tsx', import.meta.url), 'utf8');
+  const page = await readFile(new URL('../promo/PromoExperience.tsx', import.meta.url), 'utf8');
   const deliverBody = page.match(/const deliverPromo = \(\) => \{([\s\S]*?)\n  \};/)?.[1] ?? '';
   assert.match(deliverBody, /if \(!speech\.text\.trim\(\)\)/);
   assert.match(deliverBody, /mode: 'REST'/);

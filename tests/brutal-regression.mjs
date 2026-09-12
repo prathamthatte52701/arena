@@ -10,7 +10,7 @@ import { GESTURE_BOUNDS, NEUTRAL_GESTURE_TRANSFORM, RHEA_GESTURES } from '../pro
 import { CAMERA_STATE_NAMES } from '../promo/camera/types.ts';
 import { createCameraController, sampleCameraProgress, sampleCameraState } from '../promo/camera/controller.ts';
 import { CAMERA_BOUNDS, NEUTRAL_CAMERA_TRANSFORM } from '../promo/camera/rheaCamera.ts';
-import { createSceneRuntimePlan } from '../promo/scenes/orchestration.ts';
+import { createRheaSceneRuntimePlan as createSceneRuntimePlan } from '../promo/scenes/rheaRuntime.ts';
 import { RHEA_SCENES } from '../promo/scenes/rheaScenes.ts';
 import { SCENE_NAMES } from '../promo/scenes/types.ts';
 import { createVisemeTimeline, timelineDuration } from '../promo/speech/textTimeline.ts';
@@ -207,13 +207,16 @@ test('10,000 malformed WAV buffers never throw and return zero duration', () => 
 });
 
 test('face structure remains flat canonical single-canvas Rhea V2', async () => {
-  const [rig, styles, profile, body] = await Promise.all([
+  const [rig, wrapper, styles, profile, body] = await Promise.all([
+    readFile(new URL('../promo/character/CharacterPortraitRig.tsx', import.meta.url), 'utf8'),
     readFile(new URL('../promo/character/RheaPortraitRig.tsx', import.meta.url), 'utf8'),
     readFile(new URL('../promo/character/rig.module.css', import.meta.url), 'utf8'),
     readFile(new URL('../promo/character/rheaProfile.ts', import.meta.url), 'utf8'),
     readFile(new URL('../promo/body/rheaBodyProfile.ts', import.meta.url), 'utf8'),
   ]);
   assert.equal((rig.match(/<canvas\b/g) ?? []).length, 1);
+  assert.equal((wrapper.match(/<canvas\b/g) ?? []).length, 0);
+  assert.equal((wrapper.match(/<CharacterPortraitRig\b/g) ?? []).length, 1);
   assert.equal((rig.match(/className=\{styles\.portrait\}/g) ?? []).length, 1);
   assert.doesNotMatch(styles, /perspective\s*:|preserve-3d|rotateY\s*\(|scale[XY]\s*\(/);
   assert.match(profile, /faceFrontNeutral/);

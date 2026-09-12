@@ -1,5 +1,5 @@
 import { PromoExperience } from '../../promo/PromoExperience.tsx';
 
-export default function PromoRhea() {
+export default function Promo() {
   return <PromoExperience initialCharacterId="RHEA" />;
 }

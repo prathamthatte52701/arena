@@ -5,7 +5,7 @@ import { createGestureController, gestureForPerformance, resolveGesture, sampleG
 import { GESTURE_BOUNDS, NEUTRAL_GESTURE_TRANSFORM, RHEA_GESTURES } from '../promo/gestures/rheaGestures.ts';
 import { GESTURE_NAMES } from '../promo/gestures/types.ts';
 import { createBodyPoseController } from '../promo/body/controller.ts';
-import { createSceneRuntimePlan } from '../promo/scenes/orchestration.ts';
+import { createRheaSceneRuntimePlan as createSceneRuntimePlan } from '../promo/scenes/rheaRuntime.ts';
 import { SCENE_NAMES } from '../promo/scenes/types.ts';
 
 const supported = GESTURE_NAMES.filter(name => RHEA_GESTURES[name].supported);

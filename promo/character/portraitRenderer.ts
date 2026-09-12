@@ -1,5 +1,5 @@
 import type { FaceFrame } from '../face/controller';
-import { rheaProfile } from './rheaProfile';
+import type { PortraitProfile } from '../characters/types.ts';
 
 // One 2D texture, no scene, geometry model, lighting model or generated face.
 // Inverse texture coordinates keep the original skin, lashes and iris pixels.
@@ -112,7 +112,7 @@ void main() {
   gl_FragColor.rgb *= 1.-interior*.62;
 }`;
 
-export function createPortraitRenderer(canvas: HTMLCanvasElement, image: HTMLImageElement) {
+export function createPortraitRenderer(canvas: HTMLCanvasElement, image: HTMLImageElement, profile: PortraitProfile) {
   const gl = canvas.getContext('webgl', { alpha: false, antialias: false, preserveDrawingBuffer: true });
   if (!gl) throw new Error('The portrait rig needs WebGL texture support.');
   const shaders: WebGLShader[] = [];
@@ -153,9 +153,9 @@ export function createPortraitRenderer(canvas: HTMLCanvasElement, image: HTMLIma
   const gaze = uniform('gaze'), pose = uniform('pose'), life = uniform('life'), expression = uniform('expression');
   const mouth = uniform('mouth'), mouthDetail = uniform('mouthDetail');
   gl.uniform1i(uniform('portrait'), 0);
-  gl.uniform2f(uniform('size'), rheaProfile.width, rheaProfile.height);
-  gl.uniform2f(uniform('eyeA'), rheaProfile.eyes[0].x, rheaProfile.eyes[0].y);
-  gl.uniform2f(uniform('eyeB'), rheaProfile.eyes[1].x, rheaProfile.eyes[1].y);
+  gl.uniform2f(uniform('size'), profile.width, profile.height);
+  gl.uniform2f(uniform('eyeA'), profile.eyes[0].x, profile.eyes[0].y);
+  gl.uniform2f(uniform('eyeB'), profile.eyes[1].x, profile.eyes[1].y);
   gl.viewport(0, 0, canvas.width, canvas.height);
   return {
     draw(frame: FaceFrame) {

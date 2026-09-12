@@ -9,8 +9,7 @@ import { sampleGestureProgress } from '../promo/gestures/controller.ts';
 import { CAMERA_STATE_NAMES } from '../promo/camera/types.ts';
 import { sampleCameraProgress } from '../promo/camera/controller.ts';
 import { SCENE_NAMES } from '../promo/scenes/types.ts';
-import { createSceneController } from '../promo/scenes/controller.ts';
-import { createSceneRuntimePlan } from '../promo/scenes/orchestration.ts';
+import { createRheaSceneController as createSceneController, createRheaSceneRuntimePlan as createSceneRuntimePlan } from '../promo/scenes/rheaRuntime.ts';
 import { createPerformanceTimeline } from '../promo/performance/timeline.ts';
 
 const tones = ['AUTO', 'CONFIDENT', 'COLD', 'MOCKING', 'ANGRY', 'INTIMIDATING', 'SMIRKING'];

@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { usePromoSpeech } from '../promo/performance/usePromoSpeech';
 import { createFaceController } from '../promo/face/controller';
 import { createPortraitRenderer } from '../promo/character/portraitRenderer';
+import { rheaProfile } from '../promo/character/rheaProfile';
 import { rheaV2Assets } from '../promo/character/rheaV2Assets';
 import { createVisemeTimeline } from '../promo/speech/textTimeline';
 
@@ -20,7 +21,7 @@ const root = createRoot(host); root.render(<Harness />);
 const tick = () => new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
 const source = new Image(); source.src = rheaV2Assets.faceFrontNeutral; await source.decode();
 const canvas = document.querySelector('canvas')!;
-const renderer = createPortraitRenderer(canvas, source);
+const renderer = createPortraitRenderer(canvas, source, rheaProfile);
 const controller = createFaceController(() => .5);
 const controls = { expression: 'NEUTRAL', gaze: 'CENTER', idle: false, blinkRequest: 0, blinkPreview: 0 } as const;
 let frameTime = 0;

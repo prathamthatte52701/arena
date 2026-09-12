@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { createSceneController, resolveRheaScene } from '../promo/scenes/controller.ts';
+import { createRheaSceneController as createSceneController, resolveRheaScene } from '../promo/scenes/rheaRuntime.ts';
 import { RHEA_SCENES } from '../promo/scenes/rheaScenes.ts';
 import { SCENE_NAMES } from '../promo/scenes/types.ts';
 import { BODY_POSE_NAMES } from '../promo/body/types.ts';
@@ -66,7 +66,7 @@ test('scene shells preserve locked character and performance systems', () => {
 });
 
 test('active scene switching remaps presentation without mutating or restarting speech', async () => {
-  const page = await readFile(new URL('../app/promo-rhea/page.tsx', import.meta.url), 'utf8');
+  const page = await readFile(new URL('../promo/PromoExperience.tsx', import.meta.url), 'utf8');
   const switchBody = page.match(/const selectScene = \(name: SceneName\) => \{([\s\S]*?)\n  \};/)?.[1] ?? '';
   assert.match(switchBody, /if \(speaking\)/);
   assert.match(switchBody, /remapSceneRuntimePlan/);
@@ -76,7 +76,7 @@ test('active scene switching remaps presentation without mutating or restarting 
 });
 
 test('REPLAY restores the visible text and tone from scene replay memory', async () => {
-  const page = await readFile(new URL('../app/promo-rhea/page.tsx', import.meta.url), 'utf8');
+  const page = await readFile(new URL('../promo/PromoExperience.tsx', import.meta.url), 'utf8');
   const replayBody = page.match(/const replayPromo = \(\) => \{([\s\S]*?)\n  \};/)?.[1] ?? '';
   assert.match(replayBody, /speech\.setText\(memory\.text\)/);
   assert.match(replayBody, /speech\.setTone\(memory\.tone\)/);

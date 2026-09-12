@@ -4,8 +4,8 @@ import type { GestureName, GestureRequest } from '../gestures/types.ts';
 import { GAZES } from '../face/gaze.ts';
 import type { Gaze, PerformanceTarget, Tone } from '../performance/types.ts';
 import { isVoiceTone } from '../voice/darkPowerVoiceProfile.ts';
-import { resolveRheaScene } from './controller.ts';
-import type { RheaSceneDefinition, SceneName } from './types.ts';
+import { resolveScene } from './controller.ts';
+import type { SceneDefinition, SceneName, SceneRuntimeChoice, SceneRuntimeConfig } from './types.ts';
 
 export type SceneRuntimeMode = 'REST' | 'SPEAKING';
 
@@ -35,79 +35,31 @@ export interface SceneRuntimeRequest {
   gaze?: unknown;
 }
 
-type RuntimeChoice = Pick<SceneRuntimePlan, 'framing' | 'pose' | 'gesture' | 'camera' | 'gaze'>;
-
-const POLICIES = {
-  INTERVIEW: {
-    AUTO: { framing: 'MEDIUM', pose: 'INTERVIEWER', gesture: 'ARMS_RELAXED', camera: 'STATIC_MEDIUM', gaze: 'INTERVIEWER' },
-    CONFIDENT: { framing: 'MEDIUM', pose: 'PROMO_FRONT', gesture: 'ARMS_RELAXED', camera: 'SLOW_PUSH_IN', gaze: 'CENTER' },
-    COLD: { framing: 'MEDIUM', pose: 'CAMERA_STARE', gesture: 'IDLE', camera: 'STATIC_MEDIUM', gaze: 'CAMERA' },
-    MOCKING: { framing: 'MEDIUM', pose: 'INTERVIEWER', gesture: 'HEAD_TILT_EMPHASIS', camera: 'INTERVIEWER_ANGLE', gaze: 'RIGHT' },
-    ANGRY: { framing: 'MEDIUM', pose: 'PROMO_FRONT', gesture: 'LEAN_FORWARD', camera: 'SLOW_PUSH_IN', gaze: 'CAMERA' },
-    INTIMIDATING: { framing: 'CLOSE', pose: 'CAMERA_STARE', gesture: 'LEAN_FORWARD', camera: 'CLOSE_PROMO', gaze: 'CAMERA' },
-    SMIRKING: { framing: 'MEDIUM', pose: 'INTERVIEWER', gesture: 'HEAD_TILT_EMPHASIS', camera: 'CAMERA_STARE', gaze: 'INTERVIEWER' },
-  },
-  BACKSTAGE: {
-    AUTO: { framing: 'MEDIUM', pose: 'PROMO_FRONT', gesture: 'ARMS_RELAXED', camera: 'STATIC_MEDIUM', gaze: 'CAMERA' },
-    CONFIDENT: { framing: 'MEDIUM', pose: 'PROMO_FRONT', gesture: 'CHEST_EMPHASIS', camera: 'SLOW_PUSH_IN', gaze: 'CENTER' },
-    COLD: { framing: 'MEDIUM', pose: 'THREE_QUARTER', gesture: 'IDLE', camera: 'CAMERA_STARE', gaze: 'CAMERA' },
-    MOCKING: { framing: 'MEDIUM', pose: 'THREE_QUARTER', gesture: 'HEAD_TILT_EMPHASIS', camera: 'INTERVIEWER_ANGLE', gaze: 'RIGHT' },
-    ANGRY: { framing: 'MEDIUM', pose: 'PROMO_FRONT', gesture: 'CHEST_EMPHASIS', camera: 'SLOW_PUSH_IN', gaze: 'CAMERA' },
-    INTIMIDATING: { framing: 'CLOSE', pose: 'PROMO_FRONT', gesture: 'LEAN_FORWARD', camera: 'CLOSE_PROMO', gaze: 'CAMERA' },
-    SMIRKING: { framing: 'MEDIUM', pose: 'THREE_QUARTER', gesture: 'HEAD_TILT_EMPHASIS', camera: 'CAMERA_STARE', gaze: 'INTERVIEWER' },
-  },
-  RING_ARENA: {
-    AUTO: { framing: 'FULL', pose: 'POWER_STANCE', gesture: 'ARMS_RELAXED', camera: 'STATIC_FULL', gaze: 'CAMERA' },
-    CONFIDENT: { framing: 'FULL', pose: 'POWER_STANCE', gesture: 'CHEST_EMPHASIS', camera: 'SLOW_PUSH_IN', gaze: 'CENTER' },
-    COLD: { framing: 'FULL', pose: 'CAMERA_STARE', gesture: 'IDLE', camera: 'STATIC_FULL', gaze: 'CAMERA' },
-    MOCKING: { framing: 'MEDIUM', pose: 'PROMO_FRONT', gesture: 'ARMS_RELAXED', camera: 'INTERVIEWER_ANGLE', gaze: 'RIGHT' },
-    ANGRY: { framing: 'FULL', pose: 'POWER_STANCE', gesture: 'CHEST_EMPHASIS', camera: 'SLOW_PUSH_IN', gaze: 'CAMERA' },
-    INTIMIDATING: { framing: 'MEDIUM', pose: 'CAMERA_STARE', gesture: 'LEAN_FORWARD', camera: 'CLOSE_PROMO', gaze: 'CAMERA' },
-    SMIRKING: { framing: 'MEDIUM', pose: 'PROMO_FRONT', gesture: 'ARMS_RELAXED', camera: 'CAMERA_STARE', gaze: 'CAMERA' },
-  },
-  PRESS_CONFERENCE: {
-    AUTO: { framing: 'MEDIUM', pose: 'CAMERA_STARE', gesture: 'IDLE', camera: 'STATIC_MEDIUM', gaze: 'CAMERA' },
-    CONFIDENT: { framing: 'MEDIUM', pose: 'PROMO_FRONT', gesture: 'ARMS_RELAXED', camera: 'SLOW_PUSH_IN', gaze: 'CAMERA' },
-    COLD: { framing: 'MEDIUM', pose: 'CAMERA_STARE', gesture: 'IDLE', camera: 'CAMERA_STARE', gaze: 'CAMERA' },
-    MOCKING: { framing: 'MEDIUM', pose: 'INTERVIEWER', gesture: 'HEAD_TILT_EMPHASIS', camera: 'INTERVIEWER_ANGLE', gaze: 'RIGHT' },
-    ANGRY: { framing: 'MEDIUM', pose: 'PROMO_FRONT', gesture: 'ARMS_RELAXED', camera: 'SLOW_PUSH_IN', gaze: 'CAMERA' },
-    INTIMIDATING: { framing: 'CLOSE', pose: 'CAMERA_STARE', gesture: 'ARMS_RELAXED', camera: 'CLOSE_PROMO', gaze: 'CAMERA' },
-    SMIRKING: { framing: 'MEDIUM', pose: 'CAMERA_STARE', gesture: 'HEAD_TILT_EMPHASIS', camera: 'CAMERA_STARE', gaze: 'CAMERA' },
-  },
-} as const satisfies Readonly<Record<SceneName, Readonly<Record<Tone, RuntimeChoice>>>>;
-
-const REST_GAZE: Readonly<Record<SceneName, Gaze>> = Object.freeze({
-  INTERVIEW: 'INTERVIEWER',
-  BACKSTAGE: 'CAMERA',
-  RING_ARENA: 'CAMERA',
-  PRESS_CONFERENCE: 'CAMERA',
-});
-
 function legal<T extends string>(requested: unknown, allowed: readonly T[], fallback: T): T {
   return typeof requested === 'string' && allowed.includes(requested as T) ? requested as T : fallback;
 }
 
-function safeRest(scene: RheaSceneDefinition): RuntimeChoice {
+function safeRest(config: SceneRuntimeConfig, scene: SceneDefinition): SceneRuntimeChoice {
   return {
     framing: scene.defaultFraming,
     pose: scene.defaultPose,
     gesture: scene.defaultGesture,
     camera: scene.defaultCamera,
-    gaze: REST_GAZE[scene.name],
+    gaze: config.restGaze[scene.name],
   };
 }
 
-export function createSceneRuntimePlan(request: unknown): SceneRuntimePlan {
+export function createSceneRuntimePlan(config: SceneRuntimeConfig, request: unknown): SceneRuntimePlan {
   const source = typeof request === 'object' && request !== null && !Array.isArray(request)
     ? request as Record<string, unknown>
     : {};
   const input = (key: string) => Object.hasOwn(source, key) ? source[key] : undefined;
   const requestedScene = input('scene');
   const requestedTone = input('tone');
-  const scene = resolveRheaScene(requestedScene);
+  const scene = resolveScene(config, requestedScene);
   const tone: Tone = isVoiceTone(requestedTone) ? requestedTone : 'AUTO';
   const mode: SceneRuntimeMode = input('mode') === 'REST' ? 'REST' : 'SPEAKING';
-  const policy = mode === 'REST' ? safeRest(scene) : POLICIES[scene.name][tone];
+  const policy = mode === 'REST' ? safeRest(config, scene) : config.policies[scene.name][tone];
   return Object.freeze({
     scene: scene.name,
     requestedScene: typeof requestedScene === 'string' ? requestedScene : null,
@@ -123,16 +75,16 @@ export function createSceneRuntimePlan(request: unknown): SceneRuntimePlan {
   });
 }
 
-export function remapSceneRuntimePlan(plan: SceneRuntimePlan, scene: unknown): SceneRuntimePlan {
-  return createSceneRuntimePlan({ scene, text: plan.text, tone: plan.tone, mode: plan.mode });
+export function remapSceneRuntimePlan(config: SceneRuntimeConfig, plan: SceneRuntimePlan, scene: unknown): SceneRuntimePlan {
+  return createSceneRuntimePlan(config, { scene, text: plan.text, tone: plan.tone, mode: plan.mode });
 }
 
-export function stopSceneRuntimePlan(plan: SceneRuntimePlan): SceneRuntimePlan {
-  return createSceneRuntimePlan({ scene: plan.scene, text: plan.text, tone: plan.tone, mode: 'REST' });
+export function stopSceneRuntimePlan(config: SceneRuntimeConfig, plan: SceneRuntimePlan): SceneRuntimePlan {
+  return createSceneRuntimePlan(config, { scene: plan.scene, text: plan.text, tone: plan.tone, mode: 'REST' });
 }
 
-export function restartSceneRuntimePlan(plan: SceneRuntimePlan): SceneRuntimePlan {
-  return createSceneRuntimePlan({ scene: plan.scene, text: plan.text, tone: plan.tone, mode: 'SPEAKING' });
+export function restartSceneRuntimePlan(config: SceneRuntimeConfig, plan: SceneRuntimePlan): SceneRuntimePlan {
+  return createSceneRuntimePlan(config, { scene: plan.scene, text: plan.text, tone: plan.tone, mode: 'SPEAKING' });
 }
 
 export function orchestratePerformance(plan: SceneRuntimePlan | null, performance: PerformanceTarget | null): PerformanceTarget | null {
