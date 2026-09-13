@@ -161,7 +161,14 @@ export function createGestureController(config: GestureControllerConfig = DEFAUL
       return lastFrame;
     }
     const resolved = resolveGesture(config, request.name);
-    if (!resolved.supported) return lastFrame = frame(config, resolved.name, false, 'REST', 1, config.neutral);
+    if (!resolved.supported) {
+      activeName = 'IDLE';
+      activeTrigger = null;
+      startedAt = now;
+      exit = null;
+      transitionFrom = null;
+      return lastFrame = frame(config, resolved.name, false, 'REST', 1, config.neutral);
+    }
     if (request.triggerId !== activeTrigger || resolved.name !== activeName) {
       if (activeTrigger !== null && resolved.name === activeName && lastFrame.phase !== 'REST') {
         activeTrigger = request.triggerId;

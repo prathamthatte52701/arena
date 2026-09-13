@@ -10,6 +10,21 @@ import { SCENE_NAMES } from '../promo/scenes/types.ts';
 
 const supported = GESTURE_NAMES.filter(name => RHEA_GESTURES[name].supported);
 const numericKeys = Object.keys(NEUTRAL_GESTURE_TRANSFORM);
+const transformOf = frame => Object.fromEntries(numericKeys.map(key => [key, frame[key]]));
+
+function assertNeutral(frame, message) {
+  assert.equal(frame.phase, 'REST', `${message} phase`);
+  assert.deepEqual(transformOf(frame), NEUTRAL_GESTURE_TRANSFORM, `${message} transform`);
+}
+
+function assertSupportedRestartFromNeutral(controller, now, request, message) {
+  const restarted = controller.update(now, request);
+  assert.equal(restarted.name, request.name, `${message} name`);
+  assert.equal(restarted.supported, true, `${message} support`);
+  assert.equal(restarted.phase, 'ENTER', `${message} phase`);
+  assert.deepEqual(transformOf(restarted), NEUTRAL_GESTURE_TRANSFORM, `${message} boundary`);
+  return restarted;
+}
 
 test('all requested Phase 4.2 gesture contracts exist and unsafe arm articulation is explicit', () => {
   assert.deepEqual(GESTURE_NAMES, ['IDLE', 'ARMS_RELAXED', 'ARMS_CROSSED', 'ONE_HAND_POINT', 'OPEN_PALM_CHALLENGE', 'CHEST_EMPHASIS', 'LEAN_FORWARD', 'HEAD_TILT_EMPHASIS']);
@@ -56,6 +71,72 @@ test('invalid and unsupported gesture requests fall back to safe neutral output'
   assert.equal(resolveGesture('NOT_A_GESTURE').name, 'IDLE');
   assert.equal(resolveGesture(Object.create({ definitions: RHEA_GESTURES, bounds: GESTURE_BOUNDS, neutral: NEUTRAL_GESTURE_TRANSFORM }), 'CHEST_EMPHASIS').name, 'IDLE');
   assert.deepEqual(Object.fromEntries(numericKeys.map(key => [key, sampleGesture('ARMS_CROSSED', 500)[key]])), NEUTRAL_GESTURE_TRANSFORM);
+});
+
+test('unsupported gesture interruption clears stale same-trigger state', () => {
+  for (const [name, holdAt, unsupported] of [
+    ['CHEST_EMPHASIS', 500, 'ARMS_CROSSED'],
+    ['LEAN_FORWARD', 700, 'ONE_HAND_POINT'],
+  ]) {
+    const controller = createGestureController();
+    const request = { name, triggerId: 'A' };
+    controller.update(0, request);
+    assert.equal(controller.update(holdAt, request).phase, 'HOLD', `${name} reproduction must reach HOLD`);
+    assertNeutral(controller.update(holdAt, { name: unsupported, triggerId: 'unsupported' }), `${name} unsupported interruption`);
+    assertSupportedRestartFromNeutral(controller, holdAt, request, `${name} same-trigger recovery`);
+  }
+});
+
+test('supported gesture after unsupported interruption transitions from displayed neutral', () => {
+  const controller = createGestureController();
+  const first = { name: 'HEAD_TILT_EMPHASIS', triggerId: 'A' };
+  controller.update(0, first);
+  controller.update(500, first);
+  assertNeutral(controller.update(500, { name: 'OPEN_PALM_CHALLENGE', triggerId: 'unsupported' }), 'unsupported interruption');
+  assertSupportedRestartFromNeutral(controller, 500, { name: 'ARMS_RELAXED', triggerId: 'B' }, 'different-gesture recovery');
+});
+
+test('unsupported interruption remains safe across STOP and reset', () => {
+  for (const action of ['stop', 'reset']) {
+    const controller = createGestureController();
+    const request = { name: 'CHEST_EMPHASIS', triggerId: 'A' };
+    controller.update(0, request);
+    controller.update(500, request);
+    assertNeutral(controller.update(500, { name: 'ARMS_CROSSED', triggerId: 'unsupported' }), `${action} interruption`);
+    if (action === 'stop') {
+      controller.stop(500);
+      assertNeutral(controller.update(500, null), 'STOP after unsupported');
+    } else {
+      assertNeutral(controller.reset(), 'reset after unsupported');
+    }
+    assertSupportedRestartFromNeutral(controller, 500, request, `${action} recovery`);
+  }
+});
+
+test('repeated unsupported requests and triggers stay neutral and deterministic', () => {
+  const controller = createGestureController();
+  const first = controller.update(100, { name: 'ARMS_CROSSED', triggerId: 'same' });
+  const second = controller.update(100, { name: 'ONE_HAND_POINT', triggerId: 'same' });
+  const third = controller.update(100, { name: 'ONE_HAND_POINT', triggerId: 'same' });
+  assertNeutral(first, 'first unsupported');
+  assertNeutral(second, 'second unsupported');
+  assert.deepEqual(third, second);
+  assertSupportedRestartFromNeutral(controller, 100, { name: 'LEAN_FORWARD', triggerId: 'same' }, 'supported after repeated unsupported');
+});
+
+test('malformed runtime gesture requests cannot corrupt controller state', () => {
+  const malformedRequests = [null, undefined, '', 42, {}, [], 'toString', 'constructor', '__proto__'];
+  for (const malformed of malformedRequests) {
+    const controller = createGestureController();
+    const request = { name: 'CHEST_EMPHASIS', triggerId: 'A' };
+    controller.update(0, request);
+    controller.update(500, request);
+    assert.doesNotThrow(() => controller.update(500, malformed), 'malformed request must not throw');
+    const frame = controller.update(500, malformed);
+    for (const key of numericKeys) assert.ok(Number.isFinite(frame[key]), `malformed.${key}`);
+    assertNeutral(controller.reset(), 'malformed reset');
+    assertSupportedRestartFromNeutral(controller, 500, request, 'malformed recovery');
+  }
 });
 
 test('STOP exits the current gesture and reaches neutral without a frozen half gesture', () => {
