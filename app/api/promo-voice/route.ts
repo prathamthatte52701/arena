@@ -7,6 +7,7 @@ import path from 'node:path';
 import { NextResponse } from 'next/server';
 import { PIPER_SYNTHESIS_TIMEOUT_MS, parseVoiceRequestBody, wavDurationMs, voiceCacheIdentity, writePiperText } from '../../../promo/voice/pipeline.ts';
 import { DARK_POWER_VOICE_PROFILE, type VoiceTone } from '../../../promo/voice/darkPowerVoiceProfile.ts';
+import { processVoiceWav } from '../../../promo/voice/wavPostProcessing.ts';
 
 export const runtime = 'nodejs';
 
@@ -78,18 +79,19 @@ export async function POST(request: Request) {
     if (!existsSync(model) || !existsSync(`${model}.json`)) return NextResponse.json({ error: 'Local Piper model is not installed', engine: 'BROWSER FALLBACK' }, { status: 503 });
     const key = cacheKey(requestData.text, requestData.tone);
     const cached = cache.get(key);
-    if (cached) return new Response(new Uint8Array(cached.wav), { headers: { 'Content-Type': 'audio/wav', 'Cache-Control': 'no-store', 'X-Promo-TTS-Engine': 'LOCAL NEURAL', 'X-Promo-TTS-Model': DARK_POWER_VOICE_PROFILE.model, 'X-Promo-TTS-Duration-Ms': String(cached.durationMs), 'X-Promo-TTS-Text-Length': String(text.length) } });
+    if (cached) return new Response(new Uint8Array(cached.wav), { headers: { 'Content-Type': 'audio/wav', 'Cache-Control': 'no-store', 'X-Promo-TTS-Engine': 'LOCAL NEURAL', 'X-Promo-TTS-Model': DARK_POWER_VOICE_PROFILE.model, 'X-Promo-TTS-Profile': DARK_POWER_VOICE_PROFILE.version, 'X-Promo-TTS-Duration-Ms': String(cached.durationMs), 'X-Promo-TTS-Text-Length': String(text.length) } });
     const directory = await mkdtemp(path.join(tmpdir(), 'promo-queens-piper-'));
     const output = path.join(directory, 'speech.wav');
     try {
       await runPiper(requestData.text, requestData.tone, output, request.signal);
-      const wav = new Uint8Array(await readFile(output));
+      const sourceWav = new Uint8Array(await readFile(output));
+      const wav = processVoiceWav(sourceWav, DARK_POWER_VOICE_PROFILE.postProcessing);
       const durationMs = wavDurationMs(wav);
       request.signal.throwIfAborted();
       if (!wav.length || !durationMs) throw new Error('Piper returned empty or invalid audio');
       cache.set(key, { wav, durationMs });
       while (cache.size > 8) cache.delete(cache.keys().next().value as string);
-      return new Response(wav, { headers: { 'Content-Type': 'audio/wav', 'Cache-Control': 'no-store', 'X-Promo-TTS-Engine': 'LOCAL NEURAL', 'X-Promo-TTS-Model': DARK_POWER_VOICE_PROFILE.model, 'X-Promo-TTS-Duration-Ms': String(durationMs), 'X-Promo-TTS-Text-Length': String(text.length) } });
+      return new Response(new Uint8Array(wav), { headers: { 'Content-Type': 'audio/wav', 'Cache-Control': 'no-store', 'X-Promo-TTS-Engine': 'LOCAL NEURAL', 'X-Promo-TTS-Model': DARK_POWER_VOICE_PROFILE.model, 'X-Promo-TTS-Profile': DARK_POWER_VOICE_PROFILE.version, 'X-Promo-TTS-Duration-Ms': String(durationMs), 'X-Promo-TTS-Text-Length': String(text.length) } });
     } finally {
       await rm(directory, { recursive: true, force: true });
     }

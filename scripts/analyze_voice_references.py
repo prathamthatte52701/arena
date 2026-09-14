@@ -1,8 +1,8 @@
-"""Extract broad delivery metrics from local MP4 voice references.
+"""Extract broad delivery metrics from local voice references.
 
 This intentionally measures performance traits only. It does not create speaker
 embeddings, transcripts, voice conversions, or any speaker-identifying artifact.
-Requires the local PyAV package (``python -m pip install av``).
+PCM WAV files use the standard library. MP4 requires optional PyAV.
 """
 
 from __future__ import annotations
@@ -10,12 +10,34 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+import wave
 
-import av
 import numpy as np
 
 
 def decode_audio(path: Path) -> tuple[np.ndarray, int]:
+    if path.suffix.lower() == ".wav":
+        with wave.open(str(path), "rb") as source:
+            channels = source.getnchannels()
+            sample_width = source.getsampwidth()
+            source_rate = source.getframerate()
+            frames = source.readframes(source.getnframes())
+        if sample_width != 2:
+            raise ValueError(f"unsupported PCM sample width: {sample_width * 8} bits")
+        audio = np.frombuffer(frames, dtype="<i2").astype(np.float32) / 32768.0
+        if channels > 1:
+            audio = audio.reshape(-1, channels).mean(axis=1)
+        sample_rate = 16000
+        if source_rate != sample_rate and len(audio):
+            output_length = max(1, round(len(audio) * sample_rate / source_rate))
+            source_points = np.linspace(0.0, 1.0, len(audio), endpoint=False)
+            target_points = np.linspace(0.0, 1.0, output_length, endpoint=False)
+            audio = np.interp(target_points, source_points, audio).astype(np.float32)
+        return audio, sample_rate
+    try:
+        import av  # type: ignore[import-not-found]
+    except ImportError as error:
+        raise ValueError("MP4 analysis requires the optional PyAV package") from error
     chunks: list[np.ndarray] = []
     sample_rate = 16000
     with av.open(str(path)) as container:
@@ -108,7 +130,7 @@ def main() -> None:
     parser.add_argument("--input-dir", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
-    clips = sorted(args.input_dir.glob("*.mp4"))
+    clips = sorted((*args.input_dir.glob("*.wav"), *args.input_dir.glob("*.mp4")))
     records: list[dict[str, object]] = []
     failures: list[dict[str, str]] = []
     for clip in clips:
@@ -122,13 +144,14 @@ def main() -> None:
         "referenceFilesFound": len(clips),
         "clips": records,
         "failures": failures,
-        "sourceDirectory": str(args.input_dir.resolve()),
+        "sourceDirectory": "local style-reference pack (not committed)",
         "aggregate": {"decodedDurationSeconds": round(sum(record["durationSeconds"] for record in records), 3), "speechStyleAggregation": "withheld pending listening; no numeric averaging across delivery styles"},
         "privacy": {
             "speakerIdentityUsed": False,
             "speakerEmbeddingCreated": False,
             "referenceAudioFedToTts": False,
             "externalSourcesDownloaded": False,
+            "externalServiceUsed": False,
         },
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)

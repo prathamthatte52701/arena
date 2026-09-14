@@ -10,32 +10,48 @@ export interface VoiceToneSettings {
 }
 
 /**
- * Stock female preset selected by the user's listening comparison.
- * Pace/pause controls express the requested restrained villainess delivery;
- * Piper does not provide an Irish accent or emotion-intensity control.
+ * Distinct generic female synthetic preset selected by the user's local A/B
+ * review. The reference clips informed broad delivery style only; no speaker
+ * embedding, voice conversion, or identity cloning is used.
  */
 export const DARK_POWER_VOICE_PROFILE = {
-  version: 'dark-power-v2-kristin',
+  version: 'rhea-final-v1',
   engine: 'Piper 1.8.0',
   model: 'en_US-kristin-medium',
-  identity: 'generic non-cloned female synthetic preset',
+  identity: 'generic husky lower-mid female promo voice',
   referenceSummary: {
-    filesFound: 3,
-    source: 'new-voice-rhea-ripley/new voice rhea ripley/raw only',
-    filesAnalyzed: 3,
-    decodedDurationSeconds: 90.645,
+    filesFound: 5,
+    source: 'rhea_voice_style_reference_pack.zip',
+    filesAnalyzed: 5,
+    decodedDurationSeconds: 40,
     oldReferenceSourcesUsed: false,
-    limitation: 'Mixture energy and duration measured; speech-only pitch, usable speech duration and phrase contours are unverified. No old measurements reused.'
+    identityCloningUsed: false,
+    limitation: 'Broad cadence, energy, pause, and spectral traits only; no speaker identity analysis or reference-conditioned synthesis.',
   },
   tones: {
-    AUTO: { lengthScale: 1.08, sentenceSilence: 0.25 },
-    CONFIDENT: { lengthScale: 1.04, sentenceSilence: 0.22 },
-    COLD: { lengthScale: 1.15, sentenceSilence: 0.35 },
-    MOCKING: { lengthScale: 1.01, sentenceSilence: 0.20 },
-    ANGRY: { lengthScale: 0.97, sentenceSilence: 0.16 },
-    INTIMIDATING: { lengthScale: 1.17, sentenceSilence: 0.38 },
-    SMIRKING: { lengthScale: 1.03, sentenceSilence: 0.24 },
+    AUTO: { lengthScale: 1.1178, sentenceSilence: 0.285 },
+    CONFIDENT: { lengthScale: 1.0764, sentenceSilence: 0.255 },
+    COLD: { lengthScale: 1.1902, sentenceSilence: 0.385 },
+    MOCKING: { lengthScale: 1.0454, sentenceSilence: 0.235 },
+    ANGRY: { lengthScale: 1.004, sentenceSilence: 0.195 },
+    INTIMIDATING: { lengthScale: 1.2109, sentenceSilence: 0.415 },
+    SMIRKING: { lengthScale: 1.0661, sentenceSilence: 0.275 },
   } satisfies Record<VoiceTone, VoiceToneSettings>,
+  postProcessing: {
+    highPassHz: 55,
+    bodyFrequencyHz: 250,
+    bodyGainDb: 2.7,
+    bodyQ: 0.72,
+    softenFrequencyHz: 3_200,
+    softenGainDb: -1.4,
+    softenQ: 0.78,
+    compressorThresholdDb: -15,
+    compressorRatio: 2.1,
+    compressorAttackMs: 8,
+    compressorReleaseMs: 110,
+    makeupGainDb: 1.1,
+    limiterDb: -0.7,
+  },
 } as const;
 
 export function voiceToneSettings(tone: VoiceTone): VoiceToneSettings {

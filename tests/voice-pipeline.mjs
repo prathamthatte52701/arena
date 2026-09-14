@@ -2,12 +2,13 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { PIPER_SYNTHESIS_TIMEOUT_MS, createTtsRequest, parseVoiceRequestBody, voiceCacheIdentity, wavDurationMs, calibrateVisemeTimeline, monotonicAudioElapsed, writePiperText } from '../promo/voice/pipeline.ts';
 import { readFile } from 'node:fs/promises';
-import { VOICE_TONES, isVoiceTone, voiceToneSettings } from '../promo/voice/darkPowerVoiceProfile.ts';
+import { DARK_POWER_VOICE_PROFILE, VOICE_TONES, isVoiceTone, voiceToneSettings } from '../promo/voice/darkPowerVoiceProfile.ts';
 import { createReplayMemory } from '../promo/voice/replay.ts';
 import { createSpeechSessionState, beginSpeechSession, invalidateSpeechSession, isCurrentSpeechSession } from '../promo/speech/session.ts';
 import { createVisemeTimeline, timelineDuration, segmentAt, timelineDeformation } from '../promo/speech/textTimeline.ts';
 import { REST_MOUTH } from '../promo/face/mouth.ts';
 import { advanceSpeechClock, applySpeechBoundaryAnchor } from '../promo/speech/clock.ts';
+import { processVoiceWav } from '../promo/voice/wavPostProcessing.ts';
 
 const text = "  You think you're ready for me?\nThen prove it.  ";
 function wav() {
@@ -18,11 +19,18 @@ function wav() {
   b.writeUInt16LE(2,32); b.writeUInt16LE(16,34); b.write('data',36); b.writeUInt32LE(44100,40);
   return b;
 }
+const processing = { highPassHz:55, bodyFrequencyHz:250, bodyGainDb:2.7, bodyQ:.72, softenFrequencyHz:3200, softenGainDb:-1.4, softenQ:.78, compressorThresholdDb:-15, compressorRatio:2.1, compressorAttackMs:8, compressorReleaseMs:110, makeupGainDb:1.1, limiterDb:-.7 };
+function voicedWav() {
+  const b=wav();
+  for(let index=0;index<22050;index+=1) b.writeInt16LE(Math.round(31000*(.72*Math.sin(2*Math.PI*220*index/22050)+.18*Math.sin(2*Math.PI*3200*index/22050))),44+index*2);
+  return b;
+}
 test('voice request preserves exact whitespace, punctuation and lexical text',()=>assert.equal(createTtsRequest(text,'AUTO').text,text));
 test('Piper stdin receives the complete exact UTF-8 request',()=>{const input="  Don't change a damn word!\nCafé? Yes.  ";let received;writePiperText({end:(value,encoding)=>{received=Buffer.from(value,encoding);}},createTtsRequest(input,'AUTO').text);assert.deepEqual(received,Buffer.from(input,'utf8'));});
 test('all seven voice tones validate',()=>{ assert.equal(VOICE_TONES.length,7); for(const tone of VOICE_TONES) assert.ok(isVoiceTone(tone)); });
 test('invalid runtime tones reject before synthesis',()=>{ for(const tone of ['BOGUS','',null,undefined,42,{},'toString']) { assert.equal(isVoiceTone(tone),false); assert.throws(()=>createTtsRequest(text,tone),/Invalid voice tone/); } });
 test('each tone maps deterministically to supported controls',()=>{ for(const tone of VOICE_TONES) { assert.deepEqual(voiceToneSettings(tone),voiceToneSettings(tone)); assert.deepEqual(Object.keys(voiceToneSettings(tone)).sort(),['lengthScale','sentenceSilence']); } });
+test('final voice profile is the approved generic non-cloned candidate C',()=>{assert.equal(DARK_POWER_VOICE_PROFILE.version,'rhea-final-v1');assert.equal(DARK_POWER_VOICE_PROFILE.model,'en_US-kristin-medium');assert.equal(DARK_POWER_VOICE_PROFILE.referenceSummary.identityCloningUsed,false);assert.equal(DARK_POWER_VOICE_PROFILE.referenceSummary.filesAnalyzed,5);assert.equal(DARK_POWER_VOICE_PROFILE.postProcessing.bodyGainDb,2.7);assert.equal(DARK_POWER_VOICE_PROFILE.postProcessing.limiterDb,-.7);});
 test('cache identity includes tone and exact text',()=>{ assert.equal(voiceCacheIdentity(text,'AUTO'),voiceCacheIdentity(text,'AUTO')); assert.notEqual(voiceCacheIdentity(text,'AUTO'),voiceCacheIdentity(text,'COLD')); assert.notEqual(voiceCacheIdentity(text,'AUTO'),voiceCacheIdentity(text.trim(),'AUTO')); });
 test('420 characters accepted',()=>assert.equal(createTtsRequest('a'.repeat(420),'COLD').text.length,420));
 test('421 characters rejected',()=>assert.throws(()=>createTtsRequest('a'.repeat(421),'AUTO'),/exceeds/));
@@ -39,15 +47,18 @@ test('runtime voice body accepts exact UTF-8 text at both supported boundaries',
   }
 });
 test('Piper route has a bounded timeout, safe kill path, and no model-path disclosure',async()=>{
-  assert.equal(PIPER_SYNTHESIS_TIMEOUT_MS,30000);
+  assert.equal(PIPER_SYNTHESIS_TIMEOUT_MS,60000);
   const source=await readFile(new URL('../app/api/promo-voice/route.ts',import.meta.url),'utf8');
   assert.match(source,/setTimeout\(\(\) => \{ timedOut = true; terminate\(\); \}, PIPER_SYNTHESIS_TIMEOUT_MS\)/);
   assert.match(source,/child\.kill\(\)/);
   assert.doesNotMatch(source,/spawn\([^\n]+\{[^}]*shell\s*:\s*true/);
   assert.doesNotMatch(source,/engine:\s*'BROWSER FALLBACK',\s*model\s*\}/);
+  assert.match(source,/processVoiceWav\(sourceWav, DARK_POWER_VOICE_PROFILE\.postProcessing\)/);
 });
 test('real PCM WAV structure yields measured positive duration',()=>assert.equal(wavDurationMs(wav()),1000));
 test('malformed and truncated WAVs are safely rejected',()=>{ for(const b of [Buffer.alloc(0),Buffer.alloc(44),wav().subarray(0,43),wav().subarray(0,100)]) assert.equal(wavDurationMs(b),0); const corrupt=wav();corrupt.writeUInt32LE(0xffffffff,16);assert.equal(wavDurationMs(corrupt),0); });
+test('voice post-processing is deterministic duration-preserving and bounded',()=>{const source=voicedWav();const first=processVoiceWav(source,processing);const second=processVoiceWav(source,processing);assert.deepEqual(first,second);assert.notDeepEqual(first,source);assert.equal(wavDurationMs(first),wavDurationMs(source));let peak=0;for(let index=44;index<first.length;index+=2)peak=Math.max(peak,Math.abs(new DataView(first.buffer,first.byteOffset,first.byteLength).getInt16(index,true))/32768);assert.ok(peak<=10**(processing.limiterDb/20)+1/32768);});
+test('voice post-processing rejects malformed or unsupported WAV input',()=>{for(const input of [new Uint8Array(),new Uint8Array(44),new Uint8Array(wav().subarray(0,43))])assert.throws(()=>processVoiceWav(input,processing),/Invalid PCM16 WAV/);});
 test('calibrated timeline spans measured duration',()=>assert.equal(timelineDuration(calibrateVisemeTimeline(createVisemeTimeline(text),3380)),3380));
 test('calibration preserves seven-state contract and ends in REST',()=>{const t=calibrateVisemeTimeline(createVisemeTimeline(text),3380);assert.ok(t.every(s=>['REST','MBP','FV','AE','O','L','WQ'].includes(s.viseme)));assert.deepEqual(timelineDeformation(segmentAt(t,3380)),REST_MOUTH);});
 test('audio elapsed never goes backwards and freezes when audio pauses',()=>{let last=0;for(const t of [0,.1,.5,.5,.3,1]){const next=monotonicAudioElapsed(last,t,2000);assert.ok(next>=last);last=next;}assert.equal(last,1000);assert.equal(monotonicAudioElapsed(last,1,2000),1000);});

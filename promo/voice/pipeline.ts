@@ -3,7 +3,11 @@ import { timelineDuration } from '../speech/textTimeline.ts';
 import { DARK_POWER_VOICE_PROFILE, isVoiceTone, type VoiceTone, voiceToneSettings } from './darkPowerVoiceProfile.ts';
 
 export const MAX_PROMO_TEXT = 420;
-export const PIPER_SYNTHESIS_TIMEOUT_MS = 30_000;
+// Candidate C can approach the old 30s ceiling for a maximum-length promo
+// when the local dev runtime is under load. Keep the subprocess bounded while
+// allowing a complete 420-character synthesis to finish instead of falling
+// back to a different browser voice.
+export const PIPER_SYNTHESIS_TIMEOUT_MS = 60_000;
 
 export type VoiceRequestParseResult =
   | { ok: true; request: TtsRequest }

@@ -42,6 +42,8 @@ next-env.d.ts
 voice-references/
 new voice rhea ripley/
 new-voice-rhea-ripley/
+/new-voice-rhea-ripley.zip
+/rhea_voice_style_reference_pack.zip
 
 # Local Rhea migration sources and archives; canonical runtime copies live in public/.
 /rhea_character_reference_pack_v2_FINAL/
